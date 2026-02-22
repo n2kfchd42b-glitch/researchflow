@@ -197,3 +197,36 @@ def generate_report(study_id: str, template: str = "ngo"):
             f"attachment; filename=researchflow_{template}_report.pdf"
         }
     )
+from app.services.report_generator import ReportGenerator
+from fastapi.responses import StreamingResponse
+import io
+
+@router.post("/study/{study_id}/report")
+def generate_report(study_id: str, template: str = "ngo"):
+    if study_id not in studies:
+        raise HTTPException(status_code=404, detail="Study not found")
+    study = studies[study_id]
+    if not study["results"]:
+        raise HTTPException(status_code=400, detail="Run analysis first")
+
+    generator = ReportGenerator()
+    pdf_bytes = generator.generate(
+        template=template,
+        study_info={
+            "title":      study["title"],
+            "organisation": "ResearchFlow",
+            "donor":      "Funder",
+            "study_type": study["study_type"]
+        },
+        analysis_result=study["results"],
+        rigor_score=study["rigor_score"]
+    )
+
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition":
+            f"attachment; filename=researchflow_{template}_report.pdf"
+        }
+    )

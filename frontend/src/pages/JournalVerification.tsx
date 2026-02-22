@@ -50,6 +50,7 @@ const STROBE_ITEMS = [
 export default function JournalVerification() {
   const [uploadResult, setUploadResult] = useState<any>(null);
   const [datasetId, setDatasetId]       = useState('');
+  const [studyId, setStudyId]           = useState('');
   const [studyType, setStudyType]       = useState('observational');
   const [standard, setStandard]         = useState('STROBE');
   const [outcome, setOutcome]           = useState('');
@@ -57,11 +58,10 @@ export default function JournalVerification() {
   const [results, setResults]           = useState<any>(null);
   const [rigor, setRigor]               = useState<any>(null);
   const [loading, setLoading]           = useState(false);
+  const [downloading, setDownloading]   = useState(false);
   const [error, setError]               = useState('');
   const [checklist, setChecklist]       = useState<boolean[]>([]);
-  const [verificationId]                = useState(
-    'RF-' + Date.now().toString(36).toUpperCase()
-  );
+  const [verificationId]                = useState('RF-' + Date.now().toString(36).toUpperCase());
 
   const items = standard === 'CONSORT' ? CONSORT_ITEMS : STROBE_ITEMS;
 
@@ -101,10 +101,11 @@ export default function JournalVerification() {
     try {
       const studyRes = await api.createStudy({
         title: 'Journal Verification',
-        description: `${standard} verification for ${studyType} study`,
+        description: standard + ' verification for ' + studyType,
         study_type: studyType,
         user_role: 'journal'
       });
+      setStudyId(studyRes.id);
       const analysisRes = await api.analyseStudy(studyRes.id, {
         dataset_id: datasetId,
         outcome_column: outcome,
@@ -118,41 +119,44 @@ export default function JournalVerification() {
     setLoading(false);
   }
 
-  const columns = uploadResult ? Object.keys(uploadResult.column_types) : [];
+  async function handleDownload() {
+    if (!studyId) return;
+    setDownloading(true);
+    try {
+      await api.downloadReport(studyId, 'journal');
+    } catch (err: any) {
+      setError('Download failed: ' + (err.message || 'Unknown error'));
+    }
+    setDownloading(false);
+  }
+
+  const columns      = uploadResult ? Object.keys(uploadResult.column_types) : [];
   const checklistScore = checklist.length > 0
     ? Math.round((checklist.filter(Boolean).length / checklist.length) * 100)
     : 0;
   const overallScore = rigor
     ? Math.round((rigor.overall_score + checklistScore) / 2)
     : 0;
-  const status = overallScore >= 75 ? 'PASSED' : overallScore >= 50 ? 'FLAGGED' : 'FAILED';
-  const statusColor = status === 'PASSED' ? '#4caf50' : status === 'FLAGGED' ? '#ff9800' : '#f44336';
-  const statusBg    = status === 'PASSED' ? '#e8f5e9' : status === 'FLAGGED' ? '#fff3e0' : '#ffebee';
+  const status       = overallScore >= 75 ? 'PASSED' : overallScore >= 50 ? 'FLAGGED' : 'FAILED';
+  const statusColor  = status === 'PASSED' ? '#4caf50' : status === 'FLAGGED' ? '#ff9800' : '#f44336';
+  const statusBg     = status === 'PASSED' ? '#e8f5e9' : status === 'FLAGGED' ? '#fff3e0' : '#ffebee';
 
   return (
     <div className="page">
       <div style={{ marginBottom: '2rem' }}>
         <h1 style={{ color: '#1C2B3A' }}>Research Verification Portal</h1>
-        <p>
-          Automated statistical integrity verification for submitted manuscripts.
-          Upload a dataset, configure the study, and receive a full verification report.
-        </p>
+        <p>Automated statistical integrity verification for submitted manuscripts.</p>
       </div>
 
       {error && <div className="alert alert-critical">{error}</div>}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
 
-        {/* LEFT COLUMN */}
         <div>
-
-          {/* Study Configuration */}
           <div className="card">
             <h2>Study Configuration</h2>
             <div style={{ marginBottom: '1rem' }}>
-              <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>
-                Study Type
-              </label>
+              <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>Study Type</label>
               <select value={studyType} onChange={e => setStudyType(e.target.value)}
                 style={{ width: '100%', padding: '0.75rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.95rem' }}>
                 <option value="rct">Randomised Controlled Trial</option>
@@ -162,11 +166,9 @@ export default function JournalVerification() {
               </select>
             </div>
             <div>
-              <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>
-                Reporting Standard
-              </label>
+              <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>Reporting Standard</label>
               <div style={{ display: 'flex', gap: '0.75rem' }}>
-                {['CONSORT','STROBE','PRISMA'].map(s => (
+                {['CONSORT', 'STROBE', 'PRISMA'].map(s => (
                   <button key={s} onClick={() => {
                     setStandard(s);
                     setChecklist(new Array(
@@ -186,41 +188,32 @@ export default function JournalVerification() {
             </div>
           </div>
 
-          {/* Upload */}
           <div className="card">
             <h2>Upload Dataset</h2>
             <label className="upload-zone" style={{ display: 'block', cursor: 'pointer' }}>
               <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📊</div>
-              <p style={{ fontWeight: 600, color: '#1C2B3A' }}>
-                Upload research dataset
-              </p>
+              <p style={{ fontWeight: 600, color: '#1C2B3A' }}>Upload research dataset</p>
               <p style={{ fontSize: '0.85rem' }}>CSV, XLSX, SAV, DTA</p>
               <input type="file" accept=".csv,.xlsx,.xls,.sav,.dta"
                 onChange={handleUpload} style={{ display: 'none' }} />
             </label>
             {loading && !results && (
-              <p style={{ textAlign: 'center', marginTop: '1rem', color: '#1C2B3A' }}>
-                Processing...
-              </p>
+              <p style={{ textAlign: 'center', marginTop: '1rem', color: '#1C2B3A' }}>Processing...</p>
             )}
             {uploadResult && (
               <div className="alert alert-success" style={{ marginTop: '1rem' }}>
-                ✓ {uploadResult.rows} records, {uploadResult.columns} variables loaded
+                {uploadResult.rows} records, {uploadResult.columns} variables loaded
               </div>
             )}
           </div>
 
-          {/* Descriptive Stats */}
           {uploadResult && <DescriptiveStats uploadResult={uploadResult} />}
 
-          {/* Variable Selection */}
           {uploadResult && (
             <div className="card">
               <h2>Variable Selection</h2>
               <div style={{ marginBottom: '1rem' }}>
-                <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>
-                  Primary Outcome
-                </label>
+                <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>Primary Outcome</label>
                 <select value={outcome} onChange={e => setOutcome(e.target.value)}
                   style={{ width: '100%', padding: '0.75rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.95rem' }}>
                   <option value="">Select outcome...</option>
@@ -230,18 +223,15 @@ export default function JournalVerification() {
                 </select>
               </div>
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>
-                  Predictor Variables
-                </label>
+                <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>Predictor Variables</label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                   {columns.filter(c => c !== outcome).map(col => (
-                    <span key={col} onClick={() => togglePredictor(col)}
-                      className="badge" style={{
-                        cursor: 'pointer',
-                        background: predictors.includes(col) ? '#1C2B3A' : '#eee',
-                        color: predictors.includes(col) ? 'white' : '#444',
-                        padding: '0.4rem 0.9rem'
-                      }}>
+                    <span key={col} onClick={() => togglePredictor(col)} className="badge" style={{
+                      cursor: 'pointer',
+                      background: predictors.includes(col) ? '#1C2B3A' : '#eee',
+                      color: predictors.includes(col) ? 'white' : '#444',
+                      padding: '0.4rem 0.9rem'
+                    }}>
                       {col}
                     </span>
                   ))}
@@ -251,12 +241,11 @@ export default function JournalVerification() {
                 onClick={runVerification}
                 disabled={!outcome || predictors.length === 0 || loading}
                 style={{ opacity: (!outcome || predictors.length === 0) ? 0.5 : 1 }}>
-                {loading ? 'Verifying...' : '🔍 Run Verification'}
+                {loading ? 'Verifying...' : 'Run Verification'}
               </button>
             </div>
           )}
 
-          {/* Reporting Checklist */}
           {uploadResult && checklist.length > 0 && (
             <div className="card">
               <h2>{standard} Reporting Checklist</h2>
@@ -270,24 +259,21 @@ export default function JournalVerification() {
                 </div>
                 <div className="progress-bar">
                   <div className="progress-fill" style={{
-                    width: `${checklistScore}%`,
+                    width: checklistScore + '%',
                     background: checklistScore >= 75 ? '#4caf50' : checklistScore >= 50 ? '#ff9800' : '#f44336'
                   }} />
                 </div>
               </div>
               <div style={{ maxHeight: 400, overflowY: 'auto' }}>
                 {items.map((item, i) => (
-                  <div key={i} onClick={() => toggleChecklist(i)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '0.75rem',
-                      padding: '0.5rem', borderRadius: 4, cursor: 'pointer',
-                      background: checklist[i] ? '#e8f5e9' : 'transparent',
-                      marginBottom: 2
-                    }}>
+                  <div key={i} onClick={() => toggleChecklist(i)} style={{
+                    display: 'flex', alignItems: 'center', gap: '0.75rem',
+                    padding: '0.5rem', borderRadius: 4, cursor: 'pointer',
+                    background: checklist[i] ? '#e8f5e9' : 'transparent',
+                    marginBottom: 2
+                  }}>
                     <span style={{ fontSize: '1.1rem' }}>{checklist[i] ? '✅' : '⬜'}</span>
-                    <span style={{ fontSize: '0.85rem', color: checklist[i] ? '#2e7d32' : '#444' }}>
-                      {item}
-                    </span>
+                    <span style={{ fontSize: '0.85rem', color: checklist[i] ? '#2e7d32' : '#444' }}>{item}</span>
                   </div>
                 ))}
               </div>
@@ -295,20 +281,18 @@ export default function JournalVerification() {
           )}
         </div>
 
-        {/* RIGHT COLUMN — Results */}
         <div>
           {!results && (
             <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
               <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🔬</div>
               <h2>Verification Results</h2>
-              <p>Upload a dataset, configure the study, and run verification to see results here.</p>
+              <p>Upload a dataset and run verification to see results here.</p>
             </div>
           )}
 
           {results && rigor && (
             <div>
-              {/* Overall Status */}
-              <div className="card" style={{ textAlign: 'center', background: statusBg, borderTop: `4px solid ${statusColor}` }}>
+              <div className="card" style={{ textAlign: 'center', background: statusBg, borderTop: '4px solid ' + statusColor }}>
                 <h2>Verification Status</h2>
                 <div style={{ fontSize: '2.5rem', fontWeight: 700, color: statusColor, padding: '0.5rem 0' }}>
                   {status}
@@ -316,43 +300,34 @@ export default function JournalVerification() {
                 <div style={{ fontSize: '3rem', fontWeight: 700, color: statusColor }}>
                   {overallScore}/100
                 </div>
-                <p style={{ color: statusColor, fontWeight: 600 }}>
-                  Combined integrity score
-                </p>
+                <p style={{ color: statusColor, fontWeight: 600 }}>Combined integrity score</p>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-                  <span className="badge badge-blue">
-                    Statistical: {rigor.overall_score}/100
-                  </span>
-                  <span className="badge badge-blue">
-                    {standard}: {checklistScore}%
-                  </span>
+                  <span className="badge badge-blue">Statistical: {rigor.overall_score}/100</span>
+                  <span className="badge badge-blue">{standard}: {checklistScore}%</span>
                 </div>
               </div>
 
-              {/* Verification Panels */}
               {[
-                { label: 'Internal Consistency',   key: 'data_quality',  icon: '🔍' },
-                { label: 'Methodology Alignment',  key: 'methodology',   icon: '📐' },
-                { label: 'Assumption Verification', key: 'assumptions',   icon: '✓'  },
-                { label: 'Reporting Completeness',  key: 'reporting',     icon: '📄' },
+                { label: 'Internal Consistency',    key: 'data_quality', icon: '🔍' },
+                { label: 'Methodology Alignment',   key: 'methodology',  icon: '📐' },
+                { label: 'Assumption Verification', key: 'assumptions',  icon: '✓'  },
+                { label: 'Reporting Completeness',  key: 'reporting',    icon: '📄' },
               ].map(panel => {
-                const val = rigor.breakdown[panel.key];
-                const pct = Math.round((val.score / val.max) * 100);
-                const passed = pct >= 70;
+                const val  = rigor.breakdown[panel.key];
+                const pct  = Math.round((val.score / val.max) * 100);
+                const pass = pct >= 70;
                 return (
                   <div key={panel.key} className="card">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                      <h2 style={{ marginBottom: 0 }}>
-                        {panel.icon} {panel.label}
-                      </h2>
-                      <span className={`badge badge-${passed ? 'green' : pct >= 50 ? 'orange' : 'red'}`}>
-                        {passed ? '✓ PASSED' : pct >= 50 ? '⚠ REVIEW' : '✗ FAILED'}
+                      <h2 style={{ marginBottom: 0 }}>{panel.icon} {panel.label}</h2>
+                      <span className={'badge badge-' + (pass ? 'green' : pct >= 50 ? 'orange' : 'red')}>
+                        {pass ? 'PASSED' : pct >= 50 ? 'REVIEW' : 'FAILED'}
                       </span>
                     </div>
                     <div className="progress-bar" style={{ marginBottom: '0.75rem' }}>
                       <div className="progress-fill" style={{
-                        width: `${pct}%`,
-                        background: passed ? '#4caf50' : pct >= 50 ? '#ff9800' : '#f44336'
+                        width: pct + '%',
+                        background: pass ? '#4caf50' : pct >= 50 ? '#ff9800' : '#f44336'
                       }} />
                     </div>
                     <p style={{ fontSize: '0.82rem', color: '#888', marginBottom: '0.5rem' }}>
@@ -365,14 +340,10 @@ export default function JournalVerification() {
                 );
               })}
 
-              {/* Statistical Charts */}
               <ResultsCharts results={results} rigor={rigor} />
 
-              {/* Verification ID */}
               <div className="card" style={{ background: '#f0f4f8' }}>
-                <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: 4 }}>
-                  Verification ID
-                </p>
+                <p style={{ fontSize: '0.8rem', color: '#888', marginBottom: 4 }}>Verification ID</p>
                 <p style={{ fontFamily: 'monospace', fontSize: '0.9rem', color: '#1C2B3A', marginBottom: 8, fontWeight: 700 }}>
                   {verificationId}
                 </p>
@@ -381,8 +352,12 @@ export default function JournalVerification() {
                 </p>
               </div>
 
-              <button className="btn btn-full btn-navy" style={{ marginTop: '0.5rem' }}>
-                📄 Download Verification Report
+              <button
+                className="btn btn-full btn-navy"
+                style={{ marginTop: '0.5rem' }}
+                onClick={handleDownload}
+                disabled={downloading}>
+                {downloading ? 'Generating PDF...' : 'Download Verification Report (PDF)'}
               </button>
             </div>
           )}

@@ -15,6 +15,7 @@ export default function StudentWizard() {
   const [step, setStep]                 = useState(0);
   const [uploadResult, setUploadResult] = useState<any>(null);
   const [datasetId, setDatasetId]       = useState('');
+  const [studyId, setStudyId]           = useState('');
   const [studyDesign, setStudyDesign]   = useState('');
   const [question, setQuestion]         = useState('');
   const [outcome, setOutcome]           = useState('');
@@ -22,6 +23,7 @@ export default function StudentWizard() {
   const [results, setResults]           = useState<any>(null);
   const [rigor, setRigor]               = useState<any>(null);
   const [loading, setLoading]           = useState(false);
+  const [downloading, setDownloading]   = useState(false);
   const [progress, setProgress]         = useState<string[]>([]);
   const [error, setError]               = useState('');
 
@@ -65,12 +67,12 @@ export default function StudentWizard() {
         study_type: studyDesign,
         user_role: 'student'
       });
-      const sid = studyRes.id;
+      setStudyId(studyRes.id);
       for (let i = 0; i < steps_log.length; i++) {
         await new Promise(r => setTimeout(r, 600));
         setProgress(prev => [...prev, steps_log[i]]);
       }
-      const analysisRes = await api.analyseStudy(sid, {
+      const analysisRes = await api.analyseStudy(studyRes.id, {
         dataset_id: datasetId,
         outcome_column: outcome,
         predictor_columns: predictors
@@ -82,6 +84,17 @@ export default function StudentWizard() {
       setError('Analysis failed: ' + (err.message || 'Unknown error'));
     }
     setLoading(false);
+  }
+
+  async function handleDownload() {
+    if (!studyId) return;
+    setDownloading(true);
+    try {
+      await api.downloadReport(studyId, 'student');
+    } catch (err: any) {
+      setError('Download failed: ' + (err.message || 'Unknown error'));
+    }
+    setDownloading(false);
   }
 
   function getRigorColor(score: number) {
@@ -97,7 +110,6 @@ export default function StudentWizard() {
       <h1 style={{ color: '#C0533A' }}>Student Analysis Wizard</h1>
       <p>Guided step-by-step research analysis with methodology education.</p>
 
-      {/* Step Bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', margin: '2rem 0', position: 'relative' }}>
         <div style={{ position: 'absolute', top: 15, left: 0, right: 0, height: 2, background: '#eee', zIndex: 0 }} />
         {STEPS.map((s, i) => (
@@ -116,7 +128,6 @@ export default function StudentWizard() {
 
       {error && <div className="alert alert-critical" style={{ marginBottom: '1rem' }}>{error}</div>}
 
-      {/* STEP 0 — Upload */}
       {step === 0 && (
         <div>
           <div className="card">
@@ -130,30 +141,27 @@ export default function StudentWizard() {
                 onChange={handleUpload} style={{ display: 'none' }} />
             </label>
             {loading && (
-              <p style={{ textAlign: 'center', marginTop: '1rem', color: '#C0533A' }}>
-                Analysing your data...
-              </p>
+              <p style={{ textAlign: 'center', marginTop: '1rem', color: '#C0533A' }}>Analysing your data...</p>
             )}
             {uploadResult && (
               <div style={{ marginTop: '1.5rem' }}>
                 <div className="alert alert-success">
-                  ✓ Dataset loaded: {uploadResult.rows} rows, {uploadResult.columns} columns
+                  Dataset loaded: {uploadResult.rows} rows, {uploadResult.columns} columns
                 </div>
                 {uploadResult.issues.map((issue: any, i: number) => (
-                  <div key={i} className={`alert alert-${issue.severity === 'critical' ? 'critical' : 'warning'}`}>
-                    ⚠ {issue.message} — {issue.recommendation}
+                  <div key={i} className={'alert alert-' + (issue.severity === 'critical' ? 'critical' : 'warning')}>
+                    {issue.message} — {issue.recommendation}
                   </div>
                 ))}
               </div>
             )}
           </div>
-
           {uploadResult && (
             <div>
               <DescriptiveStats uploadResult={uploadResult} />
               <div style={{ marginTop: '1rem' }}>
                 <button className="btn btn-primary btn-full" onClick={() => setStep(1)}>
-                  Next: Choose Study Design →
+                  Next: Choose Study Design
                 </button>
               </div>
             </div>
@@ -161,7 +169,6 @@ export default function StudentWizard() {
         </div>
       )}
 
-      {/* STEP 1 — Study Design */}
       {step === 1 && (
         <div className="card">
           <h2>Choose Your Study Design</h2>
@@ -170,7 +177,7 @@ export default function StudentWizard() {
             {DESIGNS.map(d => (
               <div key={d.id} onClick={() => setStudyDesign(d.id)} style={{
                 padding: '1rem', borderRadius: 8, cursor: 'pointer',
-                border: `2px solid ${studyDesign === d.id ? '#C0533A' : '#eee'}`,
+                border: '2px solid ' + (studyDesign === d.id ? '#C0533A' : '#eee'),
                 background: studyDesign === d.id ? '#fff5f3' : 'white'
               }}>
                 <h3 style={{ color: studyDesign === d.id ? '#C0533A' : '#1C2B3A' }}>{d.label}</h3>
@@ -179,36 +186,27 @@ export default function StudentWizard() {
             ))}
           </div>
           <div style={{ marginBottom: '1rem' }}>
-            <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>
-              What is your research question?
-            </label>
+            <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>What is your research question?</label>
             <textarea value={question} onChange={e => setQuestion(e.target.value)}
               placeholder="e.g. Does the CHW intervention reduce child mortality?"
               style={{ width: '100%', padding: '0.75rem', borderRadius: 6, border: '1px solid #ccc', minHeight: 80, fontSize: '0.95rem' }} />
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
-            <button className="btn btn-navy" onClick={() => setStep(0)}>← Back</button>
+            <button className="btn btn-navy" onClick={() => setStep(0)}>Back</button>
             <button className="btn btn-primary" style={{ flex: 1 }}
               onClick={() => setStep(2)} disabled={!studyDesign}>
-              Next: Define Population →
+              Next: Define Population
             </button>
           </div>
         </div>
       )}
 
-      {/* STEP 2 — Population */}
       {step === 2 && (
         <div>
           <div className="card">
             <h2>Define Your Study Population</h2>
-            <p>Select your outcome variable and the factors you want to analyse.</p>
             <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>
-                Primary Outcome Variable
-              </label>
-              <p style={{ fontSize: '0.85rem', marginBottom: 8 }}>
-                The variable you are trying to predict — usually binary (0/1, yes/no).
-              </p>
+              <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>Primary Outcome Variable</label>
               <select value={outcome} onChange={e => setOutcome(e.target.value)}
                 style={{ width: '100%', padding: '0.75rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.95rem' }}>
                 <option value="">Select outcome column...</option>
@@ -218,51 +216,39 @@ export default function StudentWizard() {
               </select>
             </div>
             <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>
-                Predictor Variables
-              </label>
-              <p style={{ fontSize: '0.85rem', marginBottom: 8 }}>
-                Factors you think might influence your outcome. Tap to select.
-              </p>
+              <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>Predictor Variables</label>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                 {columns.filter(c => c !== outcome).map(col => (
-                  <span key={col} onClick={() => togglePredictor(col)} className="badge"
-                    style={{
-                      cursor: 'pointer', padding: '0.4rem 0.9rem',
-                      background: predictors.includes(col) ? '#C0533A' : '#eee',
-                      color: predictors.includes(col) ? 'white' : '#444'
-                    }}>
+                  <span key={col} onClick={() => togglePredictor(col)} className="badge" style={{
+                    cursor: 'pointer', padding: '0.4rem 0.9rem',
+                    background: predictors.includes(col) ? '#C0533A' : '#eee',
+                    color: predictors.includes(col) ? 'white' : '#444'
+                  }}>
                     {col}
                   </span>
                 ))}
               </div>
               {predictors.length > 0 && (
                 <p style={{ marginTop: 8, fontSize: '0.85rem', color: '#5A8A6A' }}>
-                  ✓ {predictors.length} selected: {predictors.join(', ')}
+                  {predictors.length} selected: {predictors.join(', ')}
                 </p>
               )}
             </div>
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button className="btn btn-navy" onClick={() => setStep(1)}>← Back</button>
+              <button className="btn btn-navy" onClick={() => setStep(1)}>Back</button>
               <button className="btn btn-primary" style={{ flex: 1 }}
                 onClick={() => { setStep(3); runAnalysis(); }}
                 disabled={!outcome || predictors.length === 0}>
-                Run Analysis →
+                Run Analysis
               </button>
             </div>
           </div>
-
           {outcome && predictors.length > 0 && (
-            <BivariateCharts
-              uploadResult={uploadResult}
-              outcome={outcome}
-              predictors={predictors}
-            />
+            <BivariateCharts uploadResult={uploadResult} outcome={outcome} predictors={predictors} />
           )}
         </div>
       )}
 
-      {/* STEP 3 — Running */}
       {step === 3 && (
         <div className="card" style={{ textAlign: 'center' }}>
           <h2>Running Your Analysis</h2>
@@ -286,14 +272,13 @@ export default function StudentWizard() {
         </div>
       )}
 
-      {/* STEP 4 — Results */}
       {step === 4 && rigor && (
         <div>
           <div className="card" style={{ textAlign: 'center' }}>
             <h2>Your Analysis Results</h2>
             <div style={{
               margin: '1.5rem auto', width: 160, height: 160, borderRadius: '50%',
-              border: `12px solid ${getRigorColor(rigor.overall_score)}`,
+              border: '12px solid ' + getRigorColor(rigor.overall_score),
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
             }}>
               <span style={{ fontSize: '2.5rem', fontWeight: 700, color: getRigorColor(rigor.overall_score) }}>
@@ -301,7 +286,7 @@ export default function StudentWizard() {
               </span>
               <span style={{ fontSize: '0.8rem', color: '#888' }}>Rigor Score</span>
             </div>
-            <span className={`badge badge-${rigor.overall_score >= 70 ? 'green' : rigor.overall_score >= 40 ? 'orange' : 'red'}`}
+            <span className={'badge badge-' + (rigor.overall_score >= 70 ? 'green' : rigor.overall_score >= 40 ? 'orange' : 'red')}
               style={{ fontSize: '1rem', padding: '0.4rem 1.2rem' }}>
               {rigor.grade}
             </span>
@@ -312,7 +297,7 @@ export default function StudentWizard() {
           <div className="card">
             <h2>Recommendations</h2>
             {rigor.recommendations.map((rec: string, i: number) => (
-              <div key={i} className="alert alert-success">✓ {rec}</div>
+              <div key={i} className="alert alert-success">{rec}</div>
             ))}
           </div>
 
@@ -325,9 +310,22 @@ export default function StudentWizard() {
             </div>
           )}
 
+          <button
+            className="btn btn-navy btn-full"
+            style={{ marginBottom: '0.75rem' }}
+            onClick={handleDownload}
+            disabled={downloading}>
+            {downloading ? 'Generating PDF...' : 'Download Student Report (PDF)'}
+          </button>
+
           <button className="btn btn-primary btn-full" onClick={() => {
-            setStep(0); setUploadResult(null); setResults(null);
-            setRigor(null); setPredictors([]); setOutcome('');
+            setStep(0);
+            setUploadResult(null);
+            setResults(null);
+            setRigor(null);
+            setPredictors([]);
+            setOutcome('');
+            setStudyId('');
           }}>
             Start New Analysis
           </button>
