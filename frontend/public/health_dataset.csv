@@ -1,0 +1,251 @@
+patient_id,age,sex,district,facility,treatment,outcome,follow_up_days,weight,admission_date
+PT0000,52,Female,West,Clinic B,Intervention,0,1009,49.7,2022-01-01
+PT0001,42,Male,West,Hospital,Intervention,0,409,46.4,2022-01-02
+PT0002,54,Male,South,Clinic B,Standard,1,112,80.0,2022-01-03
+PT0003,67,Male,West,Hospital,Standard,0,175,63.5,2022-01-04
+PT0004,41,Female,East,Clinic A,Intervention,0,248,74.0,2022-01-05
+PT0005,41,Male,East,Clinic A,Standard,0,6,,2022-01-06
+PT0006,68,Male,North,Clinic A,Intervention,0,405,84.9,2022-01-07
+PT0007,56,Female,West,Clinic B,Intervention,1,354,46.5,2022-01-08
+PT0008,37,Male,South,Clinic A,Intervention,0,110,48.4,2022-01-09
+PT0009,53,Male,East,Clinic B,Standard,0,89,82.3,2022-01-10
+PT0010,38,Female,East,Clinic A,Intervention,0,57,33.7,2022-01-11
+PT0011,38,Male,South,Clinic A,Intervention,1,116,,2022-01-12
+PT0012,48,Male,South,Clinic B,Intervention,0,8,63.7,2022-01-13
+PT0013,16,Male,East,Clinic B,Standard,1,344,56.2,2022-01-14
+PT0014,19,Female,East,Clinic A,Standard,0,6,62.6,2022-01-15
+PT0015,36,Female,South,Clinic B,Intervention,1,71,54.8,2022-01-16
+PT0016,29,Female,East,Clinic A,Standard,1,482,83.5,2022-01-17
+PT0017,49,Male,North,Clinic B,Standard,1,239,86.7,2022-01-18
+PT0018,31,Male,North,Hospital,Standard,1,59,56.8,2022-01-19
+PT0019,23,Female,South,Hospital,Standard,0,52,68.3,2022-01-20
+PT0020,66,Male,West,Hospital,Standard,0,0,49.1,2022-01-21
+PT0021,41,Male,South,Hospital,Standard,0,214,77.9,2022-01-22
+PT0022,46,Female,South,Hospital,Standard,0,9,77.6,2022-01-23
+PT0023,23,Female,West,Clinic A,Standard,0,136,61.5,2022-01-24
+PT0024,36,Male,West,Hospital,Standard,0,589,65.2,2022-01-25
+PT0025,46,Male,West,Hospital,Standard,0,20,63.9,2022-01-26
+PT0026,27,Male,North,Hospital,Intervention,0,404,45.6,2022-01-27
+PT0027,50,Female,East,Hospital,Intervention,1,857,83.6,2022-01-28
+PT0028,35,Female,North,Clinic B,Standard,0,11,55.8,2022-01-29
+PT0029,40,Female,East,Clinic A,Intervention,1,386,55.9,2022-01-30
+PT0030,35,Female,North,Hospital,Intervention,1,130,63.2,2022-01-31
+PT0031,72,Male,East,Hospital,Standard,1,426,76.9,2022-02-01
+PT0032,44,Female,North,Hospital,Standard,0,152,57.9,2022-02-02
+PT0033,29,Female,West,Clinic A,Standard,1,195,41.6,2022-02-03
+PT0034,57,Female,South,Clinic B,Intervention,1,141,,2022-02-04
+PT0035,26,Female,North,Clinic A,Intervention,1,359,70.1,2022-02-05
+PT0036,48,Female,East,Clinic B,Standard,0,238,91.3,2022-02-06
+PT0037,15,Male,West,Hospital,Standard,0,132,49.9,2022-02-07
+PT0038,25,Male,North,Hospital,Standard,0,364,49.4,2022-02-08
+PT0039,47,Female,North,Clinic A,Intervention,0,50,46.8,2022-02-09
+PT0040,56,Male,West,Clinic A,Intervention,0,30,45.4,2022-02-10
+PT0041,47,Female,North,Clinic B,Intervention,1,31,,2022-02-11
+PT0042,43,Female,South,Clinic B,Intervention,1,73,82.9,2022-02-12
+PT0043,40,Male,North,Clinic A,Standard,0,49,67.1,2022-02-13
+PT0044,22,Male,South,Clinic B,Standard,1,478,59.4,2022-02-14
+PT0045,34,Female,South,Clinic A,Standard,0,20,86.5,2022-02-15
+PT0046,38,Female,West,Clinic B,Standard,1,216,67.1,2022-02-16
+PT0047,60,Female,North,Clinic A,Intervention,1,37,78.1,2022-02-17
+PT0048,50,Male,West,Clinic A,Intervention,0,384,,2022-02-18
+PT0049,18,Female,North,Clinic A,Standard,0,585,65.5,2022-02-19
+PT0050,49,Female,North,Clinic B,Standard,1,112,50.2,2022-02-20
+PT0051,39,Female,East,Clinic B,Intervention,0,380,72.6,2022-02-21
+PT0052,34,Male,North,Clinic B,Standard,0,0,67.3,2022-02-22
+PT0053,54,Female,West,Clinic A,Intervention,1,308,54.3,2022-02-23
+PT0054,60,Female,South,Clinic B,Standard,0,46,,2022-02-24
+PT0055,58,Male,North,Clinic B,Standard,1,430,84.4,2022-02-25
+PT0056,32,Female,East,Clinic A,Standard,0,0,88.7,2022-02-26
+PT0057,40,Female,West,Hospital,Standard,1,146,62.4,2022-02-27
+PT0058,49,Male,North,Clinic A,Standard,0,254,65.8,2022-02-28
+PT0059,59,Female,West,Clinic B,Standard,1,53,,2022-03-01
+PT0060,37,Male,East,Clinic A,Standard,1,38,66.8,2022-03-02
+PT0061,42,Male,East,Hospital,Intervention,0,15,44.9,2022-03-03
+PT0062,28,Female,West,Clinic A,Intervention,0,71,70.1,2022-03-04
+PT0063,27,Female,North,Clinic B,Intervention,1,147,39.9,2022-03-05
+PT0064,57,Female,South,Hospital,Intervention,0,22,56.2,2022-03-06
+PT0065,65,Female,East,Clinic B,Intervention,0,85,71.1,2022-03-07
+PT0066,43,Male,North,Hospital,Standard,0,1,72.2,2022-03-08
+PT0067,60,Female,North,Hospital,Standard,0,307,55.3,2022-03-09
+PT0068,50,Male,South,Clinic A,Intervention,1,24,59.5,2022-03-10
+PT0069,35,Female,East,Clinic A,Standard,0,59,57.9,2022-03-11
+PT0070,50,Female,East,Clinic B,Intervention,0,3,63.8,2022-03-12
+PT0071,68,Female,North,Clinic A,Intervention,0,101,64.7,2022-03-13
+PT0072,44,Male,North,Clinic A,Standard,0,330,73.0,2022-03-14
+PT0073,68,Female,South,Hospital,Standard,0,89,58.8,2022-03-15
+PT0074,5,Female,South,Clinic A,Standard,0,35,69.5,2022-03-16
+PT0075,57,Female,East,Hospital,Intervention,1,252,71.1,2022-03-17
+PT0076,46,Female,West,Hospital,Standard,0,279,67.4,2022-03-18
+PT0077,40,Male,East,Hospital,Intervention,0,34,61.9,2022-03-19
+PT0078,46,Female,North,Clinic B,Intervention,1,265,67.2,2022-03-20
+PT0079,15,Male,East,Clinic B,Intervention,0,529,74.0,2022-03-21
+PT0080,41,Male,West,Clinic B,Standard,1,32,75.1,2022-03-22
+PT0081,50,Male,South,Hospital,Standard,0,265,,2022-03-23
+PT0082,67,Male,West,Clinic B,Intervention,0,221,53.1,2022-03-24
+PT0083,37,Male,West,Clinic B,Standard,0,115,59.7,2022-03-25
+PT0084,32,Male,West,Clinic A,Standard,0,10,45.6,2022-03-26
+PT0085,37,Female,South,Clinic B,Standard,1,13,,2022-03-27
+PT0086,58,Male,West,Clinic B,Intervention,0,344,61.0,2022-03-28
+PT0087,49,Male,West,Hospital,Intervention,0,831,67.5,2022-03-29
+PT0088,37,Male,West,Hospital,Standard,0,202,57.7,2022-03-30
+PT0089,52,Female,North,Hospital,Intervention,0,106,61.1,2022-03-31
+PT0090,46,Female,West,Hospital,Standard,1,187,79.7,2022-04-01
+PT0091,59,Male,South,Hospital,Standard,0,162,73.3,2022-04-02
+PT0092,34,Female,West,Hospital,Standard,0,87,63.7,2022-04-03
+PT0093,40,Male,West,Clinic B,Standard,0,12,74.2,2022-04-04
+PT0094,39,Male,South,Hospital,Intervention,0,310,74.5,2022-04-05
+PT0095,23,Female,West,Hospital,Intervention,1,83,60.3,2022-04-06
+PT0096,49,Male,South,Clinic A,Intervention,0,307,47.4,2022-04-07
+PT0097,48,Female,West,Clinic B,Standard,1,52,54.2,2022-04-08
+PT0098,45,Female,South,Clinic B,Standard,0,0,48.9,2022-04-09
+PT0099,41,Male,West,Clinic B,Standard,0,31,79.0,2022-04-10
+PT0100,23,Male,West,Hospital,Intervention,1,113,,2022-04-11
+PT0101,38,Female,North,Hospital,Standard,0,519,84.0,2022-04-12
+PT0102,39,Male,North,Hospital,Intervention,0,19,40.8,2022-04-13
+PT0103,32,Male,West,Clinic A,Intervention,1,346,77.9,2022-04-14
+PT0104,42,Male,West,Hospital,Intervention,0,134,91.5,2022-04-15
+PT0105,51,Female,East,Clinic A,Intervention,1,314,78.3,2022-04-16
+PT0106,73,Female,South,Clinic B,Intervention,0,63,39.2,2022-04-17
+PT0107,47,Male,East,Hospital,Intervention,1,329,86.2,2022-04-18
+PT0108,48,Female,North,Clinic A,Standard,1,266,65.5,2022-04-19
+PT0109,43,Female,North,Clinic A,Standard,0,47,62.2,2022-04-20
+PT0110,16,Female,North,Hospital,Intervention,1,25,70.4,2022-04-21
+PT0111,44,Female,North,Clinic B,Intervention,0,364,52.4,2022-04-22
+PT0112,45,Female,West,Clinic B,Standard,1,594,65.0,2022-04-23
+PT0113,81,Male,North,Clinic B,Intervention,0,5,84.4,2022-04-24
+PT0114,42,Male,West,Clinic A,Intervention,0,236,72.5,2022-04-25
+PT0115,49,Male,West,Clinic A,Standard,0,432,65.7,2022-04-26
+PT0116,44,Female,North,Clinic A,Intervention,0,350,66.1,2022-04-27
+PT0117,27,Female,North,Clinic A,Intervention,0,600,50.8,2022-04-28
+PT0118,62,Male,South,Clinic B,Intervention,1,256,63.2,2022-04-29
+PT0119,56,Female,East,Hospital,Standard,1,105,45.4,2022-04-30
+PT0120,56,Male,North,Clinic A,Standard,1,67,77.3,2022-05-01
+PT0121,31,Male,South,Clinic A,Standard,0,69,38.8,2022-05-02
+PT0122,66,Male,South,Clinic B,Intervention,0,231,75.3,2022-05-03
+PT0123,23,Female,East,Hospital,Intervention,0,246,76.8,2022-05-04
+PT0124,53,Female,West,Hospital,Standard,0,40,80.8,2022-05-05
+PT0125,77,Male,North,Clinic B,Intervention,0,364,66.0,2022-05-06
+PT0126,30,Male,East,Clinic B,Intervention,0,225,76.0,2022-05-07
+PT0127,36,Male,North,Hospital,Intervention,1,148,63.1,2022-05-08
+PT0128,46,Male,South,Clinic A,Intervention,0,114,50.8,2022-05-09
+PT0129,37,Female,South,Hospital,Intervention,0,141,83.4,2022-05-10
+PT0130,21,Female,West,Clinic B,Standard,0,31,63.8,2022-05-11
+PT0131,46,Male,South,Clinic A,Intervention,0,41,48.1,2022-05-12
+PT0132,29,Male,South,Clinic A,Standard,0,17,59.4,2022-05-13
+PT0133,52,Female,East,Clinic B,Intervention,1,30,59.9,2022-05-14
+PT0134,31,Female,North,Clinic B,Standard,0,108,70.5,2022-05-15
+PT0135,68,Male,North,Clinic B,Intervention,0,136,93.2,2022-05-16
+PT0136,33,Male,East,Hospital,Standard,0,3,71.3,2022-05-17
+PT0137,40,Male,West,Hospital,Intervention,1,286,67.5,2022-05-18
+PT0138,57,Female,North,Clinic A,Standard,1,62,94.5,2022-05-19
+PT0139,26,Female,South,Clinic B,Intervention,1,437,76.7,2022-05-20
+PT0140,48,Female,North,Clinic A,Standard,0,616,68.1,2022-05-21
+PT0141,64,Male,South,Clinic A,Intervention,0,36,59.2,2022-05-22
+PT0142,20,Male,West,Clinic A,Standard,0,111,,2022-05-23
+PT0143,47,Female,East,Clinic A,Standard,1,0,64.2,2022-05-24
+PT0144,48,Female,North,Clinic B,Intervention,1,164,66.1,2022-05-25
+PT0145,56,Male,East,Clinic A,Intervention,0,168,80.8,2022-05-26
+PT0146,26,Female,North,Clinic B,Standard,1,51,58.5,2022-05-27
+PT0147,25,Female,South,Clinic B,Intervention,1,147,71.2,2022-05-28
+PT0148,52,Male,East,Hospital,Standard,0,46,76.4,2022-05-29
+PT0149,49,Female,North,Clinic B,Standard,1,31,,2022-05-30
+PT0150,48,Male,South,Hospital,Standard,1,189,55.1,2022-05-31
+PT0151,50,Male,East,Clinic B,Intervention,0,70,63.2,2022-06-01
+PT0152,34,Male,East,Clinic B,Standard,0,160,59.5,2022-06-02
+PT0153,48,Male,North,Clinic B,Standard,0,102,78.8,2022-06-03
+PT0154,49,Male,North,Hospital,Intervention,0,748,53.0,2022-06-04
+PT0155,34,Male,North,Hospital,Intervention,0,29,65.8,2022-06-05
+PT0156,72,Male,South,Clinic A,Intervention,0,112,95.6,2022-06-06
+PT0157,52,Female,,Hospital,Intervention,1,205,70.0,2022-06-07
+PT0158,27,Male,East,Hospital,Standard,0,90,72.0,2022-06-08
+PT0159,54,Male,East,Hospital,Standard,0,661,78.9,2022-06-09
+PT0160,30,Female,North,Hospital,Standard,0,230,59.4,2022-06-10
+PT0161,56,Female,North,Clinic A,Standard,0,192,52.0,2022-06-11
+PT0162,62,Female,West,Hospital,Intervention,1,254,,2022-06-12
+PT0163,32,Male,East,Clinic B,Standard,0,549,68.2,2022-06-13
+PT0164,59,Female,South,Clinic B,Standard,0,429,45.6,2022-06-14
+PT0165,51,Male,West,Hospital,Intervention,0,231,,2022-06-15
+PT0166,57,Male,North,Hospital,Standard,1,248,77.8,2022-06-16
+PT0167,73,Male,North,Clinic B,Standard,1,28,54.0,2022-06-17
+PT0168,41,Male,East,Clinic B,Standard,0,19,70.2,2022-06-18
+PT0169,33,Female,North,Clinic A,Standard,0,152,75.7,2022-06-19
+PT0170,31,Female,South,Clinic B,Standard,0,3,,2022-06-20
+PT0171,32,Male,East,Clinic B,Standard,0,118,73.2,2022-06-21
+PT0172,43,Male,North,Hospital,Intervention,0,42,,2022-06-22
+PT0173,50,Male,East,Clinic B,Intervention,0,76,51.5,2022-06-23
+PT0174,49,Female,North,Clinic A,Standard,0,269,59.6,2022-06-24
+PT0175,57,Male,North,Clinic B,Standard,0,510,58.0,2022-06-25
+PT0176,45,Male,North,Hospital,Intervention,1,13,64.0,2022-06-26
+PT0177,66,Female,South,Hospital,Standard,0,137,78.1,2022-06-27
+PT0178,41,Female,South,Clinic B,Standard,0,385,49.3,2022-06-28
+PT0179,85,Male,East,Hospital,Standard,0,15,66.7,2022-06-29
+PT0180,54,Female,North,Clinic A,Intervention,0,313,52.2,2022-06-30
+PT0181,32,Female,North,Clinic A,Standard,1,79,56.1,2022-07-01
+PT0182,28,Male,South,Clinic B,Intervention,0,69,71.7,2022-07-02
+PT0183,52,Female,North,Clinic B,Standard,0,682,50.7,2022-07-03
+PT0184,41,Male,South,Clinic B,Intervention,1,40,73.8,2022-07-04
+PT0185,55,Female,North,Hospital,Intervention,0,212,48.8,2022-07-05
+PT0186,52,Male,East,Clinic A,Standard,0,310,73.0,2022-07-06
+PT0187,43,Male,North,Clinic A,Intervention,1,7,46.4,2022-07-07
+PT0188,32,Male,North,Hospital,Standard,0,199,57.6,2022-07-08
+PT0189,22,Female,West,Clinic A,Intervention,0,544,87.8,2022-07-09
+PT0190,38,Male,South,Clinic B,Standard,1,23,85.5,2022-07-10
+PT0191,57,Female,North,Clinic B,Standard,0,407,60.0,2022-07-11
+PT0192,48,Male,North,Clinic B,Intervention,0,162,69.7,2022-07-12
+PT0193,26,Male,West,Clinic A,Standard,0,172,79.4,2022-07-13
+PT0194,47,Female,West,Clinic B,Standard,1,170,73.2,2022-07-14
+PT0195,50,Male,South,Hospital,Intervention,0,63,61.7,2022-07-15
+PT0196,31,Male,West,Hospital,Standard,0,492,56.0,2022-07-16
+PT0197,47,Female,East,Clinic A,Standard,0,529,75.4,2022-07-17
+PT0198,45,Male,West,Hospital,Intervention,0,176,78.6,2022-07-18
+PT0199,27,Male,East,Hospital,Intervention,0,275,85.6,2022-07-19
+PT0200,50,Male,South,Clinic A,Standard,0,170,44.8,2022-07-20
+PT0201,53,Male,South,Clinic B,Standard,0,119,50.0,2022-07-21
+PT0202,61,Female,South,Clinic B,Intervention,0,194,78.9,2022-07-22
+PT0203,60,Female,South,Clinic B,Intervention,0,144,46.4,2022-07-23
+PT0204,24,Male,South,Clinic A,Standard,0,163,79.9,2022-07-24
+PT0205,30,Female,,Hospital,Intervention,0,275,62.4,2022-07-25
+PT0206,52,Male,East,Clinic B,Standard,0,118,58.7,2022-07-26
+PT0207,52,Female,South,Clinic B,Standard,1,7,67.5,2022-07-27
+PT0208,52,Male,West,Clinic A,Standard,0,32,48.9,2022-07-28
+PT0209,102,Male,North,Clinic B,Standard,0,103,,2022-07-29
+PT0210,53,Male,South,Clinic A,Standard,0,232,85.3,2022-07-30
+PT0211,62,Male,West,Hospital,Intervention,1,161,75.4,2022-07-31
+PT0212,59,Male,North,Clinic A,Intervention,1,189,62.0,2022-08-01
+PT0213,54,Male,South,Clinic A,Intervention,0,117,46.5,2022-08-02
+PT0214,40,Female,South,Clinic A,Intervention,0,172,47.0,2022-08-03
+PT0215,56,Male,,Clinic A,Standard,1,71,49.0,2022-08-04
+PT0216,33,Female,North,Hospital,Standard,0,114,64.9,2022-08-05
+PT0217,41,Male,North,Hospital,Standard,0,245,66.4,2022-08-06
+PT0218,37,Female,West,Clinic B,Standard,0,369,75.4,2022-08-07
+PT0219,46,Female,East,Hospital,Intervention,0,102,43.4,2022-08-08
+PT0220,79,Female,East,Hospital,Standard,1,8,80.7,2022-08-09
+PT0221,16,Male,East,Clinic B,Standard,1,31,73.3,2022-08-10
+PT0222,55,Male,East,Hospital,Intervention,0,3,61.1,2022-08-11
+PT0223,20,Female,North,Clinic A,Intervention,0,190,50.7,2022-08-12
+PT0224,37,Male,North,Clinic A,Intervention,1,72,80.0,2022-08-13
+PT0225,61,Female,South,Clinic B,Intervention,1,140,61.4,2022-08-14
+PT0226,45,Male,South,Clinic B,Standard,0,122,64.8,2022-08-15
+PT0227,28,Female,East,Clinic B,Standard,1,15,69.6,2022-08-16
+PT0228,34,Female,East,Clinic A,Intervention,1,92,54.0,2022-08-17
+PT0229,55,Male,East,Hospital,Standard,1,44,61.6,2022-08-18
+PT0230,34,Female,South,Clinic A,Standard,0,97,75.4,2022-08-19
+PT0231,48,Male,West,Clinic B,Standard,0,40,74.2,2022-08-20
+PT0232,45,Female,West,Hospital,Intervention,1,330,74.3,2022-08-21
+PT0233,35,Female,,Hospital,Standard,0,34,,2022-08-22
+PT0234,77,Male,South,Clinic A,Intervention,1,582,62.2,2022-08-23
+PT0235,54,Male,South,Clinic B,Standard,0,96,60.2,2022-08-24
+PT0236,14,Male,South,Clinic A,Standard,0,337,70.1,2022-08-25
+PT0237,47,Female,South,Hospital,Standard,0,178,69.0,2022-08-26
+PT0238,35,Male,South,Clinic A,Intervention,0,239,,2022-08-27
+PT0239,57,Female,East,Clinic A,Standard,1,262,94.6,2022-08-28
+PT0240,33,Female,East,Clinic B,Intervention,1,126,61.5,2022-08-29
+PT0241,43,Male,East,Clinic B,Intervention,1,141,60.1,2022-08-30
+PT0242,52,Male,East,Hospital,Intervention,0,129,51.1,2022-08-31
+PT0243,57,Female,South,Clinic A,Standard,0,159,,2022-09-01
+PT0244,26,Female,West,Clinic A,Standard,0,5,50.4,2022-09-02
+PT0245,39,Male,North,Clinic A,Standard,0,90,56.4,2022-09-03
+PT0246,37,Male,South,Hospital,Standard,0,167,80.7,2022-09-04
+PT0247,35,Male,North,Hospital,Intervention,0,163,65.5,2022-09-05
+PT0248,71,Male,West,Clinic B,Intervention,0,283,67.3,2022-09-06
+PT0249,51,Male,East,Clinic B,Intervention,0,191,63.8,2022-09-07
