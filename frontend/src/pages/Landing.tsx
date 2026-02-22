@@ -14,7 +14,7 @@ const steps = [
   { n: '4', label: 'Verified Output', desc: 'Report ready to share' },
 ];
 
-export default function Landing() {
+export default function Landing({ user }: { user?: any }) {
   const navigate = useNavigate();
   return (
     <div className="page">

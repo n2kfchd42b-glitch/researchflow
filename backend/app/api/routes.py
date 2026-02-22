@@ -230,3 +230,42 @@ def generate_report(study_id: str, template: str = "ngo"):
             f"attachment; filename=researchflow_{template}_report.pdf"
         }
     )
+
+from app.services.auth import register_user, login_user, decode_token
+from pydantic import BaseModel as PydanticBase
+
+class RegisterRequest(PydanticBase):
+    name:     str
+    email:    str
+    password: str
+    role:     str = "student"
+
+class LoginRequest(PydanticBase):
+    email:    str
+    password: str
+
+@router.post("/auth/register")
+def register(req: RegisterRequest):
+    try:
+        user = register_user(req.name, req.email, req.password, req.role)
+        token = login_user(req.email, req.password)
+        return token
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/auth/login")
+def login(req: LoginRequest):
+    try:
+        return login_user(req.email, req.password)
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+@router.get("/auth/me")
+def get_me(authorization: str = None):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    token = authorization.replace("Bearer ", "")
+    payload = decode_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return payload
