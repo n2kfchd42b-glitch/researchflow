@@ -8,5 +8,6 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-ENTRYPOINT ["sh", "-c"]
-CMD ["python3 -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+EXPOSE 8000
+
+CMD python3 -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
