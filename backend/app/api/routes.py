@@ -389,19 +389,10 @@ def privacy_info():
         "user_data": "Only email and hashed password are stored in memory for authentication",
         "version": "ResearchFlow v0.1.0"
     }
-router = APIRouter()
 
 # In-memory store for prototype
 studies = {}
 datasets = {}
-
-    user_role: Optional[str] = "ngo"
-
-class AnalysePayload(BaseModel):
-    dataset_id: str
-    outcome_column: str
-    predictor_columns: list
-    duration_column: Optional[str] = None
 
 @router.post("/upload")
 async def upload_dataset(file: UploadFile = File(...)):
