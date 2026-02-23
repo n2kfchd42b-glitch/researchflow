@@ -5,7 +5,9 @@ pandas
 numpy
 scikit-learn
 statsmodels
+lifelines
 openpyxl
 reportlab
 python-jose[cryptography]
 pydantic
+scipy
