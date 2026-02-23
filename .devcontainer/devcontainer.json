@@ -1,0 +1,15 @@
+{
+  "name": "ResearchFlow",
+  "forwardPorts": [3000, 3001, 3002, 3003, 3004, 3005, 8000, 8001, 8002],
+  "portsAttributes": {
+    "3000": { "visibility": "public" },
+    "3001": { "visibility": "public" },
+    "3002": { "visibility": "public" },
+    "3003": { "visibility": "public" },
+    "3004": { "visibility": "public" },
+    "3005": { "visibility": "public" },
+    "8000": { "visibility": "public" },
+    "8001": { "visibility": "public" },
+    "8002": { "visibility": "public" }
+  }
+}

@@ -5,6 +5,7 @@ import StudentWizard from './pages/StudentWizard';
 import NGOPipeline from './pages/NGOPipeline';
 import JournalVerification from './pages/JournalVerification';
 import MethodologyMemory from './pages/MethodologyMemory';
+import CohortBuilder from './pages/CohortBuilder';
 import Login from './pages/Login';
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
@@ -22,6 +23,7 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
         <Link to="/ngo"     style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', opacity: 0.8 }}>NGO</Link>
         <Link to="/journal" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', opacity: 0.8 }}>Journal</Link>
         <Link to="/methodology" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', opacity: 0.8 }}>Methodology</Link>
+        <Link to="/cohort" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', opacity: 0.8 }}>Cohort</Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <span style={{ color: '#aaa', fontSize: '0.85rem' }}>
             {user.name}
@@ -119,6 +121,7 @@ export default function App() {
         <Route path="/ngo"     element={<NGOPipeline />} />
         <Route path="/journal" element={<JournalVerification />} />
         <Route path="/methodology" element={<MethodologyMemory user={user} />} />
+        <Route path="/cohort" element={<CohortBuilder />} />
       </Routes>
     </BrowserRouter>
   );

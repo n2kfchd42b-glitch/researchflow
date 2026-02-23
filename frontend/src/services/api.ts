@@ -92,3 +92,29 @@ export const methodologyApi = {
 };
 
 export default api;
+
+export const cohortApi = {
+  buildCohort: async (datasetId: string, inclusionCriteria: any[], exclusionCriteria: any[]) => {
+    const res = await fetch(`${API_URL}/cohort/build`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        dataset_id:          datasetId,
+        inclusion_criteria:  inclusionCriteria,
+        exclusion_criteria:  exclusionCriteria,
+      })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  getColumnSummary: async (datasetId: string, column: string) => {
+    const res = await fetch(`${API_URL}/cohort/column-summary`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dataset_id: datasetId, column })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+};

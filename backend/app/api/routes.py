@@ -367,3 +367,37 @@ def remove_template(template_id: str, user_email: str):
         return {"deleted": True}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+from app.services.cohort_builder import build_cohort, get_column_summary
+
+class CohortRequest(BaseModel):
+    dataset_id:          str
+    inclusion_criteria:  list = []
+    exclusion_criteria:  list = []
+
+class ColumnSummaryRequest(BaseModel):
+    dataset_id: str
+    column:     str
+
+@router.post("/cohort/build")
+def cohort_build(req: CohortRequest):
+    if req.dataset_id not in datasets:
+        raise HTTPException(status_code=404, detail="Dataset not found")
+    df     = datasets[req.dataset_id]['df']
+    result = build_cohort(df, req.inclusion_criteria, req.exclusion_criteria)
+    return {
+        'original_n':            result['original_n'],
+        'after_inclusion_n':     result['after_inclusion_n'],
+        'excluded_by_inclusion': result['excluded_by_inclusion'],
+        'excluded_by_exclusion': result['excluded_by_exclusion'],
+        'final_n':               result['final_n'],
+        'exclusion_rate':        result['exclusion_rate'],
+        'consort_flow':          result['consort_flow'],
+    }
+
+@router.post("/cohort/column-summary")
+def column_summary(req: ColumnSummaryRequest):
+    if req.dataset_id not in datasets:
+        raise HTTPException(status_code=404, detail="Dataset not found")
+    df     = datasets[req.dataset_id]['df']
+    return get_column_summary(df, req.column)
