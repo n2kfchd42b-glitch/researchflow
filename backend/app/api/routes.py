@@ -109,6 +109,12 @@ async def upload_dataset(file: UploadFile = File(...)):
             "filename": file.filename
         }
         df.to_csv(f'/tmp/{dataset_id}.csv', index=False)
+        log_event(
+            user_email="anonymous",
+            action="UPLOAD",
+            details={"filename": file.filename, "rows": report["row_count"]},
+            dataset_id=dataset_id
+        )
         return {
             "dataset_id": dataset_id,
             "filename": file.filename,
@@ -164,6 +170,17 @@ def analyse_study(study_id: str, payload: AnalysePayload):
         studies[study_id]["status"] = "complete"
         studies[study_id]["results"] = result
         studies[study_id]["rigor_score"] = rigor
+        log_event(
+            user_email="anonymous",
+            action="ANALYSE",
+            details={
+                "outcome": payload.outcome_column,
+                "predictors": payload.predictor_columns,
+                "model": result.get("model")
+            },
+            study_id=study_id,
+            dataset_id=payload.dataset_id
+        )
         return {
             "study_id": study_id,
             "status": "complete",
@@ -213,6 +230,12 @@ def generate_report(study_id: str, template: str = "ngo"):
     study = studies[study_id]
     if not study["results"]:
         raise HTTPException(status_code=400, detail="Run analysis first")
+    log_event(
+        user_email="anonymous",
+        action="DOWNLOAD_REPORT",
+        details={"template": template},
+        study_id=study_id
+    )
     generator = ReportGenerator()
     pdf_bytes = generator.generate(
         template=template,
@@ -828,3 +851,13 @@ def kaplan_meier_v2(req: SurvivalRequest):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)}")
+
+from app.services.audit_trail import log_event, get_audit_log, get_reproducibility_report
+
+@router.get("/audit")
+def list_audit_log(user_email: str = None, study_id: str = None):
+    return get_audit_log(user_email=user_email, study_id=study_id)
+
+@router.get("/audit/study/{study_id}")
+def study_audit(study_id: str):
+    return get_reproducibility_report(study_id)

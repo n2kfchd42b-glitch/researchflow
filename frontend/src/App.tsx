@@ -8,6 +8,7 @@ import MethodologyMemory from './pages/MethodologyMemory';
 import CohortBuilder from './pages/CohortBuilder';
 import SurvivalAnalysis from './pages/SurvivalAnalysis';
 import SampleSize from './pages/SampleSize';
+import AuditTrail from './pages/AuditTrail';
 import Login from './pages/Login';
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
@@ -19,6 +20,7 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
     { to: "/cohort",      label: "Cohort" },
     { to: "/survival",    label: "Survival" },
     { to: "/samplesize",  label: "Sample Size" },
+    { to: "/audit",       label: "Audit" },
   ];
   return (
     <nav style={{
@@ -128,6 +130,7 @@ export default function App() {
         <Route path="/cohort" element={<CohortBuilder />} />
         <Route path="/survival" element={<SurvivalAnalysis />} />
         <Route path="/samplesize" element={<SampleSize />} />
+        <Route path="/audit" element={<AuditTrail user={user} />} />
       </Routes>
     </BrowserRouter>
   );
