@@ -65,3 +65,81 @@ export const api = {
 };
 
 export default api;
+
+export const methodologyApi = {
+  saveTemplate: async (payload: object) => {
+    const res = await fetch(`${API_URL}/templates`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  getTemplates: async (userEmail: string) => {
+    const res = await fetch(`${API_URL}/templates?user_email=${userEmail}`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  getCommunityTemplates: async () => {
+    const res = await fetch(`${API_URL}/templates/community`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  loadTemplate: async (templateId: string) => {
+    const res = await fetch(`${API_URL}/templates/${templateId}`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  deleteTemplate: async (templateId: string, userEmail: string) => {
+    const res = await fetch(
+      `${API_URL}/templates/${templateId}?user_email=${userEmail}`,
+      { method: 'DELETE' }
+    );
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+};
+
+export const methodologyApi = {
+  saveTemplate: async (payload: object) => {
+    const res = await fetch(`${API_URL}/templates`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  getTemplates: async (userEmail: string) => {
+    const res = await fetch(`${API_URL}/templates?user_email=${userEmail}`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  getCommunityTemplates: async () => {
+    const res = await fetch(`${API_URL}/templates/community`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  loadTemplate: async (templateId: string) => {
+    const res = await fetch(`${API_URL}/templates/${templateId}`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  deleteTemplate: async (templateId: string, userEmail: string) => {
+    const res = await fetch(
+      `${API_URL}/templates/${templateId}?user_email=${userEmail}`,
+      { method: 'DELETE' }
+    );
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+};

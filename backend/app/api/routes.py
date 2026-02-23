@@ -310,3 +310,60 @@ def privacy_info():
         "user_data": "Only email and hashed password are stored in memory for authentication",
         "version": "ResearchFlow v0.1.0"
     }
+
+from app.services.methodology_memory import (
+    save_template, get_templates, get_template,
+    delete_template, get_community_templates
+)
+
+class SaveTemplateRequest(BaseModel):
+    name:              str
+    description:       str = ""
+    study_type:        str
+    outcome_column:    str
+    predictor_columns: list
+    research_question: str = ""
+    user_email:        str
+    organisation:      str = ""
+    is_public:         bool = False
+
+@router.post("/templates")
+def create_template(req: SaveTemplateRequest):
+    try:
+        template = save_template(
+            name=req.name,
+            description=req.description,
+            study_type=req.study_type,
+            outcome_column=req.outcome_column,
+            predictor_columns=req.predictor_columns,
+            research_question=req.research_question,
+            user_email=req.user_email,
+            organisation=req.organisation,
+            is_public=req.is_public
+        )
+        return template
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/templates")
+def list_templates(user_email: str, organisation: str = ""):
+    return get_templates(user_email, organisation)
+
+@router.get("/templates/community")
+def community_templates():
+    return get_community_templates()
+
+@router.get("/templates/{template_id}")
+def load_template(template_id: str):
+    try:
+        return get_template(template_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+@router.delete("/templates/{template_id}")
+def remove_template(template_id: str, user_email: str):
+    try:
+        delete_template(template_id, user_email)
+        return {"deleted": True}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))

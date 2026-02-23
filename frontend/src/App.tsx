@@ -4,6 +4,7 @@ import Landing from './pages/Landing';
 import StudentWizard from './pages/StudentWizard';
 import NGOPipeline from './pages/NGOPipeline';
 import JournalVerification from './pages/JournalVerification';
+import MethodologyMemory from './pages/MethodologyMemory';
 import Login from './pages/Login';
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
@@ -20,6 +21,7 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
         <Link to="/student" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', opacity: 0.8 }}>Student</Link>
         <Link to="/ngo"     style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', opacity: 0.8 }}>NGO</Link>
         <Link to="/journal" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', opacity: 0.8 }}>Journal</Link>
+        <Link to="/methodology" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', opacity: 0.8 }}>Methodology</Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <span style={{ color: '#aaa', fontSize: '0.85rem' }}>
             {user.name}
@@ -48,6 +50,7 @@ function Dashboard({ user }: { user: any }) {
     { role: 'student', path: '/student', label: 'Go to Student Wizard', icon: '🎓', color: '#C0533A' },
     { role: 'ngo',     path: '/ngo',     label: 'Go to NGO Pipeline',    icon: '🌍', color: '#5A8A6A' },
     { role: 'journal', path: '/journal', label: 'Go to Journal Portal',  icon: '📄', color: '#1C2B3A' },
+    { role: 'student', path: '/methodology', label: 'Methodology Memory', icon: '🧬', color: '#1C2B3A' },
   ];
 
   return (
@@ -115,6 +118,7 @@ export default function App() {
         <Route path="/student" element={<StudentWizard />} />
         <Route path="/ngo"     element={<NGOPipeline />} />
         <Route path="/journal" element={<JournalVerification />} />
+        <Route path="/methodology" element={<MethodologyMemory user={user} />} />
       </Routes>
     </BrowserRouter>
   );
