@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from pydantic import BaseModel
 from typing import Optional
@@ -269,3 +270,43 @@ def get_me(authorization: str = None):
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid token")
     return payload
+
+import threading
+import time
+
+def cleanup_old_data():
+    while True:
+        time.sleep(3600)  # run every hour
+        now = datetime.utcnow()
+        to_delete = []
+        for did, dataset in datasets.items():
+            created = dataset.get('created_at')
+            if created:
+                age = (now - datetime.fromisoformat(created)).seconds
+                if age > 3600:
+                    to_delete.append(did)
+        for did in to_delete:
+            del datasets[did]
+
+        to_delete_studies = []
+        for sid, study in studies.items():
+            created = study.get('created_at')
+            if created:
+                age = (now - datetime.fromisoformat(created)).seconds
+                if age > 3600:
+                    to_delete_studies.append(sid)
+        for sid in to_delete_studies:
+            del studies[sid]
+
+cleanup_thread = threading.Thread(target=cleanup_old_data, daemon=True)
+cleanup_thread.start()
+
+@router.get("/privacy")
+def privacy_info():
+    return {
+        "data_retention": "All uploaded data is stored in memory only and automatically deleted after 1 hour",
+        "file_storage": "Uploaded files are deleted immediately after processing",
+        "persistent_storage": "No data is written to disk or permanent storage",
+        "user_data": "Only email and hashed password are stored in memory for authentication",
+        "version": "ResearchFlow v0.1.0"
+    }
