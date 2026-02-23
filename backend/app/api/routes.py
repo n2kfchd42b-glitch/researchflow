@@ -395,19 +395,6 @@ router = APIRouter()
 studies = {}
 datasets = {}
 
-class StudyPayload(BaseModel):
-    title: str
-    description: Optional[str] = ""
-def get_dataset(dataset_id: str):
-    if dataset_id in datasets:
-        return datasets[dataset_id]['df']
-    csv_path = f'/tmp/{dataset_id}.csv'
-    if os.path.exists(csv_path):
-        df = pd.read_csv(csv_path)
-        datasets[dataset_id] = {'df': df, 'created_at': datetime.utcnow().isoformat()}
-        return df
-    raise HTTPException(status_code=404, detail="Dataset not found")
-    study_type: Optional[str] = "retrospective_cohort"
     user_role: Optional[str] = "ngo"
 
 class AnalysePayload(BaseModel):
