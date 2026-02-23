@@ -1,4 +1,4 @@
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8001';
 
 console.log('ResearchFlow API URL:', API_URL);
 
@@ -10,10 +10,7 @@ export const api = {
       method: 'POST',
       body: form,
     });
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text);
-    }
+    if (!res.ok) throw new Error(await res.text());
     return res.json();
   },
 
@@ -23,10 +20,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text);
-    }
+    if (!res.ok) throw new Error(await res.text());
     return res.json();
   },
 
@@ -36,10 +30,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text);
-    }
+    if (!res.ok) throw new Error(await res.text());
     return res.json();
   },
 
@@ -48,10 +39,7 @@ export const api = {
       `${API_URL}/study/${studyId}/report?template=${template}`,
       { method: 'POST' }
     );
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text);
-    }
+    if (!res.ok) throw new Error(await res.text());
     const blob = await res.blob();
     const url  = window.URL.createObjectURL(blob);
     const a    = document.createElement('a');
@@ -64,82 +52,43 @@ export const api = {
   },
 };
 
+export const methodologyApi = {
+  saveTemplate: async (payload: object) => {
+    const res = await fetch(`${API_URL}/templates`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  getTemplates: async (userEmail: string) => {
+    const res = await fetch(`${API_URL}/templates?user_email=${userEmail}`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  getCommunityTemplates: async () => {
+    const res = await fetch(`${API_URL}/templates/community`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  loadTemplate: async (templateId: string) => {
+    const res = await fetch(`${API_URL}/templates/${templateId}`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  deleteTemplate: async (templateId: string, userEmail: string) => {
+    const res = await fetch(
+      `${API_URL}/templates/${templateId}?user_email=${userEmail}`,
+      { method: 'DELETE' }
+    );
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+};
+
 export default api;
-
-export const methodologyApi = {
-  saveTemplate: async (payload: object) => {
-    const res = await fetch(`${API_URL}/templates`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
-  },
-
-  getTemplates: async (userEmail: string) => {
-    const res = await fetch(`${API_URL}/templates?user_email=${userEmail}`);
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
-  },
-
-  getCommunityTemplates: async () => {
-    const res = await fetch(`${API_URL}/templates/community`);
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
-  },
-
-  loadTemplate: async (templateId: string) => {
-    const res = await fetch(`${API_URL}/templates/${templateId}`);
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
-  },
-
-  deleteTemplate: async (templateId: string, userEmail: string) => {
-    const res = await fetch(
-      `${API_URL}/templates/${templateId}?user_email=${userEmail}`,
-      { method: 'DELETE' }
-    );
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
-  },
-};
-
-export const methodologyApi = {
-  saveTemplate: async (payload: object) => {
-    const res = await fetch(`${API_URL}/templates`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
-  },
-
-  getTemplates: async (userEmail: string) => {
-    const res = await fetch(`${API_URL}/templates?user_email=${userEmail}`);
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
-  },
-
-  getCommunityTemplates: async () => {
-    const res = await fetch(`${API_URL}/templates/community`);
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
-  },
-
-  loadTemplate: async (templateId: string) => {
-    const res = await fetch(`${API_URL}/templates/${templateId}`);
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
-  },
-
-  deleteTemplate: async (templateId: string, userEmail: string) => {
-    const res = await fetch(
-      `${API_URL}/templates/${templateId}?user_email=${userEmail}`,
-      { method: 'DELETE' }
-    );
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
-  },
-};
