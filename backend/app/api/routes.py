@@ -1,20 +1,361 @@
+
 from datetime import datetime, timedelta
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from pydantic import BaseModel
 from typing import Optional
-import pandas as pd
-import tempfile
-import os
-import uuid
-import sys
+import pandas as pd, tempfile, os, uuid, sys, io, threading, time
 sys.path.insert(0, '.')
 from app.analytics.ingestion import DataIngestionEngine
 from app.analytics.statistics import StatisticsEngine
 from app.analytics.rigor import RigorScoreEngine
 from app.services.report_generator import ReportGenerator
+from app.services.auth import register_user, login_user, decode_token
+from app.services.methodology_memory import save_template, get_templates, get_template, delete_template, get_community_templates
+from app.services.cohort_builder import build_cohort, get_column_summary
+from app.services.survival_analysis import run_kaplan_meier
 from fastapi.responses import StreamingResponse
-import io
 
+router = APIRouter()
+
+# In-memory store for prototype
+studies = {}
+datasets = {}
+
+def get_dataset(dataset_id: str):
+    if dataset_id in datasets:
+        return datasets[dataset_id]['df']
+    csv_path = f'/tmp/{dataset_id}.csv'
+    if os.path.exists(csv_path):
+        df = pd.read_csv(csv_path)
+        datasets[dataset_id] = {'df': df, 'created_at': datetime.utcnow().isoformat()}
+        return df
+    raise HTTPException(status_code=404, detail="Dataset not found")
+
+# --- Models ---
+class StudyPayload(BaseModel):
+    title: str
+    description: Optional[str] = ""
+    study_type: Optional[str] = "retrospective_cohort"
+    user_role: Optional[str] = "ngo"
+
+class AnalysePayload(BaseModel):
+    dataset_id: str
+    outcome_column: str
+    predictor_columns: list
+    duration_column: Optional[str] = None
+
+class RegisterRequest(BaseModel):
+    name:     str
+    email:    str
+    password: str
+    role:     str = "student"
+
+class LoginRequest(BaseModel):
+    email:    str
+    password: str
+
+class SaveTemplateRequest(BaseModel):
+    name:              str
+    description:       str = ""
+    study_type:        str
+    outcome_column:    str
+    predictor_columns: list
+    research_question: str = ""
+    user_email:        str
+    organisation:      str = ""
+    is_public:         bool = False
+
+class CohortRequest(BaseModel):
+    dataset_id:          str
+    inclusion_criteria:  list = []
+    exclusion_criteria:  list = []
+
+class ColumnSummaryRequest(BaseModel):
+    dataset_id: str
+    column:     str
+
+class SurvivalRequest(BaseModel):
+    dataset_id:   str
+    duration_col: str
+    event_col:    str
+    group_col:    str = None
+
+# --- Endpoints ---
+@router.post("/upload")
+async def upload_dataset(file: UploadFile = File(...)):
+    try:
+        suffix = os.path.splitext(file.filename)[1].lower()
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            content = await file.read()
+            tmp.write(content)
+            tmp_path = tmp.name
+        engine = DataIngestionEngine()
+        df, report = engine.ingest(tmp_path)
+        os.unlink(tmp_path)
+        dataset_id = str(uuid.uuid4())
+        datasets[dataset_id] = {
+            "df": df,
+            "report": report,
+            "filename": file.filename
+        }
+        df.to_csv(f'/tmp/{dataset_id}.csv', index=False)
+        return {
+            "dataset_id": dataset_id,
+            "filename": file.filename,
+            "rows": report["row_count"],
+            "columns": report["column_count"],
+            "column_types": report["column_types"],
+            "issues": report["issues"],
+            "missing_percentage": report["missing_percentage"],
+            "numeric_summary": report["numeric_summary"]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/study")
+def create_study(payload: StudyPayload):
+    study_id = str(uuid.uuid4())
+    studies[study_id] = {
+        "id": study_id,
+        "title": payload.title,
+        "description": payload.description,
+        "study_type": payload.study_type,
+        "user_role": payload.user_role,
+        "status": "draft",
+        "results": None,
+        "rigor_score": None
+    }
+    return studies[study_id]
+
+@router.post("/study/{study_id}/analyse")
+def analyse_study(study_id: str, payload: AnalysePayload):
+    if study_id not in studies:
+        raise HTTPException(status_code=404, detail="Study not found")
+    df = get_dataset(payload.dataset_id)
+    quality_report = datasets[payload.dataset_id].get("report") if payload.dataset_id in datasets else None
+    study = studies[study_id]
+    stats_engine = StatisticsEngine()
+    rigor_engine = RigorScoreEngine()
+    try:
+        if payload.duration_column:
+            result = stats_engine.survival_analysis(
+                df,
+                payload.duration_column,
+                payload.outcome_column,
+                payload.predictor_columns[0] if payload.predictor_columns else None
+            )
+        else:
+            result = stats_engine.logistic_regression(
+                df,
+                payload.outcome_column,
+                payload.predictor_columns
+            )
+        rigor = rigor_engine.score(quality_report, result)
+        studies[study_id]["status"] = "complete"
+        studies[study_id]["results"] = result
+        studies[study_id]["rigor_score"] = rigor
+        return {
+            "study_id": study_id,
+            "status": "complete",
+            "results": result,
+            "rigor_score": rigor
+        }
+    except Exception as e:
+        studies[study_id]["status"] = "error"
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/study/{study_id}/results")
+def get_results(study_id: str):
+    if study_id not in studies:
+        raise HTTPException(status_code=404, detail="Study not found")
+    study = studies[study_id]
+    if not study["results"]:
+        raise HTTPException(status_code=400, detail="Analysis not yet run")
+    return study["results"]
+
+@router.get("/study/{study_id}/rigor")
+def get_rigor(study_id: str):
+    if study_id not in studies:
+        raise HTTPException(status_code=404, detail="Study not found")
+    study = studies[study_id]
+    if not study["rigor_score"]:
+        raise HTTPException(status_code=400, detail="Analysis not yet run")
+    return study["rigor_score"]
+
+@router.get("/studies")
+def list_studies():
+    return [
+        {
+            "id": s["id"],
+            "title": s["title"],
+            "status": s["status"],
+            "study_type": s["study_type"],
+            "user_role": s["user_role"],
+            "rigor_score": s["rigor_score"]["overall_score"] if s["rigor_score"] else None
+        }
+        for s in studies.values()
+    ]
+
+@router.post("/study/{study_id}/report")
+def generate_report(study_id: str, template: str = "ngo"):
+    if study_id not in studies:
+        raise HTTPException(status_code=404, detail="Study not found")
+    study = studies[study_id]
+    if not study["results"]:
+        raise HTTPException(status_code=400, detail="Run analysis first")
+    generator = ReportGenerator()
+    pdf_bytes = generator.generate(
+        template=template,
+        study_info={
+            "title": study["title"],
+            "organisation": "ResearchFlow",
+            "donor": "Funder",
+            "study_type": study["study_type"]
+        },
+        analysis_result=study["results"],
+        rigor_score=study["rigor_score"]
+    )
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename=researchflow_{template}_report.pdf"
+        }
+    )
+
+@router.post("/auth/register")
+def register(req: RegisterRequest):
+    try:
+        user = register_user(req.name, req.email, req.password, req.role)
+        token = login_user(req.email, req.password)
+        return token
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/auth/login")
+def login(req: LoginRequest):
+    try:
+        return login_user(req.email, req.password)
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=str(e))
+
+@router.get("/auth/me")
+def get_me(authorization: str = None):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    token = authorization.replace("Bearer ", "")
+    payload = decode_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return payload
+
+@router.post("/templates")
+def create_template(req: SaveTemplateRequest):
+    try:
+        template = save_template(
+            name=req.name,
+            description=req.description,
+            study_type=req.study_type,
+            outcome_column=req.outcome_column,
+            predictor_columns=req.predictor_columns,
+            research_question=req.research_question,
+            user_email=req.user_email,
+            organisation=req.organisation,
+            is_public=req.is_public
+        )
+        return template
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/templates")
+def list_templates(user_email: str, organisation: str = ""):
+    return get_templates(user_email, organisation)
+
+@router.get("/templates/community")
+def community_templates():
+    return get_community_templates()
+
+@router.get("/templates/{template_id}")
+def load_template(template_id: str):
+    try:
+        return get_template(template_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+@router.delete("/templates/{template_id}")
+def remove_template(template_id: str, user_email: str):
+    try:
+        delete_template(template_id, user_email)
+        return {"deleted": True}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/cohort/build")
+def cohort_build(req: CohortRequest):
+    df = get_dataset(req.dataset_id)
+    result = build_cohort(df, req.inclusion_criteria, req.exclusion_criteria)
+    return {
+        'original_n':            result['original_n'],
+        'after_inclusion_n':     result['after_inclusion_n'],
+        'excluded_by_inclusion': result['excluded_by_inclusion'],
+        'excluded_by_exclusion': result['excluded_by_exclusion'],
+        'final_n':               result['final_n'],
+        'exclusion_rate':        result['exclusion_rate'],
+        'consort_flow':          result['consort_flow'],
+    }
+
+@router.post("/cohort/column-summary")
+def column_summary(req: ColumnSummaryRequest):
+    df = get_dataset(req.dataset_id)
+    return get_column_summary(df, req.column)
+
+@router.post("/survival/kaplan-meier")
+def kaplan_meier(req: SurvivalRequest):
+    df = get_dataset(req.dataset_id)
+    try:
+        result = run_kaplan_meier(df, req.duration_col, req.event_col, req.group_col)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- Utility & Info Endpoints ---
+def cleanup_old_data():
+    while True:
+        time.sleep(3600)
+        now = datetime.utcnow()
+        to_delete = []
+        for did, dataset in list(datasets.items()):
+            created = dataset.get('created_at')
+            if created:
+                age = (now - datetime.fromisoformat(created)).seconds
+                if age > 3600:
+                    to_delete.append(did)
+        for did in to_delete:
+            del datasets[did]
+        to_delete_studies = []
+        for sid, study in list(studies.items()):
+            created = study.get('created_at')
+            if created:
+                age = (now - datetime.fromisoformat(created)).seconds
+                if age > 3600:
+                    to_delete_studies.append(sid)
+        for sid in to_delete_studies:
+            del studies[sid]
+
+cleanup_thread = threading.Thread(target=cleanup_old_data, daemon=True)
+cleanup_thread.start()
+
+@router.get("/privacy")
+def privacy_info():
+    return {
+        "data_retention": "All uploaded data is stored in memory only and automatically deleted after 1 hour",
+        "file_storage": "Uploaded files are deleted immediately after processing",
+        "persistent_storage": "No data is written to disk or permanent storage",
+        "user_data": "Only email and hashed password are stored in memory for authentication",
+        "version": "ResearchFlow v0.1.0"
+    }
 router = APIRouter()
 
 # In-memory store for prototype
@@ -24,6 +365,15 @@ datasets = {}
 class StudyPayload(BaseModel):
     title: str
     description: Optional[str] = ""
+def get_dataset(dataset_id: str):
+    if dataset_id in datasets:
+        return datasets[dataset_id]['df']
+    csv_path = f'/tmp/{dataset_id}.csv'
+    if os.path.exists(csv_path):
+        df = pd.read_csv(csv_path)
+        datasets[dataset_id] = {'df': df, 'created_at': datetime.utcnow().isoformat()}
+        return df
+    raise HTTPException(status_code=404, detail="Dataset not found")
     study_type: Optional[str] = "retrospective_cohort"
     user_role: Optional[str] = "ngo"
 
@@ -54,6 +404,8 @@ async def upload_dataset(file: UploadFile = File(...)):
             "report": report,
             "filename": file.filename
         }
+        # Save DataFrame to disk as CSV
+        df.to_csv(f'/tmp/{dataset_id}.csv', index=False)
 
         return {
             "dataset_id": dataset_id,
@@ -88,12 +440,21 @@ def analyse_study(study_id: str, payload: AnalysePayload):
     if study_id not in studies:
         raise HTTPException(status_code=404, detail="Study not found")
     if payload.dataset_id not in datasets:
-        raise HTTPException(status_code=404, detail="Dataset not found")
+        import os
+        csv_path = f'/tmp/{payload.dataset_id}.csv'
+        if os.path.exists(csv_path):
+            df = pd.read_csv(csv_path)
+            datasets[payload.dataset_id] = {'df': df, 'created_at': datetime.utcnow().isoformat()}
+            quality_report = None
+        else:
+            raise HTTPException(status_code=404, detail="Dataset not found")
+    else:
+        df = datasets[payload.dataset_id]["df"]
+        quality_report = datasets[payload.dataset_id].get("report")
+        df = get_dataset(payload.dataset_id)
+        quality_report = datasets[payload.dataset_id].get("report") if payload.dataset_id in datasets else None
 
     study = studies[study_id]
-    dataset = datasets[payload.dataset_id]
-    df = dataset["df"]
-    quality_report = dataset["report"]
 
     stats_engine = StatisticsEngine()
     rigor_engine = RigorScoreEngine()
@@ -382,8 +743,16 @@ class ColumnSummaryRequest(BaseModel):
 @router.post("/cohort/build")
 def cohort_build(req: CohortRequest):
     if req.dataset_id not in datasets:
-        raise HTTPException(status_code=404, detail="Dataset not found")
-    df     = datasets[req.dataset_id]['df']
+        import os
+        csv_path = f'/tmp/{req.dataset_id}.csv'
+        if os.path.exists(csv_path):
+            df = pd.read_csv(csv_path)
+            datasets[req.dataset_id] = {'df': df, 'created_at': datetime.utcnow().isoformat()}
+        else:
+            raise HTTPException(status_code=404, detail="Dataset not found")
+    else:
+        df = datasets[req.dataset_id]['df']
+        df = get_dataset(req.dataset_id)
     result = build_cohort(df, req.inclusion_criteria, req.exclusion_criteria)
     return {
         'original_n':            result['original_n'],
@@ -398,6 +767,54 @@ def cohort_build(req: CohortRequest):
 @router.post("/cohort/column-summary")
 def column_summary(req: ColumnSummaryRequest):
     if req.dataset_id not in datasets:
-        raise HTTPException(status_code=404, detail="Dataset not found")
-    df     = datasets[req.dataset_id]['df']
+        import os
+        csv_path = f'/tmp/{req.dataset_id}.csv'
+        if os.path.exists(csv_path):
+            df = pd.read_csv(csv_path)
+            datasets[req.dataset_id] = {'df': df, 'created_at': datetime.utcnow().isoformat()}
+        else:
+            raise HTTPException(status_code=404, detail="Dataset not found")
+    else:
+        df = datasets[req.dataset_id]['df']
+        df = get_dataset(req.dataset_id)
     return get_column_summary(df, req.column)
+
+from app.services.survival_analysis import run_kaplan_meier
+
+class SurvivalRequest(BaseModel):
+    dataset_id:   str
+    duration_col: str
+    event_col:    str
+    group_col:    str = None
+
+@router.post("/survival/kaplan-meier")
+def kaplan_meier(req: SurvivalRequest):
+    if req.dataset_id not in datasets:
+        import os
+        csv_path = f'/tmp/{req.dataset_id}.csv'
+        if os.path.exists(csv_path):
+            df = pd.read_csv(csv_path)
+            datasets[req.dataset_id] = {'df': df, 'created_at': datetime.utcnow().isoformat()}
+        else:
+            raise HTTPException(status_code=404, detail="Dataset not found")
+    else:
+        df = datasets[req.dataset_id]['df']
+        df = get_dataset(req.dataset_id)
+    try:
+        result = run_kaplan_meier(df, req.duration_col, req.event_col, req.group_col)
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/survival/km")
+def kaplan_meier_v2(req: SurvivalRequest):
+    try:
+        df = get_dataset(req.dataset_id)
+        result = run_kaplan_meier(df, req.duration_col, req.event_col, req.group_col)
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)}")

@@ -118,3 +118,20 @@ export const cohortApi = {
     return res.json();
   },
 };
+
+export const survivalApi = {
+  kaplanMeier: async (datasetId: string, durationCol: string, eventCol: string, groupCol?: string) => {
+    const res = await fetch(`${API_URL}/survival/kaplan-meier`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        dataset_id:   datasetId,
+        duration_col: durationCol,
+        event_col:    eventCol,
+        group_col:    groupCol || null,
+      })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+};
