@@ -7,43 +7,45 @@ import JournalVerification from './pages/JournalVerification';
 import MethodologyMemory from './pages/MethodologyMemory';
 import CohortBuilder from './pages/CohortBuilder';
 import SurvivalAnalysis from './pages/SurvivalAnalysis';
+import SampleSize from './pages/SampleSize';
 import Login from './pages/Login';
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
+  const links = [
+    { to: "/student",     label: "Student" },
+    { to: "/ngo",         label: "NGO" },
+    { to: "/journal",     label: "Journal" },
+    { to: "/methodology", label: "Methodology" },
+    { to: "/cohort",      label: "Cohort" },
+    { to: "/survival",    label: "Survival" },
+    { to: "/samplesize",  label: "Sample Size" },
+  ];
   return (
     <nav style={{
-      background: '#1C2B3A', padding: '0 2rem',
-      display: 'flex', alignItems: 'center',
-      justifyContent: 'space-between', height: 56
+      background: "#1C2B3A", padding: "0.5rem 1.5rem",
+      display: "flex", alignItems: "center",
+      justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem"
     }}>
-      <Link to="/" style={{ color: '#C0533A', fontWeight: 700, fontSize: '1.2rem', textDecoration: 'none' }}>
+      <Link to="/" style={{ color: "#C0533A", fontWeight: 700, fontSize: "1.2rem", textDecoration: "none" }}>
         ResearchFlow
       </Link>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-        <Link to="/student" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', opacity: 0.8 }}>Student</Link>
-        <Link to="/ngo"     style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', opacity: 0.8 }}>NGO</Link>
-        <Link to="/journal" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', opacity: 0.8 }}>Journal</Link>
-        <Link to="/methodology" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', opacity: 0.8 }}>Methodology</Link>
-        <Link to="/cohort" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', opacity: 0.8 }}>Cohort</Link>
-        <Link to="/survival" style={{ color: 'white', textDecoration: 'none', fontSize: '0.9rem', opacity: 0.8 }}>Survival</Link>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span style={{ color: '#aaa', fontSize: '0.85rem' }}>
-            {user.name}
-          </span>
-          <span style={{
-            padding: '0.2rem 0.6rem', borderRadius: 4,
-            background: '#C0533A', color: 'white', fontSize: '0.75rem', fontWeight: 600
+      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+        {links.map(l => (
+          <Link key={l.to} to={l.to} style={{
+            color: "white", textDecoration: "none", fontSize: "0.82rem",
+            background: "rgba(255,255,255,0.12)", padding: "0.3rem 0.65rem", borderRadius: 4
           }}>
-            {user.role}
-          </span>
-          <button onClick={onLogout} style={{
-            background: 'transparent', border: '1px solid #555',
-            color: '#aaa', padding: '0.3rem 0.8rem', borderRadius: 4,
-            cursor: 'pointer', fontSize: '0.8rem'
-          }}>
-            Sign Out
-          </button>
-        </div>
+            {l.label}
+          </Link>
+        ))}
+        <span style={{ color: "#aaa", fontSize: "0.8rem", marginLeft: "0.5rem" }}>{user.name}</span>
+        <button onClick={onLogout} style={{
+          background: "transparent", border: "1px solid #555",
+          color: "#aaa", padding: "0.3rem 0.8rem", borderRadius: 4,
+          cursor: "pointer", fontSize: "0.8rem"
+        }}>
+          Sign Out
+        </button>
       </div>
     </nav>
   );
@@ -125,6 +127,7 @@ export default function App() {
         <Route path="/methodology" element={<MethodologyMemory user={user} />} />
         <Route path="/cohort" element={<CohortBuilder />} />
         <Route path="/survival" element={<SurvivalAnalysis />} />
+        <Route path="/samplesize" element={<SampleSize />} />
       </Routes>
     </BrowserRouter>
   );
