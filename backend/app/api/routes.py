@@ -21,6 +21,16 @@ router = APIRouter()
 studies = {}
 datasets = {}
 
+def get_dataset_df(dataset_id):
+    if dataset_id in datasets and 'df' in datasets[dataset_id]:
+        return datasets[dataset_id]['df']
+    path = f'/tmp/{dataset_id}.csv'
+    if os.path.exists(path):
+        df = pd.read_csv(path)
+        datasets[dataset_id] = {'df': df}
+        return df
+    raise HTTPException(status_code=404, detail="Dataset not found")
+
 def get_dataset(dataset_id: str):
     if dataset_id in datasets:
         return datasets[dataset_id]['df']
@@ -311,7 +321,7 @@ def column_summary(req: ColumnSummaryRequest):
 
 @router.post("/survival/kaplan-meier")
 def kaplan_meier(req: SurvivalRequest):
-    df = get_dataset(req.dataset_id)
+    df = get_dataset_df(req.dataset_id)
     try:
         result = run_kaplan_meier(df, req.duration_col, req.event_col, req.group_col)
         return result
