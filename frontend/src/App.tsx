@@ -15,6 +15,7 @@ import JournalAssistant from './pages/JournalAssistant';
 import Login from './pages/Login';
 import InstrumentRecognition from './pages/InstrumentRecognition';
 import PropensityMatching from './pages/PropensityMatching';
+import DescriptiveStats from './pages/DescriptiveStats';
 import Dashboard from './pages/Dashboard';
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
@@ -32,6 +33,8 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
     { to: "/journal-assistant", label: "Journal" },
     { to: "/instrument", label: "Instruments" },
     { to: "/psm", label: "PSM" },
+        { to: "/descriptive", label: "Descriptive" },
+        { to: "/visualise", label: "Visualise" },
   ];
   return (
     <nav style={{
@@ -116,6 +119,8 @@ export default function App() {
         <Route path="/journal-assistant" element={<JournalAssistant />} />
         <Route path="/instrument" element={<InstrumentRecognition />} />
         <Route path="/psm" element={<PropensityMatching />} />
+        <Route path="/descriptive" element={<DescriptiveStats />} />
+        <Route path="/visualise" element={<VisualisationStudio />} />
       </Routes>
     </BrowserRouter>
   );

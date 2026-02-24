@@ -1322,3 +1322,10 @@ def psm_match(req: PSMRequest):
                "matched": result.get('n_treated_matched')},
               dataset_id=req.dataset_id)
     return result
+
+from app.services.descriptive_stats import compute_descriptive
+
+@router.get("/descriptive/{dataset_id}")
+def descriptive_stats(dataset_id: str):
+    df = get_dataset_df(dataset_id)
+    return compute_descriptive(df)
