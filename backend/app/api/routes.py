@@ -914,46 +914,326 @@ def remove_duplicates(dataset_id: str):
               dataset_id=dataset_id)
     return {"removed": before - len(df_clean), "rows_remaining": len(df_clean)}
 
+
+# ------------------- IMPORTS -------------------
+from datetime import datetime
+from fastapi import APIRouter, UploadFile, File, HTTPException, Request, Header
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+from typing import Optional
+import pandas as pd
+import tempfile
+import os
+import uuid
+import io
+import sys
+sys.path.insert(0, '.')
+
+from app.analytics.ingestion import DataIngestionEngine
+from app.analytics.statistics import StatisticsEngine
+from app.analytics.rigor import RigorScoreEngine
+from app.services.report_generator import ReportGenerator
+from app.services.auth import register_user, login_user, decode_token
+from app.services.methodology_memory import save_template, get_templates, get_template, delete_template, get_community_templates
+from app.services.cohort_builder import build_cohort, get_column_summary
+from app.services.survival_analysis import run_kaplan_meier
+from app.services.audit_trail import log_event, get_audit_log, get_reproducibility_report
+from app.services.protocol_intelligence import parse_protocol_file
+from app.services.data_cleaner import detect_outliers, detect_duplicates, impute_missing, recode_variable, get_cleaning_summary
 from app.services.guided_analysis import recommend_tests
+from app.services.journal_assistant import get_journal_package
+
+router = APIRouter()
+studies = {}
+datasets = {}
+
+# ------------------- HELPER FUNCTION -------------------
+def get_dataset_df(dataset_id: str):
+    if dataset_id in datasets and 'df' in datasets[dataset_id]:
+        return datasets[dataset_id]['df']
+    path = f'/tmp/{dataset_id}.csv'
+    if os.path.exists(path):
+        df = pd.read_csv(path)
+        datasets[dataset_id] = {'df': df, 'created_at': datetime.utcnow().isoformat()}
+        return df
+    raise HTTPException(status_code=404, detail="Dataset not found")
+
+# ------------------- PYDANTIC MODELS -------------------
+class StudyPayload(BaseModel):
+    title: str
+    description: Optional[str] = ""
+    study_type: Optional[str] = "retrospective_cohort"
+    user_role: Optional[str] = "ngo"
+
+class AnalysePayload(BaseModel):
+    dataset_id: str
+    outcome_column: str
+    predictor_columns: list
+    duration_column: Optional[str] = None
+
+class RegisterRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+    role: Optional[str] = "student"
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class SaveTemplateRequest(BaseModel):
+    name: str
+    description: Optional[str] = ""
+    study_type: str
+    outcome_column: str
+    predictor_columns: list
+    research_question: Optional[str] = ""
+    user_email: str
+    organisation: Optional[str] = ""
+    is_public: Optional[bool] = False
+
+class CohortRequest(BaseModel):
+    dataset_id: str
+    inclusion_criteria: list = []
+    exclusion_criteria: list = []
+
+class ColumnSummaryRequest(BaseModel):
+    dataset_id: str
+    column: str
+
+class SurvivalRequest(BaseModel):
+    dataset_id: str
+    duration_col: str
+    event_col: str
+    group_col: Optional[str] = None
+
+class ImputeRequest(BaseModel):
+    dataset_id: str
+    column: str
+    method: str = 'mean'
+
+class OutlierRequest(BaseModel):
+    dataset_id: str
+    column: str
+    method: str = 'iqr'
+
+class RecodeRequest(BaseModel):
+    dataset_id: str
+    column: str
+    mapping: dict
 
 class GuidedAnalysisRequest(BaseModel):
-    dataset_id:        str
-    outcome_col:       str
-    predictor_cols:    list
-    study_design:      str = 'observational'
+    dataset_id: str
+    outcome_col: str
+    predictor_cols: list
+    study_design: str = 'observational'
     research_question: str = ''
 
-@router.post("/guided/recommend")
-def guided_recommend(req: GuidedAnalysisRequest):
-    df = get_dataset_df(req.dataset_id)
+class JournalRequest(BaseModel):
+    dataset_id: str
+    outcome_col: str
+    predictor_cols: list
+    study_design: str = 'retrospective_cohort'
+    research_question: str = ''
+    statistical_test: str = 'logistic regression'
+    setting: str = 'sub-Saharan Africa'
+    open_access_only: bool = False
+
+# ------------------- ENDPOINTS -------------------
+@router.get("/health")
+def health():
+    return {"status": "healthy"}
+
+@router.get("/")
+def root():
+    return {"message": "ResearchFlow API"}
+
+@router.get("/privacy")
+def privacy():
+    return {"privacy": "Your data is processed securely and not shared with third parties."}
+
+@router.post("/upload")
+async def upload(file: UploadFile = File(...)):
     try:
-        from app.analytics.ingestion import DataIngestionEngine
-        engine = DataIngestionEngine()
-        column_types = {}
-        numeric_summary = {}
-        for col in df.columns:
-            import pandas as pd
-            if pd.api.types.is_numeric_dtype(df[col]):
-                column_types[col] = 'clinical_continuous'
-                numeric_summary[col] = {
-                    'mean':   round(float(df[col].mean()), 2),
-                    'std':    round(float(df[col].std()), 2),
-                    'unique': int(df[col].nunique()),
-                }
-            else:
-                column_types[col] = 'demographic_categorical'
-        result = recommend_tests(
-            outcome_col=req.outcome_col,
-            predictor_cols=req.predictor_cols,
-            study_design=req.study_design,
-            column_types=column_types,
-            numeric_summary=numeric_summary,
-            n_participants=len(df),
-            research_question=req.research_question,
-        )
-        return result
+        df = pd.read_csv(file.file)
+        dataset_id = str(uuid.uuid4())
+        path = f"/tmp/{dataset_id}.csv"
+        df.to_csv(path, index=False)
+        datasets[dataset_id] = {'df': df, 'created_at': datetime.utcnow().isoformat()}
+        log_event("UPLOAD", {"dataset_id": dataset_id, "filename": file.filename})
+        return {"dataset_id": dataset_id, "filename": file.filename, "n_rows": len(df), "n_columns": len(df.columns)}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/study")
+def create_study(payload: StudyPayload):
+    study_id = str(uuid.uuid4())
+    study = payload.dict()
+    study['id'] = study_id
+    study['created_at'] = datetime.utcnow().isoformat()
+    studies[study_id] = study
+    log_event("CREATE_STUDY", {"study_id": study_id, **study})
+    return study
+
+@router.post("/study/{study_id}/analyse")
+def analyse(study_id: str, payload: AnalysePayload):
+    df = get_dataset_df(payload.dataset_id)
+    stats = StatisticsEngine().run(df, payload.outcome_column, payload.predictor_columns, payload.duration_column)
+    rigor = RigorScoreEngine().score(df, payload.outcome_column, payload.predictor_columns)
+    result = {"statistics": stats, "rigor": rigor}
+    studies[study_id]['analysis'] = result
+    log_event("ANALYSE", {"study_id": study_id, "dataset_id": payload.dataset_id})
+    return result
+
+@router.post("/study/{study_id}/report")
+def report(study_id: str):
+    study = studies.get(study_id)
+    if not study or 'analysis' not in study:
+        raise HTTPException(status_code=404, detail="Study or analysis not found")
+    pdf_bytes = ReportGenerator().generate(study)
+    log_event("DOWNLOAD_REPORT", {"study_id": study_id})
+    return StreamingResponse(io.BytesIO(pdf_bytes), media_type="application/pdf", headers={"Content-Disposition": f"attachment; filename=report_{study_id}.pdf"})
+
+@router.post("/auth/register")
+def register(req: RegisterRequest):
+    return register_user(req.name, req.email, req.password, req.role)
+
+@router.post("/auth/login")
+def login(req: LoginRequest):
+    return login_user(req.email, req.password)
+
+@router.get("/auth/me")
+def me(request: Request, authorization: Optional[str] = Header(None)):
+    token = None
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization[7:]
+    if not token:
+        raise HTTPException(status_code=401, detail="Missing token")
+    return decode_token(token)
+
+@router.post("/templates")
+def save_template_ep(req: SaveTemplateRequest):
+    return save_template(**req.dict())
+
+@router.get("/templates")
+def get_templates_ep(user_email: str):
+    return get_templates(user_email)
+
+@router.get("/templates/community")
+def get_community_templates_ep():
+    return get_community_templates()
+
+@router.get("/templates/{template_id}")
+def get_template_ep(template_id: str):
+    return get_template(template_id)
+
+@router.delete("/templates/{template_id}")
+def delete_template_ep(template_id: str):
+    return delete_template(template_id)
+
+@router.post("/cohort/build")
+def build_cohort_ep(req: CohortRequest):
+    result = build_cohort(req.dataset_id, req.inclusion_criteria, req.exclusion_criteria)
+    return {"stats": result.get("stats", {})}
+
+@router.post("/cohort/column-summary")
+def column_summary_ep(req: ColumnSummaryRequest):
+    return get_column_summary(req.dataset_id, req.column)
+
+@router.post("/survival/kaplan-meier")
+def kaplan_meier_ep(req: SurvivalRequest):
+    return run_kaplan_meier(req.dataset_id, req.duration_col, req.event_col, req.group_col)
+
+@router.get("/audit")
+def audit_log_ep():
+    return get_audit_log()
+
+@router.get("/audit/study/{study_id}")
+def reproducibility_report_ep(study_id: str):
+    return get_reproducibility_report(study_id)
+
+@router.post("/protocol/extract")
+async def protocol_extract_ep(file: UploadFile = File(...)):
+    content = await file.read()
+    with tempfile.NamedTemporaryFile(delete=False) as tmp:
+        tmp.write(content)
+        tmp_path = tmp.name
+    try:
+        result = parse_protocol_file(tmp_path)
+    finally:
+        os.remove(tmp_path)
+    return result
+
+@router.get("/clean/{dataset_id}/summary")
+def cleaning_summary_ep(dataset_id: str):
+    return get_cleaning_summary(dataset_id)
+
+@router.post("/clean/outliers")
+def outliers_ep(req: OutlierRequest):
+    return detect_outliers(req.dataset_id, req.column, req.method)
+
+@router.post("/clean/impute")
+def impute_ep(req: ImputeRequest):
+    df = get_dataset_df(req.dataset_id)
+    df = impute_missing(df, req.column, req.method)
+    datasets[req.dataset_id]['df'] = df
+    df.to_csv(f"/tmp/{req.dataset_id}.csv", index=False)
+    return {"status": "imputed", "column": req.column, "method": req.method}
+
+@router.post("/clean/recode")
+def recode_ep(req: RecodeRequest):
+    df = get_dataset_df(req.dataset_id)
+    df = recode_variable(df, req.column, req.mapping)
+    datasets[req.dataset_id]['df'] = df
+    df.to_csv(f"/tmp/{req.dataset_id}.csv", index=False)
+    return {"status": "recoded", "column": req.column}
+
+@router.delete("/clean/{dataset_id}/duplicates")
+def remove_duplicates_ep(dataset_id: str):
+    df = get_dataset_df(dataset_id)
+    df = detect_duplicates(df, drop=True)
+    datasets[dataset_id]['df'] = df
+    df.to_csv(f"/tmp/{dataset_id}.csv", index=False)
+    return {"status": "duplicates_removed"}
+
+@router.post("/guided/recommend")
+def guided_recommend_ep(req: GuidedAnalysisRequest):
+    df = get_dataset_df(req.dataset_id)
+    column_types = {}
+    numeric_summary = {}
+    for col in df.columns:
+        if pd.api.types.is_numeric_dtype(df[col]):
+            column_types[col] = 'clinical_continuous'
+            numeric_summary[col] = {
+                'mean':   round(float(df[col].mean()), 2),
+                'std':    round(float(df[col].std()), 2),
+                'unique': int(df[col].nunique()),
+            }
+        else:
+            column_types[col] = 'demographic_categorical'
+    result = recommend_tests(
+        outcome_col=req.outcome_col,
+        predictor_cols=req.predictor_cols,
+        study_design=req.study_design,
+        column_types=column_types,
+        numeric_summary=numeric_summary,
+        n_participants=len(df),
+        research_question=req.research_question,
+    )
+    return result
+
+@router.post("/journal/package")
+def journal_package_ep(req: JournalRequest):
+    return get_journal_package(
+        req.dataset_id,
+        req.outcome_col,
+        req.predictor_cols,
+        req.study_design,
+        req.research_question,
+        req.statistical_test,
+        req.setting,
+        req.open_access_only,
+    )
 
 from app.services.journal_assistant import get_journal_package
 
