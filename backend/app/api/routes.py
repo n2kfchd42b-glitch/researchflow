@@ -1287,3 +1287,11 @@ def journal_package(req: JournalRequest):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+from app.services.instrument_recognition import recognize_instrument
+
+@router.get("/instrument/{dataset_id}")
+def instrument_recognition(dataset_id: str):
+    df = get_dataset_df(dataset_id)
+    result = recognize_instrument(df.columns.tolist())
+    return result
