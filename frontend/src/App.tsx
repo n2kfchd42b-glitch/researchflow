@@ -14,6 +14,7 @@ import GuidedAnalysis from './pages/GuidedAnalysis';
 import JournalAssistant from './pages/JournalAssistant';
 import Login from './pages/Login';
 import InstrumentRecognition from './pages/InstrumentRecognition';
+import Dashboard from './pages/Dashboard';
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
   const links = [
@@ -61,37 +62,6 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
   );
 }
 
-function Dashboard({ user }: { user: any }) {
-  const ROUTES = [
-    { role: 'student', path: '/student', label: 'Go to Student Wizard', icon: '🎓', color: '#C0533A' },
-    { role: 'ngo',     path: '/ngo',     label: 'Go to NGO Pipeline',    icon: '🌍', color: '#5A8A6A' },
-    { role: 'journal', path: '/journal', label: 'Go to Journal Portal',  icon: '📄', color: '#1C2B3A' },
-    { role: 'student', path: '/methodology', label: 'Methodology Memory', icon: '🧬', color: '#1C2B3A' },
-  ];
-
-  return (
-    <div style={{ padding: '3rem 2rem', maxWidth: 800, margin: '0 auto' }}>
-      <h1 style={{ color: '#1C2B3A' }}>Welcome back, {user.name}</h1>
-      <p style={{ marginBottom: '2rem' }}>Select your workspace to get started.</p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1rem' }}>
-        {ROUTES.map(r => (
-          <Link key={r.role} to={r.path} style={{ textDecoration: 'none' }}>
-            <div style={{
-              padding: '2rem', borderRadius: 12, textAlign: 'center',
-              background: user.role === r.role ? r.color : '#f8f7f4',
-              color: user.role === r.role ? 'white' : '#1C2B3A',
-              border: '2px solid ' + (user.role === r.role ? r.color : '#eee'),
-              cursor: 'pointer'
-            }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>{r.icon}</div>
-              <p style={{ fontWeight: 700, marginBottom: 0 }}>{r.label}</p>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export default function App() {
   const [user, setUser]   = useState<any>(null);
