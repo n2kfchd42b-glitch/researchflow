@@ -9,6 +9,7 @@ import CohortBuilder from './pages/CohortBuilder';
 import SurvivalAnalysis from './pages/SurvivalAnalysis';
 import SampleSize from './pages/SampleSize';
 import AuditTrail from './pages/AuditTrail';
+import DataCleaningStudio from './pages/DataCleaningStudio';
 import Login from './pages/Login';
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
@@ -21,6 +22,7 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
     { to: "/survival",    label: "Survival" },
     { to: "/samplesize",  label: "Sample Size" },
     { to: "/audit",       label: "Audit" },
+    { to: "/clean",       label: "Clean Data" },
   ];
   return (
     <nav style={{
@@ -131,6 +133,7 @@ export default function App() {
         <Route path="/survival" element={<SurvivalAnalysis />} />
         <Route path="/samplesize" element={<SampleSize />} />
         <Route path="/audit" element={<AuditTrail user={user} />} />
+        <Route path="/clean" element={<DataCleaningStudio />} />
       </Routes>
     </BrowserRouter>
   );

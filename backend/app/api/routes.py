@@ -850,3 +850,66 @@ async def extract_protocol(file: UploadFile = File(...)):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+from app.services.data_cleaner import (
+    detect_outliers, detect_duplicates, impute_missing,
+    recode_variable, get_cleaning_summary
+)
+
+class ImputeRequest(BaseModel):
+    dataset_id: str
+    column:     str
+    method:     str = 'mean'
+
+class OutlierRequest(BaseModel):
+    dataset_id: str
+    column:     str
+    method:     str = 'iqr'
+
+class RecodeRequest(BaseModel):
+    dataset_id: str
+    column:     str
+    mapping:    dict
+
+@router.get("/clean/{dataset_id}/summary")
+def cleaning_summary(dataset_id: str):
+    df = get_dataset_df(dataset_id)
+    return get_cleaning_summary(df)
+
+@router.post("/clean/outliers")
+def outlier_detection(req: OutlierRequest):
+    df = get_dataset_df(req.dataset_id)
+    return detect_outliers(df, req.column, req.method)
+
+@router.post("/clean/impute")
+def impute(req: ImputeRequest):
+    df = get_dataset_df(req.dataset_id)
+    result = impute_missing(df, req.column, req.method)
+    datasets[req.dataset_id]['df'] = df.fillna(
+        {req.column: result.get('fill_value')}
+    ) if result.get('fill_value') is not None else df
+    log_event("system", "IMPUTE", 
+              {"column": req.column, "method": req.method, "imputed": result.get('imputed_count')},
+              dataset_id=req.dataset_id)
+    return result
+
+@router.post("/clean/recode")
+def recode(req: RecodeRequest):
+    df = get_dataset_df(req.dataset_id)
+    result = recode_variable(df, req.column, req.mapping)
+    log_event("system", "RECODE",
+              {"column": req.column, "mapping": req.mapping},
+              dataset_id=req.dataset_id)
+    return result
+
+@router.delete("/clean/{dataset_id}/duplicates")
+def remove_duplicates(dataset_id: str):
+    df = get_dataset_df(dataset_id)
+    before = len(df)
+    df_clean = df.drop_duplicates()
+    datasets[dataset_id]['df'] = df_clean
+    df_clean.to_csv(f'/tmp/{dataset_id}.csv', index=False)
+    log_event("system", "REMOVE_DUPLICATES",
+              {"removed": before - len(df_clean)},
+              dataset_id=dataset_id)
+    return {"removed": before - len(df_clean), "rows_remaining": len(df_clean)}
