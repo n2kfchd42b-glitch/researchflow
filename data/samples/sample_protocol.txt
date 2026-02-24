@@ -1,0 +1,28 @@
+STUDY PROTOCOL
+
+Title: Effectiveness of Community Health Worker Interventions on Child Mortality in Rural Tanzania
+
+Primary Objective:
+This study aims to evaluate whether community health worker (CHW) interventions reduce under-five child mortality in rural Tanzania compared to standard care.
+
+Secondary Objectives:
+1. To assess the effect of CHW visits on treatment adherence
+2. To determine the association between socioeconomic status and health outcomes
+
+Hypothesis:
+We hypothesize that children in households receiving CHW visits will have significantly lower mortality rates compared to controls.
+
+Study Design:
+This is a retrospective cohort study using routine health records from 2018-2023.
+
+Sample Size:
+A sample size of 450 participants was calculated based on 80% power and alpha 0.05.
+
+Primary Outcome:
+The primary outcome is child mortality (death within 5 years of age).
+
+Variables Collected:
+Age, sex, treatment assignment, district, education level of mother, income, baseline weight, follow-up duration, CHW visit frequency.
+
+Statistical Analysis:
+Logistic regression will be used to assess the association between CHW intervention and mortality, adjusting for age, sex, and socioeconomic variables.

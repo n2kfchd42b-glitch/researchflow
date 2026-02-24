@@ -26,6 +26,29 @@ export default function StudentWizard() {
   const [downloading, setDownloading]   = useState(false);
   const [progress, setProgress]         = useState<string[]>([]);
   const [error, setError]               = useState('');
+  const [protocol, setProtocol] = useState<any>(null);
+  const [protocolLoading, setProtocolLoading] = useState(false);
+  async function handleProtocolUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setProtocolLoading(true);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8002';
+      const res = await fetch(`${API_URL}/protocol/extract`, {
+        method: 'POST',
+        body: form,
+      });
+      const data = await res.json();
+      setProtocol(data);
+      if (data.study_design) setStudyDesign(data.study_design);
+      if (data.suggested_outcomes?.length > 0) setOutcome(data.suggested_outcomes[0]);
+    } catch (err) {
+      console.error('Protocol upload failed:', err);
+    }
+    setProtocolLoading(false);
+  }
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -130,6 +153,62 @@ export default function StudentWizard() {
 
       {step === 0 && (
         <div>
+          <div style={{ marginBottom: '1.5rem', padding: '1.25rem', borderRadius: 10, background: '#f0f4f8', border: '2px dashed #1C2B3A33' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+              <span style={{ fontSize: '1.5rem' }}>📋</span>
+              <div>
+                <p style={{ fontWeight: 700, color: '#1C2B3A', marginBottom: 2 }}>Upload Study Protocol (Optional)</p>
+                <p style={{ fontSize: '0.82rem', color: '#888', marginBottom: 0 }}>PDF, Word or TXT — AI will extract your objectives and suggest variables</p>
+              </div>
+            </div>
+            <label style={{ cursor: 'pointer', display: 'inline-block', padding: '0.5rem 1rem', background: '#1C2B3A', color: 'white', borderRadius: 6, fontSize: '0.85rem' }}>
+              {protocolLoading ? 'Reading protocol...' : '+ Upload Protocol'}
+              <input type="file" accept=".pdf,.doc,.docx,.txt" onChange={handleProtocolUpload} style={{ display: 'none' }} />
+            </label>
+            {protocol && (
+              <div style={{ marginTop: '1rem', padding: '1rem', background: 'white', borderRadius: 8, border: '1px solid #5A8A6A44' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  <span>✅</span>
+                  <span style={{ fontWeight: 700, color: '#5A8A6A' }}>Protocol Read Successfully</span>
+                  <span style={{ marginLeft: 'auto', fontSize: '0.75rem', color: '#aaa' }}>Confidence: {protocol.extraction_confidence}%</span>
+                </div>
+                {protocol.objectives?.length > 0 && (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <p style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: 4 }}>Objectives Found</p>
+                    {protocol.objectives.map((obj: string, i: number) => (
+                      <p key={i} style={{ fontSize: '0.82rem', color: '#555', padding: '0.4rem 0.75rem', background: '#f8f7f4', borderRadius: 6, marginBottom: 4 }}>{obj}</p>
+                    ))}
+                  </div>
+                )}
+                {protocol.suggested_outcomes?.length > 0 && (
+                  <div style={{ marginBottom: '0.75rem' }}>
+                    <p style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: 4 }}>Suggested Outcome Variable</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                      {protocol.suggested_outcomes.map((o: string) => (
+                        <span key={o} style={{ padding: '0.3rem 0.75rem', background: '#fff5f3', border: '1px solid #C0533A44', borderRadius: 20, fontSize: '0.8rem', color: '#C0533A', fontWeight: 600 }}>{o}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {protocol.suggested_predictors?.length > 0 && (
+                  <div style={{ marginBottom: '0.5rem' }}>
+                    <p style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: 4 }}>Suggested Predictor Variables</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                      {protocol.suggested_predictors.map((p: string) => (
+                        <span key={p} style={{ padding: '0.3rem 0.75rem', background: '#f3faf5', border: '1px solid #5A8A6A44', borderRadius: 20, fontSize: '0.8rem', color: '#5A8A6A', fontWeight: 600 }}>{p}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {protocol.study_design && (
+                  <p style={{ fontSize: '0.82rem', color: '#888', marginTop: '0.5rem', marginBottom: 0 }}>
+                    Study design: <strong>{protocol.study_design.replace(/_/g, ' ')}</strong>
+                    {protocol.sample_size_target && ` · Target sample: ${protocol.sample_size_target}`}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
           <div className="card">
             <h2>Upload Your Research Data</h2>
             <p>Supported formats: CSV, Excel, SPSS, Stata</p>
