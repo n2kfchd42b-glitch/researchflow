@@ -913,3 +913,44 @@ def remove_duplicates(dataset_id: str):
               {"removed": before - len(df_clean)},
               dataset_id=dataset_id)
     return {"removed": before - len(df_clean), "rows_remaining": len(df_clean)}
+
+from app.services.guided_analysis import recommend_tests
+
+class GuidedAnalysisRequest(BaseModel):
+    dataset_id:        str
+    outcome_col:       str
+    predictor_cols:    list
+    study_design:      str = 'observational'
+    research_question: str = ''
+
+@router.post("/guided/recommend")
+def guided_recommend(req: GuidedAnalysisRequest):
+    df = get_dataset_df(req.dataset_id)
+    try:
+        from app.analytics.ingestion import DataIngestionEngine
+        engine = DataIngestionEngine()
+        column_types = {}
+        numeric_summary = {}
+        for col in df.columns:
+            import pandas as pd
+            if pd.api.types.is_numeric_dtype(df[col]):
+                column_types[col] = 'clinical_continuous'
+                numeric_summary[col] = {
+                    'mean':   round(float(df[col].mean()), 2),
+                    'std':    round(float(df[col].std()), 2),
+                    'unique': int(df[col].nunique()),
+                }
+            else:
+                column_types[col] = 'demographic_categorical'
+        result = recommend_tests(
+            outcome_col=req.outcome_col,
+            predictor_cols=req.predictor_cols,
+            study_design=req.study_design,
+            column_types=column_types,
+            numeric_summary=numeric_summary,
+            n_participants=len(df),
+            research_question=req.research_question,
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
