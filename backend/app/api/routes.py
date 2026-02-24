@@ -954,3 +954,36 @@ def guided_recommend(req: GuidedAnalysisRequest):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+from app.services.journal_assistant import get_journal_package
+
+class JournalRequest(BaseModel):
+    dataset_id:        str
+    outcome_col:       str
+    predictor_cols:    list
+    study_design:      str = 'retrospective_cohort'
+    research_question: str = ''
+    statistical_test:  str = 'logistic regression'
+    setting:           str = 'sub-Saharan Africa'
+    open_access_only:  bool = False
+
+@router.post("/journal/package")
+def journal_package(req: JournalRequest):
+    df = get_dataset_df(req.dataset_id)
+    try:
+        result = get_journal_package(
+            study_design=req.study_design,
+            outcome_col=req.outcome_col,
+            predictor_cols=req.predictor_cols,
+            n_participants=len(df),
+            research_question=req.research_question,
+            statistical_test=req.statistical_test,
+            setting=req.setting,
+            open_access_only=req.open_access_only,
+        )
+        log_event("system", "JOURNAL_PACKAGE",
+                  {"study_design": req.study_design, "journals": len(result['journals'])},
+                  dataset_id=req.dataset_id)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
