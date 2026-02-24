@@ -14,6 +14,7 @@ import GuidedAnalysis from './pages/GuidedAnalysis';
 import JournalAssistant from './pages/JournalAssistant';
 import Login from './pages/Login';
 import InstrumentRecognition from './pages/InstrumentRecognition';
+import PropensityMatching from './pages/PropensityMatching';
 import Dashboard from './pages/Dashboard';
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
@@ -30,6 +31,7 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
     { to: "/guided",      label: "Guided" },
     { to: "/journal-assistant", label: "Journal" },
     { to: "/instrument", label: "Instruments" },
+    { to: "/psm", label: "PSM" },
   ];
   return (
     <nav style={{
@@ -113,6 +115,7 @@ export default function App() {
         <Route path="/guided" element={<GuidedAnalysis />} />
         <Route path="/journal-assistant" element={<JournalAssistant />} />
         <Route path="/instrument" element={<InstrumentRecognition />} />
+        <Route path="/psm" element={<PropensityMatching />} />
       </Routes>
     </BrowserRouter>
   );

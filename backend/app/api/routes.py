@@ -1295,3 +1295,30 @@ def instrument_recognition(dataset_id: str):
     df = get_dataset_df(dataset_id)
     result = recognize_instrument(df.columns.tolist())
     return result
+
+from app.services.propensity_matching import run_propensity_matching
+
+class PSMRequest(BaseModel):
+    dataset_id:     str
+    treatment_col:  str
+    covariate_cols: list
+    caliper:        float = 0.2
+    ratio:          int   = 1
+
+@router.post("/psm/match")
+def psm_match(req: PSMRequest):
+    df = get_dataset_df(req.dataset_id)
+    result = run_propensity_matching(
+        df=df,
+        treatment_col=req.treatment_col,
+        covariate_cols=req.covariate_cols,
+        caliper=req.caliper,
+        ratio=req.ratio,
+    )
+    if 'error' in result:
+        raise HTTPException(status_code=500, detail=result['error'])
+    log_event("system", "PSM",
+              {"treatment": req.treatment_col, "covariates": req.covariate_cols,
+               "matched": result.get('n_treated_matched')},
+              dataset_id=req.dataset_id)
+    return result
