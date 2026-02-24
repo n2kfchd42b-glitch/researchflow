@@ -839,3 +839,14 @@ def list_audit_log():
 @router.get("/audit/study/{study_id}")
 def study_audit(study_id: str):
     return get_reproducibility_report(study_id)
+
+from app.services.protocol_intelligence import parse_protocol_file
+
+@router.post("/protocol/extract")
+async def extract_protocol(file: UploadFile = File(...)):
+    try:
+        content = await file.read()
+        result = parse_protocol_file(content, file.filename)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
