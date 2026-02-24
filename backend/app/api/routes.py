@@ -106,7 +106,8 @@ async def upload_dataset(file: UploadFile = File(...)):
         datasets[dataset_id] = {
             "df": df,
             "report": report,
-            "filename": file.filename
+            "filename": file.filename,
+            "created_at": datetime.utcnow().isoformat()
         }
         df.to_csv(f'/tmp/{dataset_id}.csv', index=False)
         log_event(
