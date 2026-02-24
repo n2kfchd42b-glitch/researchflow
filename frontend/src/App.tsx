@@ -13,6 +13,7 @@ import DataCleaningStudio from './pages/DataCleaningStudio';
 import GuidedAnalysis from './pages/GuidedAnalysis';
 import JournalAssistant from './pages/JournalAssistant';
 import Login from './pages/Login';
+import InstrumentRecognition from './pages/InstrumentRecognition';
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
   const links = [
@@ -27,6 +28,7 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
     { to: "/clean",       label: "Clean Data" },
     { to: "/guided",      label: "Guided" },
     { to: "/journal-assistant", label: "Journal" },
+    { to: "/instrument", label: "Instruments" },
   ];
   return (
     <nav style={{
@@ -140,6 +142,7 @@ export default function App() {
         <Route path="/clean" element={<DataCleaningStudio />} />
         <Route path="/guided" element={<GuidedAnalysis />} />
         <Route path="/journal-assistant" element={<JournalAssistant />} />
+        <Route path="/instrument" element={<InstrumentRecognition />} />
       </Routes>
     </BrowserRouter>
   );
