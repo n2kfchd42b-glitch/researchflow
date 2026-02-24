@@ -1056,13 +1056,32 @@ def privacy():
 @router.post("/upload")
 async def upload(file: UploadFile = File(...)):
     try:
-        df = pd.read_csv(file.file)
+        suffix = os.path.splitext(file.filename)[1].lower()
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            content = await file.read()
+            tmp.write(content)
+            tmp_path = tmp.name
+        engine = DataIngestionEngine()
+        df, report = engine.ingest(tmp_path)
+        os.unlink(tmp_path)
         dataset_id = str(uuid.uuid4())
-        path = f"/tmp/{dataset_id}.csv"
-        df.to_csv(path, index=False)
-        datasets[dataset_id] = {'df': df, 'created_at': datetime.utcnow().isoformat()}
+        datasets[dataset_id] = {
+            "df": df,
+            "report": report,
+            "filename": file.filename,
+            "created_at": datetime.utcnow().isoformat()
+        }
+        df.to_csv(f'/tmp/{dataset_id}.csv', index=False)
         log_event("UPLOAD", {"dataset_id": dataset_id, "filename": file.filename})
-        return {"dataset_id": dataset_id, "filename": file.filename, "n_rows": len(df), "n_columns": len(df.columns)}
+        return {
+            "dataset_id": dataset_id,
+            "filename": file.filename,
+            "rows": report["row_count"],
+            "columns": report["column_count"],
+            "column_types": report["column_types"],
+            "missing_percentage": report["missing_percentage"],
+            "numeric_summary": report["numeric_summary"]
+        }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
