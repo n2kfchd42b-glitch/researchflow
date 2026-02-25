@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './mobile.css';
 import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import Landing from './pages/Landing';
 import StudentWizard from './pages/StudentWizard';

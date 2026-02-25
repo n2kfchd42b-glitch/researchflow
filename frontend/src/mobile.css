@@ -1,0 +1,141 @@
+/* ============================================
+   RESEARCHFLOW MOBILE RESPONSIVE STYLES
+   ============================================ */
+
+/* Base mobile breakpoint */
+@media (max-width: 768px) {
+
+  /* PAGE */
+  .page {
+    padding: 1rem !important;
+  }
+
+  /* NAVBAR */
+  .navbar {
+    flex-wrap: wrap !important;
+    padding: 0.75rem 1rem !important;
+  }
+
+  .navbar-links {
+    display: none !important;
+  }
+
+  .navbar-links.open {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    padding: 0.75rem 0 !important;
+    gap: 0.25rem !important;
+    border-top: 1px solid rgba(255,255,255,0.1) !important;
+    margin-top: 0.5rem !important;
+  }
+
+  .navbar-links.open a {
+    padding: 0.6rem 0.75rem !important;
+    border-radius: 6px !important;
+    font-size: 0.9rem !important;
+  }
+
+  .hamburger {
+    display: flex !important;
+  }
+
+  /* GRIDS → SINGLE COLUMN */
+  [style*="grid-template-columns: 1fr 1fr"] ,
+  [style*="grid-template-columns: 1fr 1.3fr"] ,
+  [style*="grid-template-columns: 1fr 1.5fr"] ,
+  [style*="grid-template-columns: 280px 1fr"] ,
+  [style*="grid-template-columns: 260px 1fr"] ,
+  [style*="grid-template-columns: 320px 1fr"] ,
+  [style*="grid-template-columns: 1fr 300px"] ,
+  [style*="grid-template-columns: 1fr 220px"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* 3 and 4 column grids → 2 columns */
+  [style*="grid-template-columns: 1fr 1fr 1fr"] ,
+  [style*="repeat(3,1fr)"] ,
+  [style*="grid-template-columns: repeat(3"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  [style*="repeat(4,1fr)"] ,
+  [style*="grid-template-columns: repeat(4"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  [style*="repeat(6,1fr)"] ,
+  [style*="grid-template-columns: repeat(6"] {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  /* HERO */
+  .hero-title {
+    font-size: 1.8rem !important;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem !important;
+  }
+
+  /* CARDS */
+  .card {
+    padding: 1rem !important;
+  }
+
+  /* TABLES - horizontal scroll */
+  table {
+    display: block !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+  }
+
+  /* BUTTONS */
+  .btn {
+    font-size: 0.85rem !important;
+    padding: 0.6rem 1rem !important;
+  }
+
+  .btn-full {
+    width: 100% !important;
+  }
+
+  /* INPUTS */
+  input, select, textarea {
+    font-size: 16px !important; /* prevents iOS zoom */
+  }
+
+  /* HIDE sidebar on mobile for some pages */
+  .mobile-hide {
+    display: none !important;
+  }
+
+  /* CHAT - full width */
+  .chat-container {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 0.75rem !important;
+  }
+
+  h1 {
+    font-size: 1.4rem !important;
+  }
+
+  h2 {
+    font-size: 1.1rem !important;
+  }
+
+  [style*="repeat(3, 1fr)"] ,
+  [style*="repeat(3,1fr)"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  [style*="repeat(4, 1fr)"] ,
+  [style*="repeat(4,1fr)"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
