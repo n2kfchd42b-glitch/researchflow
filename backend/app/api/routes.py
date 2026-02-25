@@ -1072,13 +1072,14 @@ async def upload(file: UploadFile = File(...)):
             "created_at": datetime.utcnow().isoformat()
         }
         df.to_csv(f'/tmp/{dataset_id}.csv', index=False)
-        log_event("UPLOAD", {"dataset_id": dataset_id, "filename": file.filename})
+        log_event("system", "UPLOAD", {"dataset_id": dataset_id, "filename": file.filename})
         return {
             "dataset_id": dataset_id,
             "filename": file.filename,
             "rows": report["row_count"],
             "columns": report["column_count"],
             "column_types": report["column_types"],
+            "issues": report["issues"],
             "missing_percentage": report["missing_percentage"],
             "numeric_summary": report["numeric_summary"]
         }
