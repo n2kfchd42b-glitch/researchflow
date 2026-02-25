@@ -23,6 +23,7 @@ import ForestPlot from './pages/ForestPlot';
 import SampleDatasets from './pages/SampleDatasets';
 import AIAssistant from './pages/AIAssistant';
 import ProgressTracker from './pages/ProgressTracker';
+import LiteratureReview from './pages/LiteratureReview';
 import Dashboard from './pages/Dashboard';
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
@@ -47,6 +48,7 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
         { to: "/samples", label: "Samples" },
         { to: "/ai-assistant", label: "AI Assistant" },
         { to: "/progress", label: "Progress" },
+        { to: "/literature", label: "Literature" },
   ];
   return (
     <nav style={{
@@ -127,6 +129,7 @@ export default function App() {
         <Route path="/samplesize" element={<SampleSize />} />
         <Route path="/ai-assistant" element={<AIAssistant />} />
         <Route path="/progress" element={<ProgressTracker />} />
+        <Route path="/literature" element={<LiteratureReview />} />
         <Route path="/audit" element={<AuditTrail user={user} />} />
         <Route path="/clean" element={<DataCleaningStudio />} />
         <Route path="/guided" element={<GuidedAnalysis />} />
