@@ -19,6 +19,7 @@ import DescriptiveStats from './pages/DescriptiveStats';
 import VisualisationStudio from './pages/VisualisationStudio';
 import Collaboration from './pages/Collaboration';
 import ForestPlot from './pages/ForestPlot';
+import SampleDatasets from './pages/SampleDatasets';
 import Dashboard from './pages/Dashboard';
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
@@ -40,6 +41,7 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
         { to: "/visualise", label: "Visualise" },
         { to: "/collaborate", label: "Collaborate" },
         { to: "/forest-plot", label: "Forest Plot" },
+        { to: "/samples", label: "Samples" },
   ];
   return (
     <nav style={{
