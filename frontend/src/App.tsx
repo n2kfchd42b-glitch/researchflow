@@ -21,6 +21,7 @@ import Collaboration from './pages/Collaboration';
 import ForestPlot from './pages/ForestPlot';
 import SampleDatasets from './pages/SampleDatasets';
 import AIAssistant from './pages/AIAssistant';
+import ProgressTracker from './pages/ProgressTracker';
 import Dashboard from './pages/Dashboard';
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
@@ -44,6 +45,7 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
         { to: "/forest-plot", label: "Forest Plot" },
         { to: "/samples", label: "Samples" },
         { to: "/ai-assistant", label: "AI Assistant" },
+        { to: "/progress", label: "Progress" },
   ];
   return (
     <nav style={{
@@ -123,6 +125,7 @@ export default function App() {
         <Route path="/survival" element={<SurvivalAnalysis />} />
         <Route path="/samplesize" element={<SampleSize />} />
         <Route path="/ai-assistant" element={<AIAssistant />} />
+        <Route path="/progress" element={<ProgressTracker />} />
         <Route path="/audit" element={<AuditTrail user={user} />} />
         <Route path="/clean" element={<DataCleaningStudio />} />
         <Route path="/guided" element={<GuidedAnalysis />} />
