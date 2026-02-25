@@ -18,6 +18,7 @@ import PropensityMatching from './pages/PropensityMatching';
 import DescriptiveStats from './pages/DescriptiveStats';
 import VisualisationStudio from './pages/VisualisationStudio';
 import Collaboration from './pages/Collaboration';
+import ForestPlot from './pages/ForestPlot';
 import Dashboard from './pages/Dashboard';
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
@@ -38,6 +39,7 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
         { to: "/descriptive", label: "Descriptive" },
         { to: "/visualise", label: "Visualise" },
         { to: "/collaborate", label: "Collaborate" },
+        { to: "/forest-plot", label: "Forest Plot" },
   ];
   return (
     <nav style={{
@@ -125,6 +127,7 @@ export default function App() {
         <Route path="/descriptive" element={<DescriptiveStats />} />
         <Route path="/visualise" element={<VisualisationStudio />} />
         <Route path="/collaborate" element={<Collaboration user={user} />} />
+        <Route path="/forest-plot" element={<ForestPlot />} />
       </Routes>
     </BrowserRouter>
   );

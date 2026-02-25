@@ -1415,3 +1415,23 @@ def study_status(workspace_id: str, study_id: str, req: StudyStatusRequest):
         return {"success": True}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+from app.services.meta_analysis import compute_meta_analysis
+
+class MetaAnalysisRequest(BaseModel):
+    studies: list
+    effect_type: str = 'OR'
+
+@router.post("/meta/analyse")
+def meta_analyse(req: MetaAnalysisRequest):
+    try:
+        result = compute_meta_analysis(req.studies)
+        if 'error' in result:
+            raise HTTPException(status_code=400, detail=result['error'])
+        log_event("system", "META_ANALYSIS",
+                  {"n_studies": result['n_studies'], "I2": result['heterogeneity']['I2']})
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
