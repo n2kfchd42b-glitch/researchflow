@@ -29,6 +29,9 @@ import DataDictionary from './pages/DataDictionary';
 import SubgroupAnalysis from './pages/SubgroupAnalysis';
 import SensitivityAnalysis from './pages/SensitivityAnalysis';
 import BudgetTracker from './pages/BudgetTracker';
+import Table1Generator from './pages/Table1Generator';
+import Table1Generator from './pages/Table1Generator';
+import Table1Generator from './pages/Table1Generator';
 import AIAssistant from './pages/AIAssistant';
 import ProgressTracker from './pages/ProgressTracker';
 import LiteratureReview from './pages/LiteratureReview';
@@ -70,6 +73,7 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
         { to: "/subgroup", label: "Subgroup" },
         { to: "/sensitivity", label: "Sensitivity" },
         { to: "/budget", label: "Budget" },
+        { to: "/table1", label: "Table 1" },
   ];
   return (
     <nav style={{
@@ -161,6 +165,7 @@ export default function App() {
         <Route path="/subgroup" element={<SubgroupAnalysis />} />
         <Route path="/sensitivity" element={<SensitivityAnalysis />} />
         <Route path="/sensitivity" element={<SensitivityAnalysis />} />
+        <Route path="/table1" element={<Table1Generator />} />
         <Route path="/audit" element={<AuditTrail user={user} />} />
         <Route path="/clean" element={<DataCleaningStudio />} />
         <Route path="/guided" element={<GuidedAnalysis />} />
