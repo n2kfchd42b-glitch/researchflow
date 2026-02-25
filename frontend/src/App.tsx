@@ -28,6 +28,7 @@ import RiskOfBias from './pages/RiskOfBias';
 import DataDictionary from './pages/DataDictionary';
 import SubgroupAnalysis from './pages/SubgroupAnalysis';
 import SensitivityAnalysis from './pages/SensitivityAnalysis';
+import BudgetTracker from './pages/BudgetTracker';
 import AIAssistant from './pages/AIAssistant';
 import ProgressTracker from './pages/ProgressTracker';
 import LiteratureReview from './pages/LiteratureReview';
@@ -68,6 +69,7 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
         { to: "/dictionary", label: "Dictionary" },
         { to: "/subgroup", label: "Subgroup" },
         { to: "/sensitivity", label: "Sensitivity" },
+        { to: "/budget", label: "Budget" },
   ];
   return (
     <nav style={{
