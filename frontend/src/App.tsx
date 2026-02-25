@@ -26,6 +26,7 @@ import PRISMADiagram from './pages/PRISMADiagram';
 import StudyDashboard from './pages/StudyDashboard';
 import RiskOfBias from './pages/RiskOfBias';
 import DataDictionary from './pages/DataDictionary';
+import SubgroupAnalysis from './pages/SubgroupAnalysis';
 import AIAssistant from './pages/AIAssistant';
 import ProgressTracker from './pages/ProgressTracker';
 import LiteratureReview from './pages/LiteratureReview';
@@ -64,6 +65,7 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
         { to: "/studies", label: "Studies" },
         { to: "/rob", label: "Risk of Bias" },
         { to: "/dictionary", label: "Dictionary" },
+        { to: "/subgroup", label: "Subgroup" },
   ];
   return (
     <nav style={{
@@ -152,6 +154,7 @@ export default function App() {
         <Route path="/studies" element={<StudyDashboard />} />
         <Route path="/rob" element={<RiskOfBias />} />
         <Route path="/dictionary" element={<DataDictionary />} />
+        <Route path="/subgroup" element={<SubgroupAnalysis />} />
         <Route path="/audit" element={<AuditTrail user={user} />} />
         <Route path="/clean" element={<DataCleaningStudio />} />
         <Route path="/guided" element={<GuidedAnalysis />} />
