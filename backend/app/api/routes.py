@@ -1329,3 +1329,89 @@ from app.services.descriptive_stats import compute_descriptive
 def descriptive_stats(dataset_id: str):
     df = get_dataset_df(dataset_id)
     return compute_descriptive(df)
+
+from app.services.collaboration import (
+    create_workspace, invite_member, accept_invitation,
+    add_comment, get_workspace, get_user_workspaces,
+    assign_study_to_workspace, update_study_status
+)
+
+class WorkspaceRequest(BaseModel):
+    name:         str
+    description:  str = ''
+    owner_email:  str
+    owner_name:   str
+
+class InviteRequest(BaseModel):
+    workspace_id:   str
+    invitee_email:  str
+    invitee_name:   str
+    role:           str = 'analyst'
+    inviter_email:  str
+
+class CommentRequest(BaseModel):
+    workspace_id:  str
+    study_id:      str
+    user_email:    str
+    user_name:     str
+    comment:       str
+
+class StudyStatusRequest(BaseModel):
+    status:      str
+    user_email:  str
+
+@router.post("/workspace")
+def create_ws(req: WorkspaceRequest):
+    try:
+        result = create_workspace(req.name, req.description, req.owner_email, req.owner_name)
+        log_event(req.owner_email, "CREATE_WORKSPACE", {"name": req.name})
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/workspace/{workspace_id}")
+def get_ws(workspace_id: str):
+    try:
+        return get_workspace(workspace_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+@router.get("/workspace/user/{user_email}")
+def get_user_ws(user_email: str):
+    return get_user_workspaces(user_email)
+
+@router.post("/workspace/invite")
+def invite(req: InviteRequest):
+    try:
+        result = invite_member(
+            req.workspace_id, req.invitee_email,
+            req.invitee_name, req.role, req.inviter_email
+        )
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/workspace/invite/{invite_id}/accept")
+def accept_invite(invite_id: str):
+    try:
+        return accept_invitation(invite_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+@router.post("/workspace/comment")
+def comment(req: CommentRequest):
+    try:
+        return add_comment(
+            req.workspace_id, req.study_id,
+            req.user_email, req.user_name, req.comment
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/workspace/{workspace_id}/study/{study_id}/status")
+def study_status(workspace_id: str, study_id: str, req: StudyStatusRequest):
+    try:
+        update_study_status(workspace_id, study_id, req.status, req.user_email)
+        return {"success": True}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))

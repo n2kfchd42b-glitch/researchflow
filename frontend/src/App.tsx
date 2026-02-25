@@ -16,6 +16,8 @@ import Login from './pages/Login';
 import InstrumentRecognition from './pages/InstrumentRecognition';
 import PropensityMatching from './pages/PropensityMatching';
 import DescriptiveStats from './pages/DescriptiveStats';
+import VisualisationStudio from './pages/VisualisationStudio';
+import Collaboration from './pages/Collaboration';
 import Dashboard from './pages/Dashboard';
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
@@ -35,6 +37,7 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
     { to: "/psm", label: "PSM" },
         { to: "/descriptive", label: "Descriptive" },
         { to: "/visualise", label: "Visualise" },
+        { to: "/collaborate", label: "Collaborate" },
   ];
   return (
     <nav style={{
@@ -121,6 +124,7 @@ export default function App() {
         <Route path="/psm" element={<PropensityMatching />} />
         <Route path="/descriptive" element={<DescriptiveStats />} />
         <Route path="/visualise" element={<VisualisationStudio />} />
+        <Route path="/collaborate" element={<Collaboration user={user} />} />
       </Routes>
     </BrowserRouter>
   );
