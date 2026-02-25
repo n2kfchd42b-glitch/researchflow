@@ -21,9 +21,13 @@ import VisualisationStudio from './pages/VisualisationStudio';
 import Collaboration from './pages/Collaboration';
 import ForestPlot from './pages/ForestPlot';
 import SampleDatasets from './pages/SampleDatasets';
+import SyntaxExporter from './pages/SyntaxExporter';
 import AIAssistant from './pages/AIAssistant';
 import ProgressTracker from './pages/ProgressTracker';
 import LiteratureReview from './pages/LiteratureReview';
+import CodebookGenerator from './pages/CodebookGenerator';
+import DataVersioning from './pages/DataVersioning';
+import CodebookGenerator from './pages/CodebookGenerator';
 import Dashboard from './pages/Dashboard';
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
@@ -49,6 +53,9 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
         { to: "/ai-assistant", label: "AI Assistant" },
         { to: "/progress", label: "Progress" },
         { to: "/literature", label: "Literature" },
+        { to: "/codebook", label: "Codebook" },
+        { to: "/versioning", label: "Versioning" },
+        { to: "/syntax", label: "Syntax" },
   ];
   return (
     <nav style={{
@@ -130,6 +137,9 @@ export default function App() {
         <Route path="/ai-assistant" element={<AIAssistant />} />
         <Route path="/progress" element={<ProgressTracker />} />
         <Route path="/literature" element={<LiteratureReview />} />
+        <Route path="/codebook" element={<CodebookGenerator />} />
+        <Route path="/versioning" element={<DataVersioning />} />
+        <Route path="/syntax" element={<SyntaxExporter />} />
         <Route path="/audit" element={<AuditTrail user={user} />} />
         <Route path="/clean" element={<DataCleaningStudio />} />
         <Route path="/guided" element={<GuidedAnalysis />} />
