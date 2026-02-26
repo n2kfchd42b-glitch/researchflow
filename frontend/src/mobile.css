@@ -16,24 +16,9 @@
     padding: 0.75rem 1rem !important;
   }
 
-  .navbar-links {
+  /* Hide desktop inline links on mobile */
+  .navbar > div:first-child > .navbar-links {
     display: none !important;
-  }
-
-  .navbar-links.open {
-    display: flex !important;
-    flex-direction: column !important;
-    width: 100% !important;
-    padding: 0.75rem 0 !important;
-    gap: 0.25rem !important;
-    border-top: 1px solid rgba(255,255,255,0.1) !important;
-    margin-top: 0.5rem !important;
-  }
-
-  .navbar-links.open a {
-    padding: 0.6rem 0.75rem !important;
-    border-radius: 6px !important;
-    font-size: 0.9rem !important;
   }
 
   .hamburger {

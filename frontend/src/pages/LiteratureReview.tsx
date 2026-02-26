@@ -32,6 +32,7 @@ type Reference = {
   issue:        string;
   pages:        string;
   doi:          string;
+  pmid:         string;
   design:       string;
   grade:        string;
   level:        string;
@@ -58,6 +59,7 @@ function emptyRef(): Reference {
     issue:       '',
     pages:       '',
     doi:         '',
+    pmid:        '',
     design:      'Cohort',
     grade:       'Moderate',
     level:       '2b',
@@ -85,19 +87,197 @@ function apaCite(ref: Reference): string {
   return `${authors} (${ref.year}). ${ref.title}. ${ref.journal}, ${ref.volume}${ref.issue ? `(${ref.issue})` : ''}, ${ref.pages}.${ref.doi ? ` https://doi.org/${ref.doi}` : ''}`;
 }
 
+// ── CrossRef helpers ──────────────────────────────────────────────────────────
+
+function cleanDoi(raw: string): string {
+  return raw.replace(/^https?:\/\/(dx\.)?doi\.org\//i, '').trim();
+}
+
+interface CrossRefAuthor { given?: string; family?: string; }
+
+async function fetchByDoi(doi: string): Promise<Partial<Reference>> {
+  const clean = cleanDoi(doi);
+  const url   = `https://api.crossref.org/works/${encodeURIComponent(clean)}`;
+  const res   = await fetch(url);
+  if (!res.ok) throw new Error(`CrossRef returned ${res.status}`);
+  const json  = await res.json();
+  const w     = json.message;
+
+  const authors = (w.author as CrossRefAuthor[] || [])
+    .map((a: CrossRefAuthor) => [a.family, a.given].filter(Boolean).join(' '))
+    .join(', ');
+
+  const journal =
+    (w['container-title'] && w['container-title'][0]) ||
+    (w['short-container-title'] && w['short-container-title'][0]) ||
+    '';
+
+  const issued = w.issued?.['date-parts']?.[0];
+  const year   = issued?.[0] ?? new Date().getFullYear();
+
+  const pages  = w.page || '';
+  const volume = w.volume || '';
+  const issue  = w.issue || '';
+  const title  = (w.title && w.title[0]) || '';
+
+  return { title, authors, journal, year, volume, issue, pages, doi: clean };
+}
+
+// ── PubMed / NCBI helper ──────────────────────────────────────────────────────
+
+async function fetchByPmid(pmid: string): Promise<Partial<Reference>> {
+  const url = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=${encodeURIComponent(pmid.trim())}&retmode=json`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`NCBI returned ${res.status}`);
+  const json = await res.json();
+  const doc  = json.result?.[pmid.trim()];
+  if (!doc) throw new Error('PMID not found');
+
+  const authors = (doc.authors as Array<{ name: string }> || [])
+    .map((a: { name: string }) => a.name)
+    .join(', ');
+
+  const journal = doc.fulljournalname || doc.source || '';
+  const year    = doc.pubdate ? parseInt(doc.pubdate.split(' ')[0], 10) : new Date().getFullYear();
+  const volume  = doc.volume || '';
+  const issue   = doc.issue  || '';
+  const pages   = doc.pages  || '';
+  const title   = doc.title  || '';
+  const doi     = (doc.elocationid || '').replace('doi: ', '').trim();
+
+  return { title, authors, journal, year, volume, issue, pages, doi, pmid: pmid.trim() };
+}
+
+// ── DOI / PMID Lookup panel ───────────────────────────────────────────────────
+
+function AutoImportPanel({ onFill }: { onFill: (data: Partial<Reference>) => void }) {
+  const [mode,    setMode]    = useState<'doi' | 'pmid'>('doi');
+  const [input,   setInput]   = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error,   setError]   = useState('');
+  const [success, setSuccess] = useState('');
+
+  async function handleFetch() {
+    setError('');
+    setSuccess('');
+    const val = input.trim();
+    if (!val) { setError('Please enter a ' + mode.toUpperCase()); return; }
+
+    setLoading(true);
+    try {
+      const data = mode === 'doi' ? await fetchByDoi(val) : await fetchByPmid(val);
+      onFill(data);
+      setSuccess('Fields auto-filled! Review and complete the form below.');
+      setInput('');
+    } catch (err: any) {
+      setError(err.message || 'Lookup failed. Check your input and try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter') handleFetch();
+  }
+
+  return (
+    <div style={{
+      background: '#f0f7f4',
+      border: '1px solid #b2d8c4',
+      borderRadius: 10,
+      padding: '1rem 1.25rem',
+      marginBottom: '1.25rem',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+        <span style={{ fontSize: '1.1rem' }}>🔍</span>
+        <strong style={{ fontSize: '0.9rem', color: '#1C2B3A' }}>Auto-import from DOI or PubMed</strong>
+        <span style={{ fontSize: '0.75rem', color: '#5A8A6A', background: '#e8f5ec', padding: '0.1rem 0.5rem', borderRadius: 6, fontWeight: 600 }}>NEW</span>
+      </div>
+
+      {/* Mode toggle */}
+      <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.75rem' }}>
+        {(['doi', 'pmid'] as const).map(m => (
+          <button key={m} onClick={() => { setMode(m); setInput(''); setError(''); setSuccess(''); }}
+            style={{
+              padding: '0.3rem 0.9rem',
+              borderRadius: 20,
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              background: mode === m ? '#1C2B3A' : '#ddd',
+              color:      mode === m ? 'white'   : '#555',
+              transition: 'all 0.15s',
+            }}>
+            {m.toUpperCase()}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'stretch' }}>
+        <input
+          value={input}
+          onChange={e => { setInput(e.target.value); setError(''); setSuccess(''); }}
+          onKeyDown={handleKeyDown}
+          placeholder={mode === 'doi'
+            ? 'Paste DOI  e.g.  10.1016/S0140-6736(20)31180-0'
+            : 'Paste PubMed ID  e.g.  32640463'}
+          style={{
+            flex: 1,
+            padding: '0.55rem 0.85rem',
+            borderRadius: 7,
+            border: error ? '1.5px solid #f44336' : '1.5px solid #b2d8c4',
+            fontSize: '0.88rem',
+            outline: 'none',
+          }}
+        />
+        <button
+          onClick={handleFetch}
+          disabled={loading}
+          style={{
+            padding: '0.55rem 1.2rem',
+            borderRadius: 7,
+            border: 'none',
+            background: loading ? '#aaa' : '#5A8A6A',
+            color: 'white',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            fontWeight: 700,
+            fontSize: '0.85rem',
+            whiteSpace: 'nowrap',
+          }}>
+          {loading ? 'Fetching…' : 'Auto-fill ↓'}
+        </button>
+      </div>
+
+      {error && (
+        <p style={{ marginTop: '0.5rem', marginBottom: 0, fontSize: '0.8rem', color: '#f44336' }}>
+          ⚠ {error}
+        </p>
+      )}
+      {success && (
+        <p style={{ marginTop: '0.5rem', marginBottom: 0, fontSize: '0.8rem', color: '#5A8A6A', fontWeight: 600 }}>
+          ✓ {success}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
 export default function LiteratureReview() {
-  const [refs, setRefs]             = useState<Reference[]>([]);
-  const [activeTab, setActiveTab]   = useState('library');
-  const [showAdd, setShowAdd]       = useState(false);
-  const [showPICO, setShowPICO]     = useState(false);
-  const [editing, setEditing]       = useState<Reference | null>(null);
-  const [form, setForm]             = useState<Reference>(emptyRef());
-  const [search, setSearch]         = useState('');
+  const [refs, setRefs]               = useState<Reference[]>([]);
+  const [activeTab, setActiveTab]     = useState('library');
+  const [showAdd, setShowAdd]         = useState(false);
+  const [showPICO, setShowPICO]       = useState(false);
+  const [editing, setEditing]         = useState<Reference | null>(null);
+  const [form, setForm]               = useState<Reference>(emptyRef());
+  const [search, setSearch]           = useState('');
   const [filterTheme, setFilterTheme] = useState('All');
   const [filterGrade, setFilterGrade] = useState('All');
-  const [citStyle, setCitStyle]     = useState<'vancouver'|'apa'>('vancouver');
-  const [copied, setCopied]         = useState(false);
-  const [saved, setSaved]           = useState(false);
+  const [citStyle, setCitStyle]       = useState<'vancouver' | 'apa'>('vancouver');
+  const [copied, setCopied]           = useState(false);
+  const [saved, setSaved]             = useState(false);
 
   useEffect(() => {
     try {
@@ -148,6 +328,22 @@ export default function LiteratureReview() {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  // Merge auto-fetched data into the form (preserve any fields already filled by user)
+  function handleAutoFill(data: Partial<Reference>) {
+    setForm(prev => ({
+      ...prev,
+      title:   data.title   || prev.title,
+      authors: data.authors || prev.authors,
+      journal: data.journal || prev.journal,
+      year:    data.year    ?? prev.year,
+      volume:  data.volume  || prev.volume,
+      issue:   data.issue   || prev.issue,
+      pages:   data.pages   || prev.pages,
+      doi:     data.doi     || prev.doi,
+      pmid:    data.pmid    || prev.pmid,
+    }));
   }
 
   const filtered = refs.filter(r => {
@@ -255,7 +451,7 @@ export default function LiteratureReview() {
               </button>
             </div>
           )}
-          {filtered.map((ref, i) => (
+          {filtered.map((ref) => (
             <div key={ref.id} className="card" style={{ marginBottom: '0.75rem', borderLeft: `4px solid ${GRADE_COLORS[ref.grade] || '#888'}` }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
                 <div style={{ flex: 1 }}>
@@ -276,6 +472,18 @@ export default function LiteratureReview() {
                       <span style={{ padding: '0.2rem 0.6rem', borderRadius: 10, fontSize: '0.72rem', background: '#f0f8ff', color: '#2196f3' }}>
                         📍 {ref.country}
                       </span>
+                    )}
+                    {ref.doi && (
+                      <a href={`https://doi.org/${ref.doi}`} target="_blank" rel="noopener noreferrer"
+                        style={{ padding: '0.2rem 0.6rem', borderRadius: 10, fontSize: '0.72rem', background: '#f5f0ff', color: '#7c3aed', textDecoration: 'none' }}>
+                        DOI ↗
+                      </a>
+                    )}
+                    {ref.pmid && (
+                      <a href={`https://pubmed.ncbi.nlm.nih.gov/${ref.pmid}`} target="_blank" rel="noopener noreferrer"
+                        style={{ padding: '0.2rem 0.6rem', borderRadius: 10, fontSize: '0.72rem', background: '#fff0e6', color: '#c2410c', textDecoration: 'none' }}>
+                        PubMed ↗
+                      </a>
                     )}
                   </div>
                   <h3 style={{ marginBottom: 4, fontSize: '0.95rem', color: '#1C2B3A' }}>{ref.title}</h3>
@@ -453,8 +661,8 @@ export default function LiteratureReview() {
                 ⬇️ Download APA (.txt)
               </button>
               <button className="btn" style={{ background: '#eee', color: '#444' }} onClick={() => {
-                const headers = ['Title','Authors','Journal','Year','Volume','Issue','Pages','DOI','Design','GRADE','Level','Theme','Country','Sample Size','Key Finding','Notes'];
-                const rows = refs.map(r => [r.title,r.authors,r.journal,r.year,r.volume,r.issue,r.pages,r.doi,r.design,r.grade,r.level,r.theme,r.country,r.sample_size,r.key_finding,r.notes]);
+                const headers = ['Title','Authors','Journal','Year','Volume','Issue','Pages','DOI','PMID','Design','GRADE','Level','Theme','Country','Sample Size','Key Finding','Notes'];
+                const rows = refs.map(r => [r.title,r.authors,r.journal,r.year,r.volume,r.issue,r.pages,r.doi,r.pmid,r.design,r.grade,r.level,r.theme,r.country,r.sample_size,r.key_finding,r.notes]);
                 const csv  = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
                 const blob = new Blob([csv], { type: 'text/csv' });
                 const url  = URL.createObjectURL(blob);
@@ -471,8 +679,11 @@ export default function LiteratureReview() {
       {/* ADD/EDIT MODAL */}
       {showAdd && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, overflowY: 'auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '2rem' }}>
-          <div className="card" style={{ width: 680, maxWidth: '95vw' }}>
+          <div className="card" style={{ width: 700, maxWidth: '95vw' }}>
             <h2>{editing ? 'Edit Reference' : 'Add Reference'}</h2>
+
+            {/* DOI / PMID Auto-import panel */}
+            <AutoImportPanel onFill={handleAutoFill} />
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
               <div style={{ gridColumn: '1/-1' }}>
@@ -518,6 +729,12 @@ export default function LiteratureReview() {
                 <label style={{ fontSize: '0.78rem', fontWeight: 700, color: '#888', display: 'block', marginBottom: 4 }}>DOI</label>
                 <input value={form.doi} onChange={e => setForm(p => ({ ...p, doi: e.target.value }))}
                   placeholder="10.1016/..."
+                  style={{ width: '100%', padding: '0.6rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.88rem' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: '0.78rem', fontWeight: 700, color: '#888', display: 'block', marginBottom: 4 }}>PMID</label>
+                <input value={form.pmid} onChange={e => setForm(p => ({ ...p, pmid: e.target.value }))}
+                  placeholder="e.g. 32640463"
                   style={{ width: '100%', padding: '0.6rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.88rem' }} />
               </div>
               <div>
