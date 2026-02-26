@@ -38,6 +38,11 @@ import LiteratureReview from './pages/LiteratureReview';
 import CodebookGenerator from './pages/CodebookGenerator';
 import DataVersioning from './pages/DataVersioning';
 import Dashboard from './pages/Dashboard';
+import InterruptedTimeSeries from "./pages/analytics/InterruptedTimeSeries";
+import DifferenceInDifferences from "./pages/analytics/DifferenceInDifferences";
+import MixedEffects from "./pages/analytics/MixedEffects";
+import SpatialAnalysis from "./pages/analytics/SpatialAnalysis";
+import NetworkMetaAnalysis from "./pages/analytics/NetworkMetaAnalysis";
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
   const links = [
@@ -73,6 +78,13 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
         { to: "/sensitivity", label: "Sensitivity" },
         { to: "/budget", label: "Budget" },
         { to: "/table1", label: "Table 1" },
+    // Advanced Analytics group
+    { to: "#", label: "---Advanced Analytics---", groupLabel: true },
+    { to: "/its", label: "Interrupted Time Series" },
+    { to: "/did", label: "Difference-in-Differences" },
+    { to: "/mixed-effects", label: "Mixed Effects" },
+    { to: "/spatial", label: "Spatial Analysis" },
+    { to: "/network-meta", label: "Network Meta-Analysis" },
   ];
   return (
     <nav style={{
@@ -85,7 +97,9 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
       </Link>
       <ProjectSelector />
       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-        {links.map(l => (
+        {links.map(l => l.groupLabel ? (
+          <div key={l.label} style={{ color: "#aaa", fontWeight: 700, margin: "0 0.5rem" }}>{l.label.replace(/-/g, " ")}</div>
+        ) : (
           <Link key={l.to} to={l.to} style={{
             color: "white", textDecoration: "none", fontSize: "0.82rem",
             background: "rgba(255,255,255,0.12)", padding: "0.3rem 0.65rem", borderRadius: 4
@@ -177,6 +191,12 @@ export default function App() {
           <Route path="/visualise" element={<VisualisationStudio />} />
           <Route path="/collaborate" element={<Collaboration user={user} />} />
           <Route path="/forest-plot" element={<ForestPlot />} />
+          <Route path="/samples" element={<SampleDatasets />} />
+          <Route path="/its" element={<InterruptedTimeSeries />} />
+          <Route path="/did" element={<DifferenceInDifferences />} />
+          <Route path="/mixed-effects" element={<MixedEffects />} />
+          <Route path="/spatial" element={<SpatialAnalysis />} />
+          <Route path="/network-meta" element={<NetworkMetaAnalysis />} />
         </Routes>
       </BrowserRouter>
     </ProjectProvider>
