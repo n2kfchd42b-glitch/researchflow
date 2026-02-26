@@ -116,10 +116,6 @@ export default function VisualisationStudio() {
   function exportPNG() {
     alert("To save your chart: right-click on the chart and select Save Image As.");
   }
-  }
-      alert('Export requires html2canvas. Try right-click → Save image on the chart.');
-    });
-  }
 
   const columns  = uploadResult ? Object.keys(uploadResult.column_types) : [];
   const chartData = buildChartData(rawData, xCol, yCol, chartType);
