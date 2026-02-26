@@ -45,49 +45,45 @@ import SpatialAnalysis from "./pages/analytics/SpatialAnalysis";
 import NetworkMetaAnalysis from "./pages/analytics/NetworkMetaAnalysis";
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const links = [
-    { to: "/student",     label: "Student" },
-    { to: "/ngo",         label: "NGO" },
-    { to: "/journal",     label: "Journal" },
-    { to: "/methodology", label: "Methodology" },
-    { to: "/cohort",      label: "Cohort" },
-    { to: "/survival",    label: "Survival" },
-    { to: "/samplesize",  label: "Sample Size" },
-    { to: "/audit",       label: "Audit" },
-    { to: "/clean",       label: "Clean Data" },
-    { to: "/guided",      label: "Guided" },
-    { to: "/journal-assistant", label: "Journal" },
-    { to: "/instrument", label: "Instruments" },
-    { to: "/psm", label: "PSM" },
-        { to: "/descriptive", label: "Descriptive" },
-        { to: "/visualise", label: "Visualise" },
-        { to: "/collaborate", label: "Collaborate" },
-        { to: "/forest-plot", label: "Forest Plot" },
-        { to: "/samples", label: "Samples" },
-        { to: "/ai-assistant", label: "AI Assistant" },
-        { to: "/progress", label: "Progress" },
-        { to: "/literature", label: "Literature" },
-        { to: "/codebook", label: "Codebook" },
-        { to: "/versioning", label: "Versioning" },
-        { to: "/syntax", label: "Syntax" },
-        { to: "/prisma", label: "PRISMA" },
-        { to: "/studies", label: "Studies" },
-        { to: "/rob", label: "Risk of Bias" },
-        { to: "/dictionary", label: "Dictionary" },
-        { to: "/subgroup", label: "Subgroup" },
-        { to: "/sensitivity", label: "Sensitivity" },
-        { to: "/budget", label: "Budget" },
-        { to: "/table1", label: "Table 1" },
-    // Advanced Analytics group
-    { to: "#", label: "---Advanced Analytics---", groupLabel: true },
-    { to: "/its", label: "Interrupted Time Series" },
-    { to: "/did", label: "Difference-in-Differences" },
-    { to: "/mixed-effects", label: "Mixed Effects" },
-    { to: "/spatial", label: "Spatial Analysis" },
-    { to: "/network-meta", label: "Network Meta-Analysis" },
+    { to: "/student",           label: "Student" },
+    { to: "/ngo",               label: "NGO" },
+    { to: "/journal",           label: "Journal" },
+    { to: "/methodology",       label: "Methodology" },
+    { to: "/cohort",            label: "Cohort" },
+    { to: "/survival",          label: "Survival" },
+    { to: "/samplesize",        label: "Sample Size" },
+    { to: "/audit",             label: "Audit" },
+    { to: "/clean",             label: "Clean Data" },
+    { to: "/guided",            label: "Guided" },
+    { to: "/journal-assistant", label: "J. Assistant" },
+    { to: "/instrument",        label: "Instruments" },
+    { to: "/psm",               label: "PSM" },
+    { to: "/descriptive",       label: "Descriptive" },
+    { to: "/visualise",         label: "Visualise" },
+    { to: "/collaborate",       label: "Collaborate" },
+    { to: "/forest-plot",       label: "Forest Plot" },
+    { to: "/samples",           label: "Samples" },
+    { to: "/ai-assistant",      label: "AI Assistant" },
+    { to: "/progress",          label: "Progress" },
+    { to: "/literature",        label: "Literature" },
+    { to: "/codebook",          label: "Codebook" },
+    { to: "/versioning",        label: "Versioning" },
+    { to: "/syntax",            label: "Syntax" },
+    { to: "/prisma",            label: "PRISMA" },
+    { to: "/studies",           label: "Studies" },
+    { to: "/rob",               label: "Risk of Bias" },
+    { to: "/dictionary",        label: "Dictionary" },
+    { to: "/subgroup",          label: "Subgroup" },
+    { to: "/sensitivity",       label: "Sensitivity" },
+    { to: "/budget",            label: "Budget" },
+    { to: "/table1",            label: "Table 1" },
   ];
+
   return (
-    <nav style={{
+    <nav className="navbar" style={{
       background: "#1C2B3A", padding: "0.5rem 1.5rem",
       display: "flex", alignItems: "center",
       justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem"
@@ -95,12 +91,33 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
       <Link to="/" style={{ color: "#C0533A", fontWeight: 700, fontSize: "1.2rem", textDecoration: "none" }}>
         ResearchFlow
       </Link>
-      <ProjectSelector />
-      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-        {links.map(l => l.groupLabel ? (
-          <div key={l.label} style={{ color: "#aaa", fontWeight: 700, margin: "0 0.5rem" }}>{l.label.replace(/-/g, " ")}</div>
-        ) : (
-          <Link key={l.to} to={l.to} style={{
+
+      {/* Hamburger button — hidden on desktop, visible on mobile via mobile.css */}
+      <button
+        className="hamburger"
+        onClick={() => setMenuOpen(o => !o)}
+        aria-label={menuOpen ? "Close menu" : "Open menu"}
+        style={{
+          display: "none",
+          background: "transparent",
+          border: "1px solid rgba(255,255,255,0.3)",
+          color: "white",
+          padding: "0.35rem 0.6rem",
+          borderRadius: 4,
+          cursor: "pointer",
+          fontSize: "1.2rem",
+          lineHeight: 1,
+        }}
+      >
+        {menuOpen ? "✕" : "☰"}
+      </button>
+
+      {/* Nav links — shown inline on desktop, collapsed on mobile */}
+      <div className={`navbar-links${menuOpen ? " open" : ""}`} style={{
+        display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap"
+      }}>
+        {links.map(l => (
+          <Link key={l.to} to={l.to} onClick={() => setMenuOpen(false)} style={{
             color: "white", textDecoration: "none", fontSize: "0.82rem",
             background: "rgba(255,255,255,0.12)", padding: "0.3rem 0.65rem", borderRadius: 4
           }}>
@@ -155,50 +172,43 @@ export default function App() {
   }
 
   return (
-    <ProjectProvider>
-      <BrowserRouter>
-        <NavBar user={user} onLogout={handleLogout} />
-        <Routes>
-          <Route path="/"        element={<Dashboard user={user} />} />
-          <Route path="/student" element={<StudentWizard />} />
-          <Route path="/ngo"     element={<NGOPipeline />} />
-          <Route path="/journal" element={<JournalVerification />} />
-          <Route path="/methodology" element={<MethodologyMemory user={user} />} />
-          <Route path="/cohort" element={<CohortBuilder />} />
-          <Route path="/survival" element={<SurvivalAnalysis />} />
-          <Route path="/samplesize" element={<SampleSize />} />
-          <Route path="/ai-assistant" element={<AIAssistant />} />
-          <Route path="/progress" element={<ProgressTracker />} />
-          <Route path="/literature" element={<LiteratureReview />} />
-          <Route path="/codebook" element={<CodebookGenerator />} />
-          <Route path="/versioning" element={<DataVersioning />} />
-          <Route path="/syntax" element={<SyntaxExporter />} />
-          <Route path="/prisma" element={<PRISMADiagram />} />
-          <Route path="/studies" element={<StudyDashboard />} />
-          <Route path="/rob" element={<RiskOfBias />} />
-          <Route path="/dictionary" element={<DataDictionary />} />
-          <Route path="/subgroup" element={<SubgroupAnalysis />} />
-          <Route path="/sensitivity" element={<SensitivityAnalysis />} />
-          <Route path="/sensitivity" element={<SensitivityAnalysis />} />
-          <Route path="/table1" element={<Table1Generator />} />
-          <Route path="/audit" element={<AuditTrail user={user} />} />
-          <Route path="/clean" element={<DataCleaningStudio />} />
-          <Route path="/guided" element={<GuidedAnalysis />} />
-          <Route path="/journal-assistant" element={<JournalAssistant />} />
-          <Route path="/instrument" element={<InstrumentRecognition />} />
-          <Route path="/psm" element={<PropensityMatching />} />
-          <Route path="/descriptive" element={<DescriptiveStats />} />
-          <Route path="/visualise" element={<VisualisationStudio />} />
-          <Route path="/collaborate" element={<Collaboration user={user} />} />
-          <Route path="/forest-plot" element={<ForestPlot />} />
-          <Route path="/samples" element={<SampleDatasets />} />
-          <Route path="/its" element={<InterruptedTimeSeries />} />
-          <Route path="/did" element={<DifferenceInDifferences />} />
-          <Route path="/mixed-effects" element={<MixedEffects />} />
-          <Route path="/spatial" element={<SpatialAnalysis />} />
-          <Route path="/network-meta" element={<NetworkMetaAnalysis />} />
-        </Routes>
-      </BrowserRouter>
-    </ProjectProvider>
+    <BrowserRouter>
+      <NavBar user={user} onLogout={handleLogout} />
+      <Routes>
+        <Route path="/"        element={<Dashboard user={user} />} />
+        <Route path="/student" element={<StudentWizard />} />
+        <Route path="/ngo"     element={<NGOPipeline />} />
+        <Route path="/journal" element={<JournalVerification />} />
+        <Route path="/methodology" element={<MethodologyMemory user={user} />} />
+        <Route path="/cohort" element={<CohortBuilder />} />
+        <Route path="/survival" element={<SurvivalAnalysis />} />
+        <Route path="/samplesize" element={<SampleSize />} />
+        <Route path="/ai-assistant" element={<AIAssistant />} />
+        <Route path="/progress" element={<ProgressTracker />} />
+        <Route path="/literature" element={<LiteratureReview />} />
+        <Route path="/codebook" element={<CodebookGenerator />} />
+        <Route path="/versioning" element={<DataVersioning />} />
+        <Route path="/syntax" element={<SyntaxExporter />} />
+        <Route path="/prisma" element={<PRISMADiagram />} />
+        <Route path="/studies" element={<StudyDashboard />} />
+        <Route path="/rob" element={<RiskOfBias />} />
+        <Route path="/dictionary" element={<DataDictionary />} />
+        <Route path="/subgroup" element={<SubgroupAnalysis />} />
+        <Route path="/sensitivity" element={<SensitivityAnalysis />} />
+        <Route path="/budget" element={<BudgetTracker />} />
+        <Route path="/table1" element={<Table1Generator />} />
+        <Route path="/samples" element={<SampleDatasets />} />
+        <Route path="/audit" element={<AuditTrail user={user} />} />
+        <Route path="/clean" element={<DataCleaningStudio />} />
+        <Route path="/guided" element={<GuidedAnalysis />} />
+        <Route path="/journal-assistant" element={<JournalAssistant />} />
+        <Route path="/instrument" element={<InstrumentRecognition />} />
+        <Route path="/psm" element={<PropensityMatching />} />
+        <Route path="/descriptive" element={<DescriptiveStats />} />
+        <Route path="/visualise" element={<VisualisationStudio />} />
+        <Route path="/collaborate" element={<Collaboration user={user} />} />
+        <Route path="/forest-plot" element={<ForestPlot />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
