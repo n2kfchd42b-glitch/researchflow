@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { ProjectProvider } from './context/ProjectContext';
+import ProjectSelector from './components/ProjectSelector';
 import './mobile.css';
 import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import Landing from './pages/Landing';
@@ -36,6 +38,11 @@ import LiteratureReview from './pages/LiteratureReview';
 import CodebookGenerator from './pages/CodebookGenerator';
 import DataVersioning from './pages/DataVersioning';
 import Dashboard from './pages/Dashboard';
+import InterruptedTimeSeries from "./pages/analytics/InterruptedTimeSeries";
+import DifferenceInDifferences from "./pages/analytics/DifferenceInDifferences";
+import MixedEffects from "./pages/analytics/MixedEffects";
+import SpatialAnalysis from "./pages/analytics/SpatialAnalysis";
+import NetworkMetaAnalysis from "./pages/analytics/NetworkMetaAnalysis";
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
   const [menuOpen, setMenuOpen] = useState(false);

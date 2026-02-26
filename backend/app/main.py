@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router
+from app.api.projects import router as projects_router
+from app.api.references import router as references_router
+from app.api.studies import router as studies_router
+from app.api.assessments import router as assessments_router
 
 app = FastAPI(
     title="ResearchFlow API",
@@ -16,6 +20,10 @@ app.add_middleware(
 )
 
 app.include_router(router)
+app.include_router(projects_router)
+app.include_router(references_router)
+app.include_router(studies_router)
+app.include_router(assessments_router)
 
 @app.get("/")
 def root():

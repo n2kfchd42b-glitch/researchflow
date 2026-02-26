@@ -5,10 +5,10 @@ from app.analytics.ingestion import DataIngestionEngine
 from app.analytics.statistics import StatisticsEngine
 from app.analytics.rigor import RigorScoreEngine
 
-df = pd.read_csv('../data/samples/health_dataset.csv')
+df = pd.read_csv('data/samples/health_dataset.csv')
 
 ingestion = DataIngestionEngine()
-df, quality_report = ingestion.ingest('../data/samples/health_dataset.csv')
+df, quality_report = ingestion.ingest('data/samples/health_dataset.csv')
 
 stats = StatisticsEngine()
 result = stats.logistic_regression(
