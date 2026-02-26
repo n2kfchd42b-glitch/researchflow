@@ -221,7 +221,7 @@ export default function ProgressTracker() {
           {editingTitle ? (
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: 4 }}>
               <input value={project.title}
-                onChange={e => setProject(p => ({ ...p, title: e.target.value }))}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProject((p: ProjectData) => ({ ...p, title: e.target.value }))}
                 onBlur={() => { save(project); setEditingTitle(false); }}
                 autoFocus
                 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1C2B3A', border: 'none', borderBottom: '2px solid #C0533A', outline: 'none', background: 'transparent', width: '100%' }} />
@@ -232,7 +232,7 @@ export default function ProgressTracker() {
             </h1>
           )}
           <input value={project.description}
-            onChange={e => save({ ...project, description: e.target.value })}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => save({ ...project, description: e.target.value })}
             placeholder="Add a description..."
             style={{ border: 'none', outline: 'none', color: '#888', fontSize: '0.9rem', background: 'transparent', width: '100%' }} />
         </div>
@@ -261,11 +261,11 @@ export default function ProgressTracker() {
         <div className="card" style={{ padding: '1rem' }}>
           <p style={{ fontSize: '0.78rem', color: '#888', marginBottom: 4 }}>Start Date</p>
           <input type="date" value={project.start_date}
-            onChange={e => save({ ...project, start_date: e.target.value })}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => save({ ...project, start_date: e.target.value })}
             style={{ border: 'none', outline: 'none', fontSize: '0.9rem', fontWeight: 700, color: '#1C2B3A', background: 'transparent', width: '100%' }} />
           <p style={{ fontSize: '0.78rem', color: '#888', marginBottom: 4, marginTop: 8 }}>Target Submission</p>
           <input type="date" value={project.target_date}
-            onChange={e => save({ ...project, target_date: e.target.value })}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => save({ ...project, target_date: e.target.value })}
             style={{ border: 'none', outline: 'none', fontSize: '0.9rem', fontWeight: 700, color: '#1C2B3A', background: 'transparent', width: '100%' }} />
         </div>
         <div className="card" style={{ textAlign: 'center', padding: '1rem', borderTop: daysLeft !== null && daysLeft < 30 ? '4px solid #f44336' : '4px solid #5A8A6A' }}>
@@ -325,7 +325,7 @@ export default function ProgressTracker() {
             </div>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <input type="date" value={project.phase_dates[activePhase] || ''}
-                onChange={e => setPhaseDate(activePhase, e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhaseDate(activePhase, e.target.value)}
                 style={{ padding: '0.4rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.78rem' }}
                 title="Target date for this phase" />
               <button className="btn" style={{ background: '#eee', color: '#555', fontSize: '0.78rem', padding: '0.4rem 0.8rem' }}
@@ -475,7 +475,7 @@ export default function ProgressTracker() {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="card" style={{ width: 500, maxWidth: '90vw' }}>
             <h2>Notes — {PHASES.find(p => p.id === showNotes)?.label}</h2>
-            <textarea value={noteText} onChange={e => setNoteText(e.target.value)}
+            <textarea value={noteText} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNoteText(e.target.value)}
               placeholder="Add notes, decisions, blockers or reminders for this phase..."
               style={{ width: '100%', minHeight: 150, padding: '0.75rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.9rem', marginBottom: '1rem' }} />
             <div style={{ display: 'flex', gap: '0.75rem' }}>

@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 
+declare const process: { env: Record<string, string | undefined> };
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8004';
 
 const EFFECT_TYPES = [
@@ -35,12 +36,12 @@ export default function ForestPlot() {
 
   function addStudy() {
     if (!newStudy.name) return;
-    setStudies(prev => [...prev, { ...newStudy }]);
+    setStudies((prev: any[]) => [...prev, { ...newStudy }]);
     setNewStudy({ name: '', year: new Date().getFullYear(), effect_size: 0, se: 0.2, n: 100 });
   }
 
   function removeStudy(i: number) {
-    setStudies(prev => prev.filter((_, idx) => idx !== i));
+    setStudies((prev: any[]) => prev.filter((_: any, idx: number) => idx !== i));
   }
 
   function loadSample() {
@@ -269,7 +270,7 @@ export default function ForestPlot() {
             </div>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', cursor: 'pointer' }}>
-                <input type="checkbox" checked={model === 'random'} onChange={e => setModel(e.target.checked ? 'random' : 'fixed')} />
+                <input type="checkbox" checked={model === 'random'} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setModel(e.target.checked ? 'random' : 'fixed')} />
                 Random effects model
               </label>
             </div>
@@ -290,7 +291,7 @@ export default function ForestPlot() {
             </div>
 
             <div style={{ maxHeight: 200, overflowY: 'auto', marginBottom: '1rem' }}>
-              {studies.map((s, i) => (
+              {studies.map((s: any, i: number) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.4rem 0.5rem', background: i % 2 === 0 ? '#f8f7f4' : 'white', borderRadius: 4, marginBottom: 2 }}>
                   <div>
                     <span style={{ fontWeight: 600, fontSize: '0.82rem' }}>{s.name}</span>
@@ -306,15 +307,15 @@ export default function ForestPlot() {
             <div style={{ borderTop: '1px solid #eee', paddingTop: '0.75rem' }}>
               <p style={{ fontWeight: 600, fontSize: '0.82rem', marginBottom: '0.5rem' }}>Add Study</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem', marginBottom: '0.5rem' }}>
-                <input value={newStudy.name} onChange={e => setNewStudy(p => ({ ...p, name: e.target.value }))}
+                <input value={newStudy.name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewStudy(p => ({ ...p, name: e.target.value }))}
                   placeholder="Author Year" style={{ padding: '0.4rem', borderRadius: 4, border: '1px solid #ccc', fontSize: '0.82rem' }} />
-                <input type="number" value={newStudy.year} onChange={e => setNewStudy(p => ({ ...p, year: parseInt(e.target.value) }))}
+                <input type="number" value={newStudy.year} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewStudy(p => ({ ...p, year: parseInt(e.target.value) }))}
                   placeholder="Year" style={{ padding: '0.4rem', borderRadius: 4, border: '1px solid #ccc', fontSize: '0.82rem' }} />
-                <input type="number" step="0.01" value={newStudy.effect_size} onChange={e => setNewStudy(p => ({ ...p, effect_size: parseFloat(e.target.value) }))}
+                <input type="number" step="0.01" value={newStudy.effect_size} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewStudy(p => ({ ...p, effect_size: parseFloat(e.target.value) }))}
                   placeholder="Effect (log)" style={{ padding: '0.4rem', borderRadius: 4, border: '1px solid #ccc', fontSize: '0.82rem' }} />
-                <input type="number" step="0.01" value={newStudy.se} onChange={e => setNewStudy(p => ({ ...p, se: parseFloat(e.target.value) }))}
+                <input type="number" step="0.01" value={newStudy.se} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewStudy(p => ({ ...p, se: parseFloat(e.target.value) }))}
                   placeholder="SE" style={{ padding: '0.4rem', borderRadius: 4, border: '1px solid #ccc', fontSize: '0.82rem' }} />
-                <input type="number" value={newStudy.n} onChange={e => setNewStudy(p => ({ ...p, n: parseInt(e.target.value) }))}
+                <input type="number" value={newStudy.n} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewStudy(p => ({ ...p, n: parseInt(e.target.value) }))}
                   placeholder="N" style={{ padding: '0.4rem', borderRadius: 4, border: '1px solid #ccc', fontSize: '0.82rem' }} />
               </div>
               <button className="btn btn-sage" onClick={addStudy} disabled={!newStudy.name}

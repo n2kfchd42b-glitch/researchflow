@@ -97,11 +97,11 @@ export default function VisualisationStudio() {
       setUploadResult(data);
       const text = await file.text();
       const lines = text.trim().split('\n');
-      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-      const rows = lines.slice(1).map(line => {
+      const headers = lines[0].split(',').map((h: string) => h.trim().replace(/"/g, ''));
+      const rows = lines.slice(1).map((line: string) => {
         const vals = line.split(',');
         const obj: any = {};
-        headers.forEach((h, i) => { obj[h] = vals[i]?.trim().replace(/"/g, '') || ''; });
+        headers.forEach((h: string, i: number) => { obj[h] = vals[i]?.trim().replace(/"/g, '') || ''; });
         return obj;
       });
       setRawData(rows);
@@ -115,10 +115,6 @@ export default function VisualisationStudio() {
 
   function exportPNG() {
     alert("To save your chart: right-click on the chart and select Save Image As.");
-  }
-  }
-      alert('Export requires html2canvas. Try right-click → Save image on the chart.');
-    });
   }
 
   const columns  = uploadResult ? Object.keys(uploadResult.column_types) : [];
@@ -285,14 +281,14 @@ export default function VisualisationStudio() {
               <h3 style={{ marginBottom: '0.75rem', fontSize: '0.9rem', color: '#888', textTransform: 'uppercase', letterSpacing: 1 }}>Data</h3>
               <div style={{ marginBottom: '0.75rem' }}>
                 <label style={{ fontSize: '0.82rem', fontWeight: 600, display: 'block', marginBottom: 4 }}>X Axis</label>
-                <select value={xCol} onChange={e => setXCol(e.target.value)}
+                <select value={xCol} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setXCol(e.target.value)}
                   style={{ width: '100%', padding: '0.5rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.85rem' }}>
                   {columns.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div style={{ marginBottom: '0.75rem' }}>
                 <label style={{ fontSize: '0.82rem', fontWeight: 600, display: 'block', marginBottom: 4 }}>Y Axis</label>
-                <select value={yCol} onChange={e => setYCol(e.target.value)}
+                <select value={yCol} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setYCol(e.target.value)}
                   style={{ width: '100%', padding: '0.5rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.85rem' }}>
                   {columns.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
@@ -308,7 +304,7 @@ export default function VisualisationStudio() {
               ].map(item => (
                 <div key={item.label} style={{ marginBottom: '0.6rem' }}>
                   <label style={{ fontSize: '0.78rem', color: '#888', display: 'block', marginBottom: 3 }}>{item.label}</label>
-                  <input value={item.value} onChange={e => item.set(e.target.value)}
+                  <input value={item.value} onChange={(e: React.ChangeEvent<HTMLInputElement>) => item.set(e.target.value)}
                     style={{ width: '100%', padding: '0.4rem 0.6rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.82rem' }} />
                 </div>
               ))}
@@ -326,7 +322,7 @@ export default function VisualisationStudio() {
                       border: chartColor === c ? '3px solid #333' : '2px solid transparent',
                     }} />
                   ))}
-                  <input type="color" value={chartColor} onChange={e => setChartColor(e.target.value)}
+                  <input type="color" value={chartColor} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setChartColor(e.target.value)}
                     style={{ width: 24, height: 24, borderRadius: '50%', cursor: 'pointer', border: 'none', padding: 0 }} />
                 </div>
               </div>
@@ -355,7 +351,7 @@ export default function VisualisationStudio() {
                     <span style={{ fontSize: '0.78rem', fontWeight: 600 }}>{item.value}</span>
                   </div>
                   <input type="range" min={item.min} max={item.max} step={item.step}
-                    value={item.value} onChange={e => item.set(parseFloat(e.target.value))}
+                    value={item.value} onChange={(e: React.ChangeEvent<HTMLInputElement>) => item.set(parseFloat(e.target.value))}
                     style={{ width: '100%' }} />
                 </div>
               ))}
@@ -367,7 +363,7 @@ export default function VisualisationStudio() {
                   { label: 'Show Values', value: showValues, set: setShowValues },
                 ].map(item => (
                   <label key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.82rem', cursor: 'pointer' }}>
-                    <input type="checkbox" checked={item.value} onChange={e => item.set(e.target.checked)} />
+                    <input type="checkbox" checked={item.value} onChange={(e: React.ChangeEvent<HTMLInputElement>) => item.set(e.target.checked)} />
                     {item.label}
                   </label>
                 ))}

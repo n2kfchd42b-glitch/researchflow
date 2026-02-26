@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
+declare const process: { env: Record<string, string | undefined> };
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8004';
 
 const ROLE_COLORS: Record<string, string> = {
@@ -47,7 +48,7 @@ export default function Collaboration({ user }: { user: any }) {
       const res = await fetch(`${API_URL}/workspace/user/${user.email}`);
       const data = await res.json();
       setWorkspaces(Array.isArray(data) ? data : []);
-      if (data.length > 0 && !activeWS) setActiveWS(data[0]);
+      if (Array.isArray(data) && data.length > 0 && !activeWS) setActiveWS(data[0]);
     } catch (e) {}
     setLoading(false);
   }
@@ -68,7 +69,7 @@ export default function Collaboration({ user }: { user: any }) {
         })
       });
       const data = await res.json();
-      setWorkspaces(prev => [...prev, data]);
+      setWorkspaces((prev: any[]) => [...prev, data]);
       setActiveWS(data);
       setShowCreate(false);
       setNewWS({ name: '', description: '' });
@@ -143,7 +144,7 @@ export default function Collaboration({ user }: { user: any }) {
       const res = await fetch(`${API_URL}/workspace/${activeWS.id}`);
       const data = await res.json();
       setActiveWS(data);
-      setWorkspaces(prev => prev.map(w => w.id === data.id ? data : w));
+      setWorkspaces((prev: any[]) => prev.map((w: any) => w.id === data.id ? data : w));
     } catch (e) {}
   }
 
@@ -173,13 +174,13 @@ export default function Collaboration({ user }: { user: any }) {
             <h2>Create Workspace</h2>
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>Workspace Name</label>
-              <input value={newWS.name} onChange={e => setNewWS(p => ({ ...p, name: e.target.value }))}
+              <input value={newWS.name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewWS(p => ({ ...p, name: e.target.value }))}
                 placeholder="e.g. CHW Study Tanzania 2024"
                 style={{ width: '100%', padding: '0.75rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.95rem' }} />
             </div>
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>Description</label>
-              <textarea value={newWS.description} onChange={e => setNewWS(p => ({ ...p, description: e.target.value }))}
+              <textarea value={newWS.description} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNewWS(p => ({ ...p, description: e.target.value }))}
                 placeholder="Brief description of the study or project"
                 style={{ width: '100%', padding: '0.75rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.88rem', minHeight: 70 }} />
             </div>
@@ -201,13 +202,13 @@ export default function Collaboration({ user }: { user: any }) {
             <h2>Invite Team Member</h2>
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>Email</label>
-              <input value={invite.email} onChange={e => setInvite(p => ({ ...p, email: e.target.value }))}
+              <input value={invite.email} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInvite(p => ({ ...p, email: e.target.value }))}
                 placeholder="colleague@university.ac"
                 style={{ width: '100%', padding: '0.75rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.95rem' }} />
             </div>
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>Name</label>
-              <input value={invite.name} onChange={e => setInvite(p => ({ ...p, name: e.target.value }))}
+              <input value={invite.name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInvite(p => ({ ...p, name: e.target.value }))}
                 placeholder="Dr. Jane Smith"
                 style={{ width: '100%', padding: '0.75rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.95rem' }} />
             </div>
@@ -215,7 +216,7 @@ export default function Collaboration({ user }: { user: any }) {
               <label style={{ fontWeight: 600, display: 'block', marginBottom: 6 }}>Role</label>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 {['pi', 'analyst', 'student', 'reviewer'].map(role => (
-                  <button key={role} onClick={() => setInvite(p => ({ ...p, role }))} style={{
+                  <button key={role} onClick={() => setInvite((p: typeof invite) => ({ ...p, role }))} style={{
                     flex: 1, padding: '0.5rem', borderRadius: 6, cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600,
                     background: invite.role === role ? ROLE_COLORS[role] : '#eee',
                     color: invite.role === role ? 'white' : '#444',
@@ -250,7 +251,7 @@ export default function Collaboration({ user }: { user: any }) {
                 <p style={{ fontSize: '0.82rem', color: '#888' }}>No workspaces yet. Create one to collaborate.</p>
               </div>
             )}
-            {workspaces.map(ws => (
+            {workspaces.map((ws: any) => (
               <div key={ws.id} onClick={() => setActiveWS(ws)} style={{
                 padding: '0.75rem', borderRadius: 8, cursor: 'pointer', marginBottom: '0.5rem',
                 background: activeWS?.id === ws.id ? '#fff5f3' : 'transparent',
@@ -387,7 +388,7 @@ export default function Collaboration({ user }: { user: any }) {
                               {study.status?.replace(/_/g, ' ')}
                             </span>
                             {activeWS.owner_email === user.email && (
-                              <select onChange={e => updateStudyStatus(study.id, e.target.value)}
+                              <select onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateStudyStatus(study.id, e.target.value)}
                                 style={{ padding: '0.3rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.78rem' }}>
                                 <option value="">Change status</option>
                                 {['in_progress', 'completed', 'approved', 'rejected'].map(s => (
@@ -425,8 +426,8 @@ export default function Collaboration({ user }: { user: any }) {
                       </div>
                     ))}
                     <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
-                      <input value={comment} onChange={e => setComment(e.target.value)}
-                        onKeyPress={e => e.key === 'Enter' && postComment()}
+                      <input value={comment} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setComment(e.target.value)}
+                        onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && postComment()}
                         placeholder="Add a comment..."
                         style={{ flex: 1, padding: '0.75rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.88rem' }} />
                       <button className="btn btn-primary" onClick={postComment} disabled={!comment}>

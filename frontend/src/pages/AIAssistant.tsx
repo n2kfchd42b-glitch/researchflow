@@ -81,7 +81,7 @@ You can upload your dataset for context-specific advice, or just ask me any rese
   }
 
   function addMessage(role: 'user' | 'assistant', content: string) {
-    setMessages(prev => [...prev, { role, content, timestamp: new Date().toISOString() }]);
+    setMessages((prev: Message[]) => [...prev, { role, content, timestamp: new Date().toISOString() }]);
   }
 
   async function sendMessage(text?: string) {
@@ -97,9 +97,9 @@ You can upload your dataset for context-specific advice, or just ask me any rese
         : SYSTEM_PROMPT;
 
       const apiMessages = messages
-        .filter(m => m.role !== 'assistant' || messages.indexOf(m) > 0)
-        .concat([{ role: 'user', content: userMessage, timestamp: '' }])
-        .map(m => ({ role: m.role, content: m.content }));
+        .filter((m: Message) => m.role !== 'assistant' || messages.indexOf(m) > 0)
+        .concat([{ role: 'user' as const, content: userMessage, timestamp: '' }])
+        .map((m: Message) => ({ role: m.role, content: m.content }));
 
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -151,7 +151,7 @@ You can upload your dataset for context-specific advice, or just ask me any rese
 
           {/* Messages */}
           <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {messages.map((msg, i) => (
+            {messages.map((msg: Message, i: number) => (
               <div key={i} style={{ display: 'flex', gap: '0.75rem', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
                 {msg.role === 'assistant' && (
                   <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#1C2B3A', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0, alignSelf: 'flex-start' }}>
@@ -205,7 +205,7 @@ You can upload your dataset for context-specific advice, or just ask me any rese
                 ref={inputRef}
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                onKeyPress={e => e.key === 'Enter' && sendMessage()}
+                onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && sendMessage()}
                 placeholder="Ask anything about your research..."
                 style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: 24, border: '1.5px solid #eee', fontSize: '0.9rem', outline: 'none', background: '#f8f7f4' }}
               />
@@ -225,8 +225,8 @@ You can upload your dataset for context-specific advice, or just ask me any rese
           {SUGGESTED_QUESTIONS.map((q, i) => (
             <button key={i} onClick={() => sendMessage(q)}
               style={{ textAlign: 'left', padding: '0.6rem 0.8rem', borderRadius: 8, border: '1px solid #eee', background: 'white', cursor: 'pointer', fontSize: '0.78rem', color: '#444', lineHeight: 1.4, transition: 'all 0.15s' }}
-              onMouseOver={e => { e.currentTarget.style.borderColor = '#C0533A'; e.currentTarget.style.color = '#C0533A'; }}
-              onMouseOut={e  => { e.currentTarget.style.borderColor = '#eee';    e.currentTarget.style.color = '#444'; }}
+              onMouseOver={(e: React.MouseEvent<HTMLButtonElement>) => { e.currentTarget.style.borderColor = '#C0533A'; e.currentTarget.style.color = '#C0533A'; }}
+              onMouseOut={(e: React.MouseEvent<HTMLButtonElement>)  => { e.currentTarget.style.borderColor = '#eee';    e.currentTarget.style.color = '#444'; }}
             >
               {q}
             </button>

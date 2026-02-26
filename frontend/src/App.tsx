@@ -33,7 +33,8 @@ import ProgressTracker from './pages/ProgressTracker';
 import LiteratureReview from './pages/LiteratureReview';
 import CodebookGenerator from './pages/CodebookGenerator';
 import DataVersioning from './pages/DataVersioning';
-import CodebookGenerator from './pages/CodebookGenerator';
+import EthicsTracker from './pages/EthicsTracker';
+import FormBuilder from './pages/FormBuilder';
 import Dashboard from './pages/Dashboard';
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
@@ -68,6 +69,8 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
         { to: "/dictionary", label: "Dictionary" },
         { to: "/subgroup", label: "Subgroup" },
         { to: "/sensitivity", label: "Sensitivity" },
+        { to: "/ethics",      label: "Ethics"      },
+        { to: "/formbuilder", label: "Form Builder" },
   ];
   return (
     <nav style={{
@@ -158,7 +161,9 @@ export default function App() {
         <Route path="/dictionary" element={<DataDictionary />} />
         <Route path="/subgroup" element={<SubgroupAnalysis />} />
         <Route path="/sensitivity" element={<SensitivityAnalysis />} />
-        <Route path="/sensitivity" element={<SensitivityAnalysis />} />
+        <Route path="/samples"      element={<SampleDatasets />} />
+        <Route path="/ethics"       element={<EthicsTracker />} />
+        <Route path="/formbuilder"  element={<FormBuilder />} />
         <Route path="/audit" element={<AuditTrail user={user} />} />
         <Route path="/clean" element={<DataCleaningStudio />} />
         <Route path="/guided" element={<GuidedAnalysis />} />
