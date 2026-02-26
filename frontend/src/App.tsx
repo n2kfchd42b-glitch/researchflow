@@ -10,6 +10,7 @@ import JournalLayout from './layouts/JournalLayout';
 
 // Pages
 import ProductLanding from './pages/ProductLanding';
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import StudentWizard from './pages/StudentWizard';
@@ -150,6 +151,7 @@ export default function App() {
           </Route>
 
           {/* Shared / utility routes */}
+          <Route path="/landing"      element={<Landing user={user} />} />
           <Route path="/ai-assistant" element={<AIAssistant />} />
           <Route path="/collaborate"  element={<Collaboration user={user} />} />
           <Route path="/methodology"  element={<MethodologyMemory user={user} />} />

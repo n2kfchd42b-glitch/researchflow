@@ -5,6 +5,7 @@ from app.api.projects import router as projects_router
 from app.api.references import router as references_router
 from app.api.studies import router as studies_router
 from app.api.assessments import router as assessments_router
+from app.routers.analysis_router import router as analysis_router
 
 app = FastAPI(
     title="ResearchFlow API",
@@ -24,6 +25,7 @@ app.include_router(projects_router)
 app.include_router(references_router)
 app.include_router(studies_router)
 app.include_router(assessments_router)
+app.include_router(analysis_router)
 
 @app.get("/")
 def root():
