@@ -84,7 +84,7 @@ function apaCite(ref: Reference): string {
   return `${authors} (${ref.year}). ${ref.title}. ${ref.journal}, ${ref.volume}${ref.issue ? `(${ref.issue})` : ''}, ${ref.pages}.${ref.doi ? ` https://doi.org/${ref.doi}` : ''}`;
 }
 
-
+const LiteratureReview: React.FC = () => {
   const { projectId } = useProject();
   const [refs, setRefs]             = useState<Reference[]>([]);
   const [activeTab, setActiveTab]   = useState('library');
@@ -640,4 +640,6 @@ function apaCite(ref: Reference): string {
       )}
     </div>
   );
-}
+};
+
+export default LiteratureReview;

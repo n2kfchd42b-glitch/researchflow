@@ -1,10 +1,10 @@
-import React, { useState, useContext } from "react";
-import { ProjectContext } from "../../context/ProjectContext";
+import React, { useState } from "react";
+import { useProject } from "../../context/ProjectContext";
 import { DiDResult } from "./types";
 import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
 
 const DifferenceInDifferences: React.FC = () => {
-  const { projectId } = useContext(ProjectContext);
+  const { projectId } = useProject();
   const [datasetVersionId, setDatasetVersionId] = useState<number | null>(null);
   const [outcomeColumn, setOutcomeColumn] = useState("");
   const [groupColumn, setGroupColumn] = useState("");

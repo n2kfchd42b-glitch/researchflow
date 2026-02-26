@@ -226,7 +226,7 @@ export default function VisualisationStudio() {
         <ResponsiveContainer width="100%" height={chartHeight}>
           <PieChart>
             <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%"
-              outerRadius={chartHeight / 3} label={showValues ? ({ name, percent }: { name: string, percent?: number }) => `${name} ${((percent || 0) * 100).toFixed(1)}%` : undefined}
+              outerRadius={chartHeight / 3} label={showValues ? ({ name, percent }: { name?: string, percent?: number }) => `${name ?? ''} ${((percent || 0) * 100).toFixed(1)}%` : undefined}
               opacity={opacity}>
               {chartData.map((_: any, index: number) => (
                 <Cell key={index} fill={palette[index % palette.length]} />

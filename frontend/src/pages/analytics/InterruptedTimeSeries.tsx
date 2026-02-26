@@ -1,10 +1,10 @@
-import React, { useState, useContext } from "react";
-import { ProjectContext } from "../../context/ProjectContext";
+import React, { useState } from "react";
+import { useProject } from "../../context/ProjectContext";
 import { ITSResult } from "./types";
 import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
 
 const InterruptedTimeSeries: React.FC = () => {
-  const { projectId } = useContext(ProjectContext);
+  const { projectId } = useProject();
   const [datasetVersionId, setDatasetVersionId] = useState<number | null>(null);
   const [timeColumn, setTimeColumn] = useState("");
   const [outcomeColumn, setOutcomeColumn] = useState("");
