@@ -17,13 +17,18 @@ const STEPS = [
 ];
 
 const TOOLS = [
-  { label: 'Table 1',            path: '/student/table1' },
-  { label: 'Descriptive Stats',  path: '/student/descriptive' },
-  { label: 'Survival Analysis',  path: '/student/survival' },
-  { label: 'Sample Size',        path: '/student/samplesize' },
-  { label: 'Codebook',           path: '/student/codebook' },
-  { label: 'Literature Review',  path: '/student/literature' },
-  { label: 'PRISMA',             path: '/student/prisma' },
+  { label: 'Table 1',             path: '/student/table1' },
+  { label: 'Descriptive Stats',   path: '/student/descriptive' },
+  { label: 'Survival Analysis',   path: '/student/survival' },
+  { label: 'Sample Size',         path: '/student/samplesize' },
+  { label: 'Codebook',            path: '/student/codebook' },
+  { label: 'Literature Review',   path: '/student/literature' },
+  { label: 'PRISMA',              path: '/student/prisma' },
+  { label: 'Subgroup Analysis',   path: '/student/subgroup' },
+  { label: 'Sensitivity Analysis',path: '/student/sensitivity' },
+  { label: 'Forest Plot',         path: '/student/forest-plot' },
+  { label: 'Visualisation Studio',path: '/student/visualise' },
+  { label: 'Sample Datasets',     path: '/student/samples' },
 ];
 
 const ACCENT  = '#C0533A';

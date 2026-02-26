@@ -17,6 +17,8 @@ const NAV_ITEMS = [
   { label: 'Field Forms',     path: '/ngo/forms' },
   { label: 'Data Cleaning',   path: '/ngo/clean' },
   { label: 'Data Versioning', path: '/ngo/versioning' },
+  { label: 'Data Dictionary', path: '/ngo/dictionary' },
+  { label: 'Cohort Builder',  path: '/ngo/cohort' },
   { label: 'Budget Tracker',  path: '/ngo/budget' },
   { label: 'Ethics Tracker',  path: '/ngo/ethics' },
 ];
