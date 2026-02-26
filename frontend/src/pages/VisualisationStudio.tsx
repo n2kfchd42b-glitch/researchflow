@@ -115,10 +115,14 @@ export default function VisualisationStudio() {
 
   function exportPNG() {
     alert("To save your chart: right-click on the chart and select Save Image As.");
-  }
-  }
-      alert('Export requires html2canvas. Try right-click → Save image on the chart.');
-    });
+    // If you want to implement PNG export, use html2canvas or similar library here.
+    // Example:
+    // html2canvas(document.getElementById('chart')).then(canvas => {
+    //   const link = document.createElement('a');
+    //   link.download = 'chart.png';
+    //   link.href = canvas.toDataURL();
+    //   link.click();
+    // });
   }
 
   const columns  = uploadResult ? Object.keys(uploadResult.column_types) : [];

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { ProjectProvider } from './context/ProjectContext';
+import ProjectSelector from './components/ProjectSelector';
 import './mobile.css';
 import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import Landing from './pages/Landing';
@@ -30,14 +32,11 @@ import SubgroupAnalysis from './pages/SubgroupAnalysis';
 import SensitivityAnalysis from './pages/SensitivityAnalysis';
 import BudgetTracker from './pages/BudgetTracker';
 import Table1Generator from './pages/Table1Generator';
-import Table1Generator from './pages/Table1Generator';
-import Table1Generator from './pages/Table1Generator';
 import AIAssistant from './pages/AIAssistant';
 import ProgressTracker from './pages/ProgressTracker';
 import LiteratureReview from './pages/LiteratureReview';
 import CodebookGenerator from './pages/CodebookGenerator';
 import DataVersioning from './pages/DataVersioning';
-import CodebookGenerator from './pages/CodebookGenerator';
 import Dashboard from './pages/Dashboard';
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
@@ -84,6 +83,7 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
       <Link to="/" style={{ color: "#C0533A", fontWeight: 700, fontSize: "1.2rem", textDecoration: "none" }}>
         ResearchFlow
       </Link>
+      <ProjectSelector />
       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
         {links.map(l => (
           <Link key={l.to} to={l.to} style={{
@@ -141,42 +141,44 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter>
-      <NavBar user={user} onLogout={handleLogout} />
-      <Routes>
-        <Route path="/"        element={<Dashboard user={user} />} />
-        <Route path="/student" element={<StudentWizard />} />
-        <Route path="/ngo"     element={<NGOPipeline />} />
-        <Route path="/journal" element={<JournalVerification />} />
-        <Route path="/methodology" element={<MethodologyMemory user={user} />} />
-        <Route path="/cohort" element={<CohortBuilder />} />
-        <Route path="/survival" element={<SurvivalAnalysis />} />
-        <Route path="/samplesize" element={<SampleSize />} />
-        <Route path="/ai-assistant" element={<AIAssistant />} />
-        <Route path="/progress" element={<ProgressTracker />} />
-        <Route path="/literature" element={<LiteratureReview />} />
-        <Route path="/codebook" element={<CodebookGenerator />} />
-        <Route path="/versioning" element={<DataVersioning />} />
-        <Route path="/syntax" element={<SyntaxExporter />} />
-        <Route path="/prisma" element={<PRISMADiagram />} />
-        <Route path="/studies" element={<StudyDashboard />} />
-        <Route path="/rob" element={<RiskOfBias />} />
-        <Route path="/dictionary" element={<DataDictionary />} />
-        <Route path="/subgroup" element={<SubgroupAnalysis />} />
-        <Route path="/sensitivity" element={<SensitivityAnalysis />} />
-        <Route path="/sensitivity" element={<SensitivityAnalysis />} />
-        <Route path="/table1" element={<Table1Generator />} />
-        <Route path="/audit" element={<AuditTrail user={user} />} />
-        <Route path="/clean" element={<DataCleaningStudio />} />
-        <Route path="/guided" element={<GuidedAnalysis />} />
-        <Route path="/journal-assistant" element={<JournalAssistant />} />
-        <Route path="/instrument" element={<InstrumentRecognition />} />
-        <Route path="/psm" element={<PropensityMatching />} />
-        <Route path="/descriptive" element={<DescriptiveStats />} />
-        <Route path="/visualise" element={<VisualisationStudio />} />
-        <Route path="/collaborate" element={<Collaboration user={user} />} />
-        <Route path="/forest-plot" element={<ForestPlot />} />
-      </Routes>
-    </BrowserRouter>
+    <ProjectProvider>
+      <BrowserRouter>
+        <NavBar user={user} onLogout={handleLogout} />
+        <Routes>
+          <Route path="/"        element={<Dashboard user={user} />} />
+          <Route path="/student" element={<StudentWizard />} />
+          <Route path="/ngo"     element={<NGOPipeline />} />
+          <Route path="/journal" element={<JournalVerification />} />
+          <Route path="/methodology" element={<MethodologyMemory user={user} />} />
+          <Route path="/cohort" element={<CohortBuilder />} />
+          <Route path="/survival" element={<SurvivalAnalysis />} />
+          <Route path="/samplesize" element={<SampleSize />} />
+          <Route path="/ai-assistant" element={<AIAssistant />} />
+          <Route path="/progress" element={<ProgressTracker />} />
+          <Route path="/literature" element={<LiteratureReview />} />
+          <Route path="/codebook" element={<CodebookGenerator />} />
+          <Route path="/versioning" element={<DataVersioning />} />
+          <Route path="/syntax" element={<SyntaxExporter />} />
+          <Route path="/prisma" element={<PRISMADiagram />} />
+          <Route path="/studies" element={<StudyDashboard />} />
+          <Route path="/rob" element={<RiskOfBias />} />
+          <Route path="/dictionary" element={<DataDictionary />} />
+          <Route path="/subgroup" element={<SubgroupAnalysis />} />
+          <Route path="/sensitivity" element={<SensitivityAnalysis />} />
+          <Route path="/sensitivity" element={<SensitivityAnalysis />} />
+          <Route path="/table1" element={<Table1Generator />} />
+          <Route path="/audit" element={<AuditTrail user={user} />} />
+          <Route path="/clean" element={<DataCleaningStudio />} />
+          <Route path="/guided" element={<GuidedAnalysis />} />
+          <Route path="/journal-assistant" element={<JournalAssistant />} />
+          <Route path="/instrument" element={<InstrumentRecognition />} />
+          <Route path="/psm" element={<PropensityMatching />} />
+          <Route path="/descriptive" element={<DescriptiveStats />} />
+          <Route path="/visualise" element={<VisualisationStudio />} />
+          <Route path="/collaborate" element={<Collaboration user={user} />} />
+          <Route path="/forest-plot" element={<ForestPlot />} />
+        </Routes>
+      </BrowserRouter>
+    </ProjectProvider>
   );
 }

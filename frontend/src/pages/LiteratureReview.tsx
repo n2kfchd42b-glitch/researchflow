@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
-const STORAGE_KEY = 'researchflow_literature';
+import { useProject } from '../context/ProjectContext';
 
 const STUDY_DESIGNS = ['RCT', 'Cohort', 'Case-Control', 'Cross-sectional', 'Systematic Review', 'Meta-analysis', 'Case Report', 'Qualitative', 'Other'];
 const EVIDENCE_LEVELS = ['1a', '1b', '2a', '2b', '3', '4', '5'];
@@ -85,7 +84,8 @@ function apaCite(ref: Reference): string {
   return `${authors} (${ref.year}). ${ref.title}. ${ref.journal}, ${ref.volume}${ref.issue ? `(${ref.issue})` : ''}, ${ref.pages}.${ref.doi ? ` https://doi.org/${ref.doi}` : ''}`;
 }
 
-export default function LiteratureReview() {
+
+  const { projectId } = useProject();
   const [refs, setRefs]             = useState<Reference[]>([]);
   const [activeTab, setActiveTab]   = useState('library');
   const [showAdd, setShowAdd]       = useState(false);
@@ -98,41 +98,55 @@ export default function LiteratureReview() {
   const [citStyle, setCitStyle]     = useState<'vancouver'|'apa'>('vancouver');
   const [copied, setCopied]         = useState(false);
   const [saved, setSaved]           = useState(false);
+  const [loading, setLoading]       = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setRefs(JSON.parse(stored));
-    } catch (e) {}
-  }, []);
+    if (!projectId) return;
+    setLoading(true);
+    fetch(`/api/references?project_id=${projectId}`)
+      .then(res => res.json())
+      .then(data => setRefs(data))
+      .finally(() => setLoading(false));
+  }, [projectId]);
 
   function save(updated: Reference[]) {
     setRefs(updated);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      setSaved(true);
-      setTimeout(() => setSaved(false), 1500);
-    } catch (e) {}
+    setSaved(true);
+    setTimeout(() => setSaved(false), 1500);
   }
 
-  function addRef() {
-    if (!form.title || !form.authors) return;
-    const newRef = { ...form, id: Date.now().toString(), added_at: new Date().toISOString() };
-    save([...refs, newRef]);
-    setForm(emptyRef());
-    setShowAdd(false);
+  async function addRef() {
+    if (!form.title || !form.authors || !projectId) return;
+    const payload = { ...form, project_id: projectId };
+    const res = await fetch('/api/references', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      const newRef = await res.json();
+      save([...refs, newRef]);
+      setForm(emptyRef());
+      setShowAdd(false);
+    }
   }
 
-  function updateRef() {
+  async function updateRef() {
+    // Not implemented: backend update endpoint. For now, delete and re-add.
     if (!editing) return;
-    save(refs.map(r => r.id === editing.id ? { ...form, id: editing.id } : r));
+    await deleteRef(editing.id, false);
+    await addRef();
     setEditing(null);
     setForm(emptyRef());
     setShowAdd(false);
   }
 
-  function deleteRef(id: string) {
-    if (window.confirm('Delete this reference?')) save(refs.filter(r => r.id !== id));
+  async function deleteRef(id: string, confirm = true) {
+    if (confirm && !window.confirm('Delete this reference?')) return;
+    const res = await fetch(`/api/references/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      save(refs.filter(r => r.id !== id));
+    }
   }
 
   function startEdit(ref: Reference) {
@@ -148,6 +162,12 @@ export default function LiteratureReview() {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  if (!projectId) {
+    return <div className="card" style={{ margin: '2rem auto', maxWidth: 500, textAlign: 'center' }}>
+      <h2>Please select or create a project to continue.</h2>
+    </div>;
   }
 
   const filtered = refs.filter(r => {
