@@ -1,17 +1,22 @@
 import React, { useState, useContext } from "react";
-import { ProjectContext } from "../../context/ProjectContext";
+import { useProject } from "../../context/ProjectContext";
 import { DiDResult } from "./types";
 import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
 
 const DifferenceInDifferences: React.FC = () => {
-  const { projectId } = useContext(ProjectContext);
+  const { projectId } = useProject();
   const [datasetVersionId, setDatasetVersionId] = useState<number | null>(null);
   const [outcomeColumn, setOutcomeColumn] = useState("");
   const [groupColumn, setGroupColumn] = useState("");
   const [periodColumn, setPeriodColumn] = useState("");
   const [result, setResult] = useState<DiDResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
 
   const handleRun = async () => {
+    setError(null);
+    setWarning(null);
+    setResult(null);
     if (!projectId || !datasetVersionId) return;
     const res = await fetch("/analysis/did", {
       method: "POST",
@@ -24,7 +29,13 @@ const DifferenceInDifferences: React.FC = () => {
         period_column: periodColumn,
       }),
     });
-    setResult(await res.json());
+    const data = await res.json();
+    if (data.error) {
+      setError(data.error + (data.details ? ": " + data.details : ""));
+    } else {
+      setResult(data);
+      if (data.warning) setWarning(data.warning);
+    }
   };
 
   if (!projectId) {
@@ -56,7 +67,9 @@ const DifferenceInDifferences: React.FC = () => {
       </div>
       <div className="card" style={{ marginLeft: 400 }}>
         <h3>Results</h3>
-        {result && (
+        {error && <div className="alert-critical">{error}</div>}
+        {warning && <div className="alert">{warning}</div>}
+        {result && !error && (
           <>
             <div>
               <b>DiD Effect:</b> {result.did_effect}<br />

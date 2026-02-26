@@ -1,13 +1,18 @@
 import React, { useState, useContext } from "react";
-import { ProjectContext } from "../../context/ProjectContext";
+import { useProject } from "../../context/ProjectContext";
 import { SpatialResult } from "./types";
 
 const SpatialAnalysis: React.FC = () => {
-  const { projectId } = useContext(ProjectContext);
+  const { projectId } = useProject();
   const [datasetVersionId, setDatasetVersionId] = useState<number | null>(null);
   const [result, setResult] = useState<SpatialResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
 
   const handleRun = async () => {
+    setError(null);
+    setWarning(null);
+    setResult(null);
     if (!projectId || !datasetVersionId) return;
     const res = await fetch("/analysis/spatial", {
       method: "POST",
@@ -17,7 +22,13 @@ const SpatialAnalysis: React.FC = () => {
         dataset_version_id: datasetVersionId,
       }),
     });
-    setResult(await res.json());
+    const data = await res.json();
+    if (data.error) {
+      setError(data.error + (data.details ? ": " + data.details : ""));
+    } else {
+      setResult(data);
+      if (data.warning) setWarning(data.warning);
+    }
   };
 
   if (!projectId) {
@@ -33,7 +44,9 @@ const SpatialAnalysis: React.FC = () => {
       </div>
       <div className="card" style={{ marginLeft: 400 }}>
         <h3>Results</h3>
-        {result && (
+        {error && <div className="alert-critical">{error}</div>}
+        {warning && <div className="alert">{warning}</div>}
+        {result && !error && (
           <>
             <div>
               <b>Summary Stats:</b> {JSON.stringify(result.summary_stats)}

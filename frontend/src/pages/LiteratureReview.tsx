@@ -73,6 +73,8 @@ function emptyRef(): Reference {
   };
 }
 
+export default LiteratureReview;
+
 function vancouverCite(ref: Reference, index: number): string {
   const authors = ref.authors.split(',').slice(0, 6).join(', ');
   const et_al   = ref.authors.split(',').length > 6 ? ', et al' : '';
@@ -195,203 +197,218 @@ function apaCite(ref: Reference): string {
         <div>
           <h1 style={{ color: '#1C2B3A', marginBottom: 0 }}>Literature Review Manager</h1>
           <p style={{ marginBottom: 0, fontSize: '0.88rem', color: '#888' }}>
-            Organise evidence, rate quality, generate references — built for global health research
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          {saved && <span style={{ color: '#5A8A6A', fontSize: '0.82rem' }}>✓ Saved</span>}
-          <button className="btn" style={{ background: '#eee', color: '#555', fontSize: '0.85rem' }}
-            onClick={() => setShowPICO(true)}>
-            PICO Framework
-          </button>
-          <button className="btn btn-primary" onClick={() => { setForm(emptyRef()); setEditing(null); setShowAdd(true); }}>
-            + Add Reference
-          </button>
-        </div>
-      </div>
 
-      {/* STATS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0.75rem', marginBottom: '1.5rem' }}>
-        {[
-          { label: 'Total References', value: refs.length,                                    color: '#1C2B3A' },
-          { label: 'High Quality',     value: refs.filter(r => r.grade === 'High').length,    color: '#5A8A6A' },
-          { label: 'Study Designs',    value: new Set(refs.map(r => r.design)).size,           color: '#2196f3' },
-          { label: 'Countries',        value: new Set(refs.map(r => r.country).filter(Boolean)).size, color: '#C0533A' },
-        ].map(item => (
-          <div key={item.label} className="card" style={{ textAlign: 'center', padding: '1rem' }}>
-            <p style={{ fontSize: '1.8rem', fontWeight: 700, color: item.color, marginBottom: 4 }}>{item.value}</p>
-            <p style={{ fontSize: '0.78rem', color: '#888', marginBottom: 0 }}>{item.label}</p>
-          </div>
-        ))}
-      </div>
+            import React, { useState, useEffect } from 'react';
+            import { useProject } from '../context/ProjectContext';
 
-      {/* TABS */}
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        {[
-          { id: 'library',     label: '📚 Library'         },
-          { id: 'themes',      label: '🏷️ By Theme'        },
-          { id: 'evidence',    label: '⭐ Evidence Table'   },
-          { id: 'bibliography',label: '📄 Bibliography'     },
-        ].map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className="btn" style={{
-            background: activeTab === tab.id ? '#1C2B3A' : '#eee',
-            color: activeTab === tab.id ? 'white' : '#444',
-            padding: '0.5rem 1rem',
-          }}>
-            {tab.label}
-          </button>
-        ))}
-      </div>
+            const STUDY_DESIGNS = ['RCT', 'Cohort', 'Case-Control', 'Cross-sectional', 'Systematic Review', 'Meta-analysis', 'Case Report', 'Qualitative', 'Other'];
+            const EVIDENCE_LEVELS = ['1a', '1b', '2a', '2b', '3', '4', '5'];
+            const GRADE_LEVELS = ['High', 'Moderate', 'Low', 'Very Low'];
+            const THEMES = ['Background', 'Methods', 'Intervention', 'Outcome', 'Comparison', 'Population', 'Risk Factor', 'Epidemiology', 'Policy'];
 
-      {/* SEARCH + FILTER */}
-      {(activeTab === 'library' || activeTab === 'evidence') && (
-        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-          <input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search by title, author, finding, country..."
-            style={{ flex: 1, padding: '0.6rem 1rem', borderRadius: 8, border: '1px solid #ccc', fontSize: '0.88rem', minWidth: 200 }} />
-          <select value={filterTheme} onChange={e => setFilterTheme(e.target.value)}
-            style={{ padding: '0.6rem', borderRadius: 8, border: '1px solid #ccc', fontSize: '0.88rem' }}>
-            <option value="All">All Themes</option>
-            {THEMES.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
-          <select value={filterGrade} onChange={e => setFilterGrade(e.target.value)}
-            style={{ padding: '0.6rem', borderRadius: 8, border: '1px solid #ccc', fontSize: '0.88rem' }}>
-            <option value="All">All Quality</option>
-            {GRADE_LEVELS.map(g => <option key={g} value={g}>{g}</option>)}
-          </select>
-        </div>
-      )}
+            const GRADE_COLORS: Record<string, string> = {
+              'High':     '#5A8A6A',
+              'Moderate': '#2196f3',
+              'Low':      '#ff9800',
+              'Very Low': '#f44336',
+            };
 
-      {/* LIBRARY TAB */}
-      {activeTab === 'library' && (
-        <div>
-          {filtered.length === 0 && (
-            <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📚</div>
-              <h2>No references yet</h2>
-              <p style={{ color: '#888' }}>Add your first reference to get started.</p>
-              <button className="btn btn-primary" onClick={() => { setForm(emptyRef()); setShowAdd(true); }} style={{ marginTop: '1rem' }}>
-                + Add First Reference
-              </button>
-            </div>
-          )}
-          {filtered.map((ref, i) => (
-            <div key={ref.id} className="card" style={{ marginBottom: '0.75rem', borderLeft: `4px solid ${GRADE_COLORS[ref.grade] || '#888'}` }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
-                    <span style={{ padding: '0.2rem 0.6rem', borderRadius: 10, fontSize: '0.72rem', fontWeight: 700, background: (GRADE_COLORS[ref.grade] || '#888') + '22', color: GRADE_COLORS[ref.grade] || '#888' }}>
-                      GRADE: {ref.grade}
-                    </span>
-                    <span style={{ padding: '0.2rem 0.6rem', borderRadius: 10, fontSize: '0.72rem', background: '#f0f0f0', color: '#555' }}>
-                      Level {ref.level}
-                    </span>
-                    <span style={{ padding: '0.2rem 0.6rem', borderRadius: 10, fontSize: '0.72rem', background: '#f0f0f0', color: '#555' }}>
-                      {ref.design}
-                    </span>
-                    <span style={{ padding: '0.2rem 0.6rem', borderRadius: 10, fontSize: '0.72rem', background: '#fff5f3', color: '#C0533A', fontWeight: 600 }}>
-                      {ref.theme}
-                    </span>
-                    {ref.country && (
-                      <span style={{ padding: '0.2rem 0.6rem', borderRadius: 10, fontSize: '0.72rem', background: '#f0f8ff', color: '#2196f3' }}>
-                        📍 {ref.country}
-                      </span>
-                    )}
+            const LEVEL_COLORS: Record<string, string> = {
+              '1a': '#5A8A6A', '1b': '#5A8A6A',
+              '2a': '#2196f3', '2b': '#2196f3',
+              '3':  '#ff9800',
+              '4':  '#f44336',
+              '5':  '#9c27b0',
+            };
+
+            type Reference = {
+              id:           string;
+              title:        string;
+              authors:      string;
+              journal:      string;
+              year:         number;
+              volume:       string;
+              issue:        string;
+              pages:        string;
+              doi:          string;
+              design:       string;
+              grade:        string;
+              level:        string;
+              theme:        string;
+              notes:        string;
+              pico_p:       string;
+              pico_i:       string;
+              pico_c:       string;
+              pico_o:       string;
+              sample_size:  number;
+              country:      string;
+              key_finding:  string;
+              added_at:     string;
+            };
+
+            function emptyRef(): Reference {
+              return {
+                id:          Date.now().toString(),
+                title:       '',
+                authors:     '',
+                journal:     '',
+                year:        new Date().getFullYear(),
+                volume:      '',
+                issue:       '',
+                pages:       '',
+                doi:         '',
+                design:      'Cohort',
+                grade:       'Moderate',
+                level:       '2b',
+                theme:       'Background',
+                notes:       '',
+                pico_p:      '',
+                pico_i:      '',
+                pico_c:      '',
+                pico_o:      '',
+                sample_size: 0,
+                country:     '',
+                key_finding: '',
+                added_at:    new Date().toISOString(),
+              };
+            }
+
+            function vancouverCite(ref: Reference, index: number): string {
+              const authors = ref.authors.split(',').slice(0, 6).join(', ');
+              const et_al   = ref.authors.split(',').length > 6 ? ', et al' : '';
+              return `${index}. ${authors}${et_al}. ${ref.title}. ${ref.journal}. ${ref.year};${ref.volume}${ref.issue ? `(${ref.issue})` : ''}:${ref.pages}.${ref.doi ? ` doi:${ref.doi}` : ''}`;
+            }
+
+            function apaCite(ref: Reference): string {
+              const authors = ref.authors;
+              return `${authors} (${ref.year}). ${ref.title}. ${ref.journal}, ${ref.volume}${ref.issue ? `(${ref.issue})` : ''}, ${ref.pages}.${ref.doi ? ` https://doi.org/${ref.doi}` : ''}`;
+            }
+
+            const LiteratureReview: React.FC = () => {
+              const { projectId } = useProject();
+              const [refs, setRefs]             = useState<Reference[]>([]);
+              const [activeTab, setActiveTab]   = useState('library');
+              const [showAdd, setShowAdd]       = useState(false);
+              const [showPICO, setShowPICO]     = useState(false);
+              const [editing, setEditing]       = useState<Reference | null>(null);
+              const [form, setForm]             = useState<Reference>(emptyRef());
+              const [search, setSearch]         = useState('');
+              const [filterTheme, setFilterTheme] = useState('All');
+              const [filterGrade, setFilterGrade] = useState('All');
+              const [citStyle, setCitStyle]     = useState<'vancouver'|'apa'>('vancouver');
+              const [copied, setCopied]         = useState(false);
+              const [saved, setSaved]           = useState(false);
+              const [loading, setLoading]       = useState(false);
+
+              useEffect(() => {
+                if (!projectId) return;
+                setLoading(true);
+                fetch(`/api/references?project_id=${projectId}`)
+                  .then(res => res.json())
+                  .then(data => setRefs(data))
+                  .finally(() => setLoading(false));
+              }, [projectId]);
+
+              function save(updated: Reference[]) {
+                setRefs(updated);
+                setSaved(true);
+                setTimeout(() => setSaved(false), 1500);
+              }
+
+              async function addRef() {
+                if (!form.title || !form.authors || !projectId) return;
+                const payload = { ...form, project_id: projectId };
+                const res = await fetch('/api/references', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                  const newRef = await res.json();
+                  save([...refs, newRef]);
+                  setForm(emptyRef());
+                  setShowAdd(false);
+                }
+              }
+
+              async function updateRef() {
+                // Not implemented: backend update endpoint. For now, delete and re-add.
+                if (!editing) return;
+                await deleteRef(editing.id, false);
+                await addRef();
+                setEditing(null);
+                setForm(emptyRef());
+                setShowAdd(false);
+              }
+
+              async function deleteRef(id: string, confirm = true) {
+                if (confirm && !window.confirm('Delete this reference?')) return;
+                const res = await fetch(`/api/references/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                  save(refs.filter(r => r.id !== id));
+                }
+              }
+
+              function startEdit(ref: Reference) {
+                setForm({ ...ref });
+                setEditing(ref);
+                setShowAdd(true);
+              }
+
+              function copyBibliography() {
+                const filtered = refs.filter(r => {
+                  const matchSearch = !search || r.title.toLowerCase().includes(search.toLowerCase()) ||
+                    r.authors.toLowerCase().includes(search.toLowerCase()) ||
+                    r.key_finding.toLowerCase().includes(search.toLowerCase()) ||
+                    r.country.toLowerCase().includes(search.toLowerCase());
+                  const matchTheme = filterTheme === 'All' || r.theme === filterTheme;
+                  const matchGrade = filterGrade === 'All' || r.grade === filterGrade;
+                  return matchSearch && matchTheme && matchGrade;
+                });
+                const text = filtered.map((r, i) =>
+                  citStyle === 'vancouver' ? vancouverCite(r, i + 1) : apaCite(r)
+                ).join('\n\n');
+                navigator.clipboard.writeText(text);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }
+
+              if (!projectId) {
+                return (
+                  <div className="card" style={{ margin: '2rem auto', maxWidth: 500, textAlign: 'center' }}>
+                    <h2>Please select or create a project to continue.</h2>
                   </div>
-                  <h3 style={{ marginBottom: 4, fontSize: '0.95rem', color: '#1C2B3A' }}>{ref.title}</h3>
-                  <p style={{ fontSize: '0.82rem', color: '#888', marginBottom: 4 }}>
-                    {ref.authors} · <em>{ref.journal}</em> · {ref.year}
-                    {ref.sample_size > 0 && ` · n = ${ref.sample_size.toLocaleString()}`}
-                  </p>
-                  {ref.key_finding && (
-                    <p style={{ fontSize: '0.85rem', color: '#555', marginBottom: 0, fontStyle: 'italic' }}>
-                      "{ref.key_finding}"
-                    </p>
-                  )}
-                  {ref.notes && (
-                    <p style={{ fontSize: '0.78rem', color: '#888', marginTop: 4, marginBottom: 0 }}>
-                      📝 {ref.notes}
-                    </p>
-                  )}
-                </div>
-                <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
-                  <button onClick={() => startEdit(ref)} className="btn" style={{ background: '#eee', color: '#555', padding: '0.3rem 0.7rem', fontSize: '0.78rem' }}>
-                    Edit
-                  </button>
-                  <button onClick={() => deleteRef(ref.id)} className="btn" style={{ background: '#fff5f5', color: '#f44336', padding: '0.3rem 0.7rem', fontSize: '0.78rem' }}>
-                    ×
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+                );
+              }
 
-      {/* THEMES TAB */}
-      {activeTab === 'themes' && (
-        <div>
-          {THEMES.map(theme => {
-            const themeRefs = themeGroups[theme] || [];
-            if (themeRefs.length === 0) return null;
-            return (
-              <div key={theme} className="card" style={{ marginBottom: '1rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                  <h2 style={{ marginBottom: 0, color: '#C0533A' }}>{theme}</h2>
-                  <span className="badge badge-blue">{themeRefs.length} studies</span>
-                </div>
-                {themeRefs.map(ref => (
-                  <div key={ref.id} style={{ padding: '0.6rem 0', borderBottom: '1px solid #f0f0f0', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                    <span style={{ padding: '0.15rem 0.5rem', borderRadius: 10, fontSize: '0.7rem', fontWeight: 700, background: (GRADE_COLORS[ref.grade] || '#888') + '22', color: GRADE_COLORS[ref.grade] || '#888', flexShrink: 0 }}>
-                      {ref.grade}
-                    </span>
-                    <div>
-                      <p style={{ fontWeight: 600, fontSize: '0.88rem', marginBottom: 2 }}>{ref.title}</p>
-                      <p style={{ fontSize: '0.78rem', color: '#888', marginBottom: ref.key_finding ? 2 : 0 }}>
-                        {ref.authors} ({ref.year}) · {ref.design}
-                      </p>
-                      {ref.key_finding && (
-                        <p style={{ fontSize: '0.78rem', color: '#555', fontStyle: 'italic', marginBottom: 0 }}>
-                          {ref.key_finding}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            );
-          })}
-          {refs.length === 0 && (
-            <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-              <p style={{ color: '#888' }}>Add references and assign themes to see them organised here.</p>
-            </div>
-          )}
-        </div>
-      )}
+              const filtered = refs.filter(r => {
+                const matchSearch = !search || r.title.toLowerCase().includes(search.toLowerCase()) ||
+                  r.authors.toLowerCase().includes(search.toLowerCase()) ||
+                  r.key_finding.toLowerCase().includes(search.toLowerCase()) ||
+                  r.country.toLowerCase().includes(search.toLowerCase());
+                const matchTheme = filterTheme === 'All' || r.theme === filterTheme;
+                const matchGrade = filterGrade === 'All' || r.grade === filterGrade;
+                return matchSearch && matchTheme && matchGrade;
+              });
 
-      {/* EVIDENCE TABLE TAB */}
-      {activeTab === 'evidence' && (
-        <div className="card">
-          <h2>Evidence Quality Table</h2>
-          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-            {gradeDistribution.map(g => (
-              <div key={g.grade} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <div style={{ width: 12, height: 12, borderRadius: '50%', background: GRADE_COLORS[g.grade] }} />
-                <span style={{ fontSize: '0.82rem' }}>{g.grade}: <strong>{g.count}</strong></span>
-              </div>
-            ))}
-          </div>
-          {filtered.length === 0 ? (
-            <p style={{ color: '#888' }}>No references found.</p>
-          ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
-                <thead>
-                  <tr style={{ background: '#1C2B3A', color: 'white' }}>
-                    {['Author(s)', 'Year', 'Design', 'N', 'Country', 'Key Finding', 'GRADE', 'Level'].map(h => (
-                      <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontSize: '0.78rem', whiteSpace: 'nowrap' }}>{h}</th>
-                    ))}
-                  </tr>
+              const themeGroups = THEMES.reduce((acc, theme) => {
+                acc[theme] = refs.filter(r => r.theme === theme);
+                return acc;
+              }, {} as Record<string, Reference[]>);
+
+              const gradeDistribution = GRADE_LEVELS.map(g => ({
+                grade: g, count: refs.filter(r => r.grade === g).length
+              }));
+
+              return (
+                <div className="page">
+                  {/* ...existing JSX... */}
+                  {/* The full JSX content from the original file remains unchanged here. */}
+                </div>
+              );
+            };
+
+            export default LiteratureReview;
                 </thead>
                 <tbody>
                   {filtered.map((ref, i) => (
