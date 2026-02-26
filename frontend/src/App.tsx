@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { ProjectProvider } from './context/ProjectContext';
+import ProjectSelector from './components/ProjectSelector';
 import './mobile.css';
 import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import Landing from './pages/Landing';
@@ -28,6 +30,8 @@ import RiskOfBias from './pages/RiskOfBias';
 import DataDictionary from './pages/DataDictionary';
 import SubgroupAnalysis from './pages/SubgroupAnalysis';
 import SensitivityAnalysis from './pages/SensitivityAnalysis';
+import BudgetTracker from './pages/BudgetTracker';
+import Table1Generator from './pages/Table1Generator';
 import AIAssistant from './pages/AIAssistant';
 import ProgressTracker from './pages/ProgressTracker';
 import LiteratureReview from './pages/LiteratureReview';
@@ -36,8 +40,15 @@ import DataVersioning from './pages/DataVersioning';
 import EthicsTracker from './pages/EthicsTracker';
 import FormBuilder from './pages/FormBuilder';
 import Dashboard from './pages/Dashboard';
+import InterruptedTimeSeries from "./pages/analytics/InterruptedTimeSeries";
+import DifferenceInDifferences from "./pages/analytics/DifferenceInDifferences";
+import MixedEffects from "./pages/analytics/MixedEffects";
+import SpatialAnalysis from "./pages/analytics/SpatialAnalysis";
+import NetworkMetaAnalysis from "./pages/analytics/NetworkMetaAnalysis";
 
 function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const links = [
     { to: "/student",     label: "Student" },
     { to: "/ngo",         label: "NGO" },
@@ -72,8 +83,9 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
         { to: "/ethics",      label: "Ethics"      },
         { to: "/formbuilder", label: "Form Builder" },
   ];
+
   return (
-    <nav style={{
+    <nav className="navbar" style={{
       background: "#1C2B3A", padding: "0.5rem 1.5rem",
       display: "flex", alignItems: "center",
       justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem"
@@ -81,9 +93,33 @@ function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
       <Link to="/" style={{ color: "#C0533A", fontWeight: 700, fontSize: "1.2rem", textDecoration: "none" }}>
         ResearchFlow
       </Link>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+
+      {/* Hamburger button — hidden on desktop, visible on mobile via mobile.css */}
+      <button
+        className="hamburger"
+        onClick={() => setMenuOpen(o => !o)}
+        aria-label={menuOpen ? "Close menu" : "Open menu"}
+        style={{
+          display: "none",
+          background: "transparent",
+          border: "1px solid rgba(255,255,255,0.3)",
+          color: "white",
+          padding: "0.35rem 0.6rem",
+          borderRadius: 4,
+          cursor: "pointer",
+          fontSize: "1.2rem",
+          lineHeight: 1,
+        }}
+      >
+        {menuOpen ? "✕" : "☰"}
+      </button>
+
+      {/* Nav links — shown inline on desktop, collapsed on mobile */}
+      <div className={`navbar-links${menuOpen ? " open" : ""}`} style={{
+        display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap"
+      }}>
         {links.map(l => (
-          <Link key={l.to} to={l.to} style={{
+          <Link key={l.to} to={l.to} onClick={() => setMenuOpen(false)} style={{
             color: "white", textDecoration: "none", fontSize: "0.82rem",
             background: "rgba(255,255,255,0.12)", padding: "0.3rem 0.65rem", borderRadius: 4
           }}>
