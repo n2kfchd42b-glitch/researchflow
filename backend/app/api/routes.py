@@ -1,6 +1,7 @@
 
 from datetime import datetime, timedelta
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Response, Depends
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional
 import pandas as pd, tempfile, os, uuid, sys, io, threading, time
@@ -9,7 +10,12 @@ from app.analytics.ingestion import DataIngestionEngine
 from app.analytics.statistics import StatisticsEngine
 from app.analytics.rigor import RigorScoreEngine
 from app.services.report_generator import ReportGenerator
-from app.services.auth import register_user, login_user, decode_token
+from app.services.auth import (
+    register_user, login_user, decode_token,
+    get_user_by_email, update_user_profile, create_token,
+)
+from app.core.database import get_db
+from sqlalchemy.orm import Session
 from app.services.methodology_memory import save_template, get_templates, get_template, delete_template, get_community_templates
 from app.services.cohort_builder import build_cohort, get_column_summary
 from app.services.survival_analysis import run_kaplan_meier
@@ -55,14 +61,33 @@ class AnalysePayload(BaseModel):
     duration_column: Optional[str] = None
 
 class RegisterRequest(BaseModel):
-    name:     str
-    email:    str
-    password: str
-    role:     str = "student"
+    name:        str
+    email:       str
+    password:    str
+    role:        str = "student"
+    institution: str = ""
+    country:     str = ""
 
 class LoginRequest(BaseModel):
     email:    str
     password: str
+
+class ProfileUpdateRequest(BaseModel):
+    name:        Optional[str] = None
+    institution: Optional[str] = None
+    country:     Optional[str] = None
+
+_COOKIE     = "rf_access_token"
+_COOKIE_AGE = 60 * 60 * 24  # 24 h
+
+def _get_token_payload(request_cookies: dict) -> dict:
+    token = request_cookies.get(_COOKIE)
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    payload = decode_token(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired session")
+    return payload
 
 class SaveTemplateRequest(BaseModel):
     name:              str
@@ -257,31 +282,55 @@ def generate_report(study_id: str, template: str = "ngo"):
         }
     )
 
+from fastapi import Request as _FRequest
+
 @router.post("/auth/register")
-def register(req: RegisterRequest):
+def register(req: RegisterRequest, response: Response, db: Session = Depends(get_db)):
     try:
-        user = register_user(req.name, req.email, req.password, req.role)
-        token = login_user(req.email, req.password)
-        return token
+        user  = register_user(db, req.name, req.email, req.password, req.role,
+                               institution=req.institution, country=req.country)
+        token = create_token({"sub": user["email"], "role": user["role"]})
+        response.set_cookie(key=_COOKIE, value=token,
+                            httponly=True, max_age=_COOKIE_AGE, samesite="lax")
+        return {"user": user}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/auth/login")
-def login(req: LoginRequest):
+def login(req: LoginRequest, response: Response, db: Session = Depends(get_db)):
     try:
-        return login_user(req.email, req.password)
+        result = login_user(db, req.email, req.password)
+        response.set_cookie(key=_COOKIE, value=result["token"],
+                            httponly=True, max_age=_COOKIE_AGE, samesite="lax")
+        return {"user": result["user"]}
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
 
 @router.get("/auth/me")
-def get_me(authorization: str = None):
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    token = authorization.replace("Bearer ", "")
-    payload = decode_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    return payload
+def get_me(request: _FRequest, db: Session = Depends(get_db)):
+    payload = _get_token_payload(dict(request.cookies))
+    user    = get_user_by_email(db, payload["sub"])
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+    return user
+
+@router.post("/auth/logout")
+def logout(response: Response):
+    response.delete_cookie(key=_COOKIE)
+    return {"ok": True}
+
+@router.put("/auth/profile")
+def update_profile(req: ProfileUpdateRequest, request: _FRequest,
+                   db: Session = Depends(get_db)):
+    payload = _get_token_payload(dict(request.cookies))
+    try:
+        updated = update_user_profile(
+            db, payload["sub"],
+            {k: v for k, v in req.dict().items() if v is not None},
+        )
+        return updated
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/templates")
 def create_template(req: SaveTemplateRequest):
@@ -617,32 +666,6 @@ class RegisterRequest(PydanticBase):
 class LoginRequest(PydanticBase):
     email:    str
     password: str
-
-@router.post("/auth/register")
-def register(req: RegisterRequest):
-    try:
-        user = register_user(req.name, req.email, req.password, req.role)
-        token = login_user(req.email, req.password)
-        return token
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-@router.post("/auth/login")
-def login(req: LoginRequest):
-    try:
-        return login_user(req.email, req.password)
-    except ValueError as e:
-        raise HTTPException(status_code=401, detail=str(e))
-
-@router.get("/auth/me")
-def get_me(authorization: str = None):
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    token = authorization.replace("Bearer ", "")
-    payload = decode_token(token)
-    if not payload:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    return payload
 
 import threading
 import time
@@ -1113,23 +1136,6 @@ def report(study_id: str):
     pdf_bytes = ReportGenerator().generate(study)
     log_event("DOWNLOAD_REPORT", {"study_id": study_id})
     return StreamingResponse(io.BytesIO(pdf_bytes), media_type="application/pdf", headers={"Content-Disposition": f"attachment; filename=report_{study_id}.pdf"})
-
-@router.post("/auth/register")
-def register(req: RegisterRequest):
-    return register_user(req.name, req.email, req.password, req.role)
-
-@router.post("/auth/login")
-def login(req: LoginRequest):
-    return login_user(req.email, req.password)
-
-@router.get("/auth/me")
-def me(request: Request, authorization: Optional[str] = Header(None)):
-    token = None
-    if authorization and authorization.startswith("Bearer "):
-        token = authorization[7:]
-    if not token:
-        raise HTTPException(status_code=401, detail="Missing token")
-    return decode_token(token)
 
 @router.post("/templates")
 def save_template_ep(req: SaveTemplateRequest):

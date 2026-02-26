@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './mobile.css';
 import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import Landing from './pages/Landing';
@@ -72,141 +72,365 @@ const NAV_LINKS = [
   { to: "/table1",            label: "Table 1" },
 ];
 
-function NavBar({ user, onLogout }: { user: any; onLogout: () => void }) {
-  const [menuOpen, setMenuOpen] = useState(false);
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8001';
+
+const ROLE_ICONS: Record<string, string> = { student: '🎓', ngo: '🌍', journal: '📄' };
+
+// ── Profile modal ─────────────────────────────────────────────────────────────
+
+function ProfileModal({
+  user,
+  onClose,
+  onSave,
+}: {
+  user: any;
+  onClose: () => void;
+  onSave: (updated: any) => void;
+}) {
+  const [name,        setName]        = useState(user.name        || '');
+  const [institution, setInstitution] = useState(user.institution || '');
+  const [country,     setCountry]     = useState(user.country     || '');
+  const [saving,      setSaving]      = useState(false);
+  const [error,       setError]       = useState('');
+  const [success,     setSuccess]     = useState(false);
+
+  async function handleSave() {
+    setSaving(true); setError(''); setSuccess(false);
+    try {
+      const res = await fetch(`${API_URL}/auth/profile`, {
+        method:      'PUT',
+        credentials: 'include',
+        headers:     { 'Content-Type': 'application/json' },
+        body:        JSON.stringify({ name, institution, country }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.detail || 'Save failed');
+      }
+      const updated = await res.json();
+      onSave(updated);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2000);
+    } catch (err: any) {
+      setError(err.message || 'Save failed');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const inp: React.CSSProperties = {
+    width: '100%', padding: '0.65rem 0.85rem', borderRadius: 7,
+    border: '1.5px solid #ddd', fontSize: '0.9rem',
+  };
+  const lbl: React.CSSProperties = {
+    fontSize: '0.78rem', fontWeight: 700, color: '#888', display: 'block', marginBottom: 5,
+  };
 
   return (
-    <nav className="navbar" style={{
-      background: "#1C2B3A",
-      padding: "0.5rem 1.5rem",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      flexWrap: "wrap",
-      gap: "0.5rem",
-      position: "relative",
-    }}>
-      {/* Logo + Hamburger row */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", flexWrap: "nowrap" }}>
-        <Link to="/" style={{ color: "#C0533A", fontWeight: 700, fontSize: "1.2rem", textDecoration: "none" }}>
-          ResearchFlow
-        </Link>
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      background: 'rgba(0,0,0,0.55)', zIndex: 2000,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem',
+    }} onClick={onClose}>
+      <div style={{
+        background: 'white', borderRadius: 14, padding: '2rem', width: 420, maxWidth: '95vw',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+      }} onClick={e => e.stopPropagation()}>
 
-        {/* Desktop links */}
-        <div className="navbar-links" style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
-          {NAV_LINKS.map(l => (
-            <Link key={l.to} to={l.to} onClick={() => setMenuOpen(false)} style={{
-              color: "white", textDecoration: "none", fontSize: "0.78rem",
-              background: "rgba(255,255,255,0.12)", padding: "0.3rem 0.55rem", borderRadius: 4,
-              whiteSpace: "nowrap",
-            }}>
-              {l.label}
-            </Link>
-          ))}
-          <span style={{ color: "#aaa", fontSize: "0.8rem", marginLeft: "0.5rem" }}>{user.name}</span>
-          <button onClick={onLogout} style={{
-            background: "transparent", border: "1px solid #555",
-            color: "#aaa", padding: "0.3rem 0.8rem", borderRadius: 4,
-            cursor: "pointer", fontSize: "0.8rem",
+        {/* Avatar + header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{
+            width: 52, height: 52, borderRadius: '50%',
+            background: '#C0533A', color: 'white',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '1.4rem', fontWeight: 700, flexShrink: 0,
           }}>
-            Sign Out
+            {user.name ? user.name[0].toUpperCase() : '?'}
+          </div>
+          <div>
+            <h2 style={{ margin: 0, fontSize: '1.1rem' }}>Your Profile</h2>
+            <p style={{ margin: 0, fontSize: '0.82rem', color: '#888' }}>{user.email}</p>
+          </div>
+          <button onClick={onClose} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.4rem', color: '#aaa', lineHeight: 1 }}>×</button>
+        </div>
+
+        {/* Read-only role badge */}
+        <div style={{ marginBottom: '1.25rem' }}>
+          <label style={lbl}>ROLE</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '1.2rem' }}>{ROLE_ICONS[user.role] || '👤'}</span>
+            <span style={{
+              padding: '0.3rem 0.85rem', borderRadius: 20,
+              background: '#f5f0ff', color: '#7c3aed',
+              fontWeight: 700, fontSize: '0.85rem', textTransform: 'capitalize',
+            }}>{user.role}</span>
+            <span style={{ fontSize: '0.75rem', color: '#bbb' }}>(cannot change)</span>
+          </div>
+        </div>
+
+        {error && (
+          <div style={{ background: '#fff5f5', border: '1px solid #fcc', borderRadius: 7, padding: '0.6rem 0.85rem', marginBottom: '1rem', fontSize: '0.82rem', color: '#c00' }}>
+            ⚠ {error}
+          </div>
+        )}
+        {success && (
+          <div style={{ background: '#f0fff4', border: '1px solid #b2dfdb', borderRadius: 7, padding: '0.6rem 0.85rem', marginBottom: '1rem', fontSize: '0.82rem', color: '#2e7d32', fontWeight: 600 }}>
+            ✓ Profile saved!
+          </div>
+        )}
+
+        {[
+          { label: 'FULL NAME',    value: name,        set: setName,        placeholder: 'Your full name'    },
+          { label: 'INSTITUTION',  value: institution,  set: setInstitution, placeholder: 'University / NGO'  },
+          { label: 'COUNTRY',      value: country,      set: setCountry,     placeholder: 'e.g. Kenya'        },
+        ].map(field => (
+          <div key={field.label} style={{ marginBottom: '0.85rem' }}>
+            <label style={lbl}>{field.label}</label>
+            <input value={field.value} onChange={e => field.set(e.target.value)}
+              placeholder={field.placeholder} style={inp} />
+          </div>
+        ))}
+
+        <div style={{ display: 'flex', gap: '0.6rem', marginTop: '1.25rem' }}>
+          <button onClick={handleSave} disabled={saving || !name.trim()} style={{
+            flex: 1, padding: '0.75rem', borderRadius: 8,
+            background: '#C0533A', color: 'white', border: 'none',
+            fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer',
+            opacity: (!name.trim() || saving) ? 0.6 : 1,
+          }}>
+            {saving ? 'Saving…' : 'Save Changes'}
+          </button>
+          <button onClick={onClose} style={{
+            padding: '0.75rem 1rem', borderRadius: 8,
+            background: '#eee', color: '#555', border: 'none',
+            fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem',
+          }}>
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── NavBar ────────────────────────────────────────────────────────────────────
+
+function NavBar({
+  user,
+  onLogout,
+  onProfileUpdate,
+}: {
+  user: any;
+  onLogout: () => void;
+  onProfileUpdate: (u: any) => void;
+}) {
+  const [menuOpen,    setMenuOpen]    = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [dropOpen,    setDropOpen]    = useState(false);
+  const dropRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (dropRef.current && !dropRef.current.contains(e.target as Node)) {
+        setDropOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const initials = user.name ? user.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase() : '?';
+
+  return (
+    <>
+      <nav className="navbar" style={{
+        background: "#1C2B3A",
+        padding: "0.5rem 1.5rem",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        flexWrap: "wrap",
+        gap: "0.5rem",
+        position: "relative",
+      }}>
+        {/* Logo + Hamburger row */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", flexWrap: "nowrap" }}>
+          <Link to="/" style={{ color: "#C0533A", fontWeight: 700, fontSize: "1.2rem", textDecoration: "none" }}>
+            ResearchFlow
+          </Link>
+
+          {/* Desktop links */}
+          <div className="navbar-links" style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
+            {NAV_LINKS.map(l => (
+              <Link key={l.to} to={l.to} onClick={() => setMenuOpen(false)} style={{
+                color: "white", textDecoration: "none", fontSize: "0.78rem",
+                background: "rgba(255,255,255,0.12)", padding: "0.3rem 0.55rem", borderRadius: 4,
+                whiteSpace: "nowrap",
+              }}>
+                {l.label}
+              </Link>
+            ))}
+
+            {/* User avatar dropdown */}
+            <div ref={dropRef} style={{ position: 'relative', marginLeft: '0.25rem' }}>
+              <button
+                onClick={() => setDropOpen(o => !o)}
+                title={`${user.name} · ${user.role}`}
+                style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  background: '#C0533A', color: 'white',
+                  border: 'none', cursor: 'pointer',
+                  fontSize: '0.75rem', fontWeight: 700,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                {initials}
+              </button>
+
+              {dropOpen && (
+                <div style={{
+                  position: 'absolute', top: '110%', right: 0, zIndex: 900,
+                  background: 'white', borderRadius: 10, boxShadow: '0 4px 20px rgba(0,0,0,0.18)',
+                  minWidth: 220, padding: '0.5rem 0',
+                }}>
+                  {/* User info */}
+                  <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid #f0f0f0' }}>
+                    <p style={{ margin: 0, fontWeight: 700, fontSize: '0.9rem', color: '#1C2B3A' }}>{user.name}</p>
+                    <p style={{ margin: 0, fontSize: '0.78rem', color: '#888' }}>{user.email}</p>
+                    <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.4rem', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '0.72rem', background: '#f5f0ff', color: '#7c3aed', borderRadius: 10, padding: '0.1rem 0.5rem', fontWeight: 700, textTransform: 'capitalize' }}>
+                        {ROLE_ICONS[user.role] || '👤'} {user.role}
+                      </span>
+                      {user.institution && (
+                        <span style={{ fontSize: '0.72rem', background: '#f0f8ff', color: '#2196f3', borderRadius: 10, padding: '0.1rem 0.5rem' }}>
+                          🏛 {user.institution}
+                        </span>
+                      )}
+                      {user.country && (
+                        <span style={{ fontSize: '0.72rem', background: '#f0fff4', color: '#2e7d32', borderRadius: 10, padding: '0.1rem 0.5rem' }}>
+                          📍 {user.country}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <button onClick={() => { setDropOpen(false); setShowProfile(true); }} style={{
+                    display: 'block', width: '100%', textAlign: 'left',
+                    padding: '0.6rem 1rem', background: 'none', border: 'none',
+                    cursor: 'pointer', fontSize: '0.88rem', color: '#333',
+                  }}>
+                    ✏️ Edit Profile
+                  </button>
+                  <button onClick={() => { setDropOpen(false); onLogout(); }} style={{
+                    display: 'block', width: '100%', textAlign: 'left',
+                    padding: '0.6rem 1rem', background: 'none', border: 'none',
+                    cursor: 'pointer', fontSize: '0.88rem', color: '#f44336',
+                  }}>
+                    🚪 Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Hamburger button */}
+          <button
+            className="hamburger"
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label="Toggle menu"
+            style={{
+              display: "none", flexDirection: "column", gap: 5,
+              background: "transparent", border: "none", cursor: "pointer", padding: "0.4rem",
+            }}
+          >
+            {[0, 1, 2].map(i => (
+              <span key={i} style={{ display: "block", width: 22, height: 2, background: menuOpen ? "#C0533A" : "white", borderRadius: 2 }} />
+            ))}
           </button>
         </div>
 
-        {/* Hamburger button (hidden on desktop via CSS) */}
-        <button
-          className="hamburger"
-          onClick={() => setMenuOpen(o => !o)}
-          aria-label="Toggle menu"
-          style={{
-            display: "none",
-            flexDirection: "column",
-            gap: 5,
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            padding: "0.4rem",
-          }}
-        >
-          <span style={{ display: "block", width: 22, height: 2, background: menuOpen ? "#C0533A" : "white", borderRadius: 2, transition: "background 0.2s" }} />
-          <span style={{ display: "block", width: 22, height: 2, background: menuOpen ? "#C0533A" : "white", borderRadius: 2, transition: "background 0.2s" }} />
-          <span style={{ display: "block", width: 22, height: 2, background: menuOpen ? "#C0533A" : "white", borderRadius: 2, transition: "background 0.2s" }} />
-        </button>
-      </div>
-
-      {/* Mobile dropdown menu */}
-      {menuOpen && (
-        <div className="navbar-links open" style={{
-          display: "flex",
-          flexDirection: "column",
-          width: "100%",
-          padding: "0.75rem 0",
-          gap: "0.25rem",
-          borderTop: "1px solid rgba(255,255,255,0.1)",
-          marginTop: "0.5rem",
-        }}>
-          {NAV_LINKS.map(l => (
-            <Link key={l.to} to={l.to} onClick={() => setMenuOpen(false)} style={{
-              color: "white", textDecoration: "none", fontSize: "0.9rem",
-              padding: "0.6rem 0.75rem", borderRadius: 6,
-              background: "rgba(255,255,255,0.06)",
-            }}>
-              {l.label}
-            </Link>
-          ))}
-          <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", marginTop: "0.5rem", paddingTop: "0.5rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ color: "#aaa", fontSize: "0.85rem" }}>{user.name}</span>
-            <button onClick={() => { setMenuOpen(false); onLogout(); }} style={{
-              background: "transparent", border: "1px solid #555",
-              color: "#aaa", padding: "0.3rem 0.8rem", borderRadius: 4,
-              cursor: "pointer", fontSize: "0.8rem",
-            }}>
-              Sign Out
-            </button>
+        {/* Mobile dropdown */}
+        {menuOpen && (
+          <div className="navbar-links open" style={{
+            display: "flex", flexDirection: "column", width: "100%",
+            padding: "0.75rem 0", gap: "0.25rem",
+            borderTop: "1px solid rgba(255,255,255,0.1)", marginTop: "0.5rem",
+          }}>
+            {NAV_LINKS.map(l => (
+              <Link key={l.to} to={l.to} onClick={() => setMenuOpen(false)} style={{
+                color: "white", textDecoration: "none", fontSize: "0.9rem",
+                padding: "0.6rem 0.75rem", borderRadius: 6,
+                background: "rgba(255,255,255,0.06)",
+              }}>
+                {l.label}
+              </Link>
+            ))}
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", marginTop: "0.5rem", paddingTop: "0.5rem", display: "flex", gap: "0.5rem" }}>
+              <button onClick={() => { setMenuOpen(false); setShowProfile(true); }} style={{
+                flex: 1, background: "rgba(255,255,255,0.1)", border: "none",
+                color: "white", padding: "0.4rem 0.8rem", borderRadius: 4,
+                cursor: "pointer", fontSize: "0.85rem",
+              }}>
+                ✏️ Profile
+              </button>
+              <button onClick={() => { setMenuOpen(false); onLogout(); }} style={{
+                flex: 1, background: "transparent", border: "1px solid #555",
+                color: "#aaa", padding: "0.4rem 0.8rem", borderRadius: 4,
+                cursor: "pointer", fontSize: "0.85rem",
+              }}>
+                Sign Out
+              </button>
+            </div>
           </div>
-        </div>
+        )}
+      </nav>
+
+      {showProfile && (
+        <ProfileModal
+          user={user}
+          onClose={() => setShowProfile(false)}
+          onSave={updated => { onProfileUpdate(updated); setShowProfile(false); }}
+        />
       )}
-    </nav>
+    </>
   );
 }
 
 
 export default function App() {
-  const [user, setUser]   = useState<any>(null);
-  const [token, setToken] = useState('');
+  const [user,  setUser]  = useState<any>(null);
   const [ready, setReady] = useState(false);
 
+  // On mount: restore session from httpOnly cookie via /auth/me
   useEffect(() => {
-    const savedUser  = localStorage.getItem('rf_user');
-    const savedToken = localStorage.getItem('rf_token');
-    if (savedUser && savedToken) {
-      setUser(JSON.parse(savedUser));
-      setToken(savedToken);
-    }
-    setReady(true);
+    fetch(`${API_URL}/auth/me`, { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(u  => { if (u) setUser(u); })
+      .catch(() => {})
+      .finally(() => setReady(true));
   }, []);
 
-  function handleLogin(userData: any, userToken: string) {
-    setUser(userData);
-    setToken(userToken);
-  }
-
-  function handleLogout() {
+  async function handleLogout() {
+    await fetch(`${API_URL}/auth/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
     setUser(null);
-    setToken('');
-    localStorage.removeItem('rf_user');
-    localStorage.removeItem('rf_token');
   }
 
-  if (!ready) return null;
+  if (!ready) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#1C2B3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: '#C0533A', fontSize: '1.2rem', fontWeight: 700 }}>ResearchFlow…</div>
+      </div>
+    );
+  }
 
   if (!user) {
-    return <Login onLogin={handleLogin} />;
+    return <Login onLogin={setUser} />;
   }
 
   return (
     <BrowserRouter>
-      <NavBar user={user} onLogout={handleLogout} />
+      <NavBar user={user} onLogout={handleLogout} onProfileUpdate={setUser} />
       <Routes>
         <Route path="/"                 element={<Dashboard user={user} />} />
         <Route path="/student"          element={<StudentWizard />} />
