@@ -1,0 +1,447 @@
+/* ═══════════════════════════════════════════════════════════════════
+   ResearchFlow Student Wizard — Styles
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  --rf-terra:      #C0533A;
+  --rf-sage:       #5A8A6A;
+  --rf-navy:       #1C2B3A;
+  --rf-blue:       #2E86C1;
+  --rf-purple:     #7D3C98;
+  --rf-orange:     #E67E22;
+  --rf-bg:         #F4F7FA;
+  --rf-bg-tip:     #FFF9E6;
+  --rf-border:     #D5D8DC;
+  --rf-text:       #1C2B3A;
+  --rf-text-light: #666666;
+}
+
+/* ─── Step Indicator ─────────────────────────────────────────────── */
+
+.step-indicator {
+  user-select: none;
+}
+
+@keyframes step-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(46, 134, 193, 0.2); }
+  50%       { box-shadow: 0 0 0 8px rgba(46, 134, 193, 0.08); }
+}
+
+.step-current {
+  animation: step-pulse 1.5s ease-in-out infinite;
+}
+
+@media (max-width: 640px) {
+  .step-label {
+    display: none;
+  }
+  .step-indicator {
+    gap: 0 !important;
+  }
+}
+
+/* ─── Study Type Cards ───────────────────────────────────────────── */
+
+.study-type-card {
+  border: 2px solid var(--rf-border);
+  border-radius: 10px;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s, background 0.15s;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.study-type-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.study-type-card.selected {
+  border-color: var(--rf-blue);
+  background: #EBF5FB;
+  box-shadow: 0 0 0 3px rgba(46, 134, 193, 0.15);
+}
+
+/* ─── Recommendation Panel ───────────────────────────────────────── */
+
+.rec-panel {
+  background: var(--rf-bg-tip);
+  border-radius: 10px;
+  padding: 1.25rem;
+  border: 1px solid #F5CBA7;
+}
+
+.rec-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  color: #7D4E1A;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
+
+/* ─── Variable Role Table ────────────────────────────────────────── */
+
+.var-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.var-table th {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  background: #F4F7FA;
+  color: #555;
+  font-weight: 600;
+  font-size: 0.8rem;
+  border-bottom: 2px solid var(--rf-border);
+}
+
+.var-table td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid #EEF1F5;
+  vertical-align: middle;
+}
+
+.var-table tr:nth-child(even) td {
+  background: #FAFBFC;
+}
+
+.var-table tr:hover td {
+  background: #F0F4FA;
+}
+
+.role-select {
+  border: 1px solid var(--rf-border);
+  border-radius: 5px;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.82rem;
+  background: white;
+  color: var(--rf-text);
+  cursor: pointer;
+  outline: none;
+  width: 100%;
+}
+
+.role-select:focus {
+  border-color: var(--rf-blue);
+  box-shadow: 0 0 0 2px rgba(46, 134, 193, 0.15);
+}
+
+/* ─── Analysis Checklist Cards ───────────────────────────────────── */
+
+.analysis-card {
+  background: white;
+  border-radius: 10px;
+  border: 1px solid var(--rf-border);
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+  transition: box-shadow 0.15s;
+}
+
+.analysis-card:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.analysis-card.completed {
+  border-left: 4px solid var(--rf-sage);
+}
+
+.analysis-card.warning {
+  border-left: 4px solid #F0B429;
+}
+
+.analysis-card.not-started {
+  border-left: 4px solid var(--rf-border);
+}
+
+/* Status badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-success  { background: #E9F7EF; color: #1E8449; }
+.badge-warning  { background: #FEF9E7; color: #B7950B; }
+.badge-error    { background: #FDEDEC; color: #A93226; }
+.badge-default  { background: #F2F3F4; color: #626567; }
+
+/* ─── Results Cards ──────────────────────────────────────────────── */
+
+.result-card {
+  background: white;
+  border-radius: 10px;
+  border: 1px solid var(--rf-border);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.result-card-header {
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--rf-border);
+  background: #FAFBFC;
+}
+
+.result-card-body {
+  padding: 1rem 1.25rem;
+}
+
+/* ─── Report Preview ─────────────────────────────────────────────── */
+
+.report-preview {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #222;
+}
+
+.report-section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--rf-navy);
+  border-bottom: 2px solid var(--rf-border);
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.report-editable {
+  width: 100%;
+  min-height: 100px;
+  border: 1px dashed #ccc;
+  border-radius: 5px;
+  padding: 0.75rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #333;
+  background: #FEFEFE;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.report-editable:focus {
+  border-color: var(--rf-blue);
+}
+
+/* ─── Quality Checklist ──────────────────────────────────────────── */
+
+.quality-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0;
+  font-size: 0.875rem;
+  border-bottom: 1px solid #F2F3F4;
+}
+
+.quality-item:last-child {
+  border-bottom: none;
+}
+
+/* ─── Bottom Action Bar ──────────────────────────────────────────── */
+
+.action-bar {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  border-top: 1px solid var(--rf-border);
+  padding: 0.875rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+  z-index: 10;
+}
+
+.btn-primary {
+  padding: 0.65rem 1.5rem;
+  background: var(--rf-blue);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-primary:hover:not(:disabled) { opacity: 0.88; }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-secondary {
+  padding: 0.65rem 1.25rem;
+  background: white;
+  color: var(--rf-text);
+  border: 1px solid var(--rf-border);
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-secondary:hover { background: #F4F7FA; }
+
+/* ─── Form Elements ──────────────────────────────────────────────── */
+
+.rf-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--rf-text);
+  margin-bottom: 0.4rem;
+}
+
+.rf-input {
+  width: 100%;
+  padding: 0.6rem 0.875rem;
+  border: 1.5px solid var(--rf-border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--rf-text);
+  background: white;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.rf-input:focus {
+  border-color: var(--rf-blue);
+  box-shadow: 0 0 0 3px rgba(46, 134, 193, 0.12);
+}
+
+.rf-help-text {
+  font-size: 0.78rem;
+  color: var(--rf-text-light);
+  margin-top: 0.3rem;
+}
+
+/* ─── Chip / Tag Input ───────────────────────────────────────────── */
+
+.chip-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.4rem;
+  border: 1.5px solid var(--rf-border);
+  border-radius: 8px;
+  background: white;
+  min-height: 42px;
+}
+
+.chip-container:focus-within {
+  border-color: var(--rf-blue);
+  box-shadow: 0 0 0 3px rgba(46, 134, 193, 0.12);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: #EBF5FB;
+  color: #1A6EA6;
+  border-radius: 99px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.chip-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #1A6EA6;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* ─── Upload Zone ────────────────────────────────────────────────── */
+
+.upload-zone {
+  border: 2px dashed var(--rf-border);
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  background: white;
+}
+
+.upload-zone:hover,
+.upload-zone.dragging {
+  border-color: var(--rf-blue);
+  background: #EBF5FB;
+}
+
+/* ─── Progress Bar ───────────────────────────────────────────────── */
+
+@keyframes progress-bar {
+  0%   { width: 0%; }
+  100% { width: 100%; }
+}
+
+.progress-bar-track {
+  background: #E5E9EF;
+  border-radius: 99px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--rf-blue);
+  border-radius: 99px;
+  transition: width 0.3s ease;
+}
+
+/* ─── Responsive Breakpoints ─────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .two-col-layout {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .study-type-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .action-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .action-bar .btn-primary,
+  .action-bar .btn-secondary {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .study-type-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .study-type-card {
+    padding: 0.875rem;
+  }
+}

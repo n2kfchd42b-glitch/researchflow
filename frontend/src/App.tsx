@@ -1,142 +1,71 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ProjectProvider } from './context/ProjectContext';
-import ProjectSelector from './components/ProjectSelector';
 import './mobile.css';
-import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import Landing from './pages/Landing';
-import StudentWizard from './pages/StudentWizard';
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+import Login from './pages/Login';
+
+// ─── Product Landing ──────────────────────────────────────────────────────────
+import ProductLanding from './pages/ProductLanding';
+
+// ─── Layouts ──────────────────────────────────────────────────────────────────
+import StudentLayout from './layouts/StudentLayout';
+import NGOLayout from './layouts/NGOLayout';
+import JournalLayout from './layouts/JournalLayout';
+
+// ─── Student Wizard Pages (5-step flow) ───────────────────────────────────────
+import StudySetupPage from './products/student/pages/StudySetupPage';
+import DataUploadPage from './products/student/pages/DataUploadPage';
+import GuidedAnalysisPage from './products/student/pages/GuidedAnalysisPage';
+import ResultsReviewPage from './products/student/pages/ResultsReviewPage';
+import ReportGenerationPage from './products/student/pages/ReportGenerationPage';
+
+// ─── Existing page components (all preserved) ─────────────────────────────────
 import NGOPipeline from './pages/NGOPipeline';
 import JournalVerification from './pages/JournalVerification';
+import JournalAssistant from './pages/JournalAssistant';
+import RiskOfBias from './pages/RiskOfBias';
+import AuditTrail from './pages/AuditTrail';
 import MethodologyMemory from './pages/MethodologyMemory';
-import CohortBuilder from './pages/CohortBuilder';
+import Collaboration from './pages/Collaboration';
+import AIAssistant from './pages/AIAssistant';
+
+// Shared analysis tools (used in both Student and NGO)
+import Table1Generator from './pages/Table1Generator';
+import DescriptiveStats from './pages/DescriptiveStats';
 import SurvivalAnalysis from './pages/SurvivalAnalysis';
 import SampleSize from './pages/SampleSize';
-import AuditTrail from './pages/AuditTrail';
-import DataCleaningStudio from './pages/DataCleaningStudio';
-import GuidedAnalysis from './pages/GuidedAnalysis';
-import JournalAssistant from './pages/JournalAssistant';
-import Login from './pages/Login';
-import InstrumentRecognition from './pages/InstrumentRecognition';
-import PropensityMatching from './pages/PropensityMatching';
-import DescriptiveStats from './pages/DescriptiveStats';
-import VisualisationStudio from './pages/VisualisationStudio';
-import Collaboration from './pages/Collaboration';
-import ForestPlot from './pages/ForestPlot';
-import SampleDatasets from './pages/SampleDatasets';
-import SyntaxExporter from './pages/SyntaxExporter';
+import CodebookGenerator from './pages/CodebookGenerator';
+import LiteratureReview from './pages/LiteratureReview';
 import PRISMADiagram from './pages/PRISMADiagram';
-import StudyDashboard from './pages/StudyDashboard';
-import RiskOfBias from './pages/RiskOfBias';
-import DataDictionary from './pages/DataDictionary';
 import SubgroupAnalysis from './pages/SubgroupAnalysis';
 import SensitivityAnalysis from './pages/SensitivityAnalysis';
-import BudgetTracker from './pages/BudgetTracker';
-import Table1Generator from './pages/Table1Generator';
-import AIAssistant from './pages/AIAssistant';
-import ProgressTracker from './pages/ProgressTracker';
-import LiteratureReview from './pages/LiteratureReview';
-import CodebookGenerator from './pages/CodebookGenerator';
+import ForestPlot from './pages/ForestPlot';
+import VisualisationStudio from './pages/VisualisationStudio';
+import SampleDatasets from './pages/SampleDatasets';
+import PropensityMatching from './pages/PropensityMatching';
+
+// NGO-specific pages
+import StudyDashboard from './pages/StudyDashboard';
+import InstrumentRecognition from './pages/InstrumentRecognition';
+import DataCleaningStudio from './pages/DataCleaningStudio';
 import DataVersioning from './pages/DataVersioning';
-import Dashboard from './pages/Dashboard';
-import InterruptedTimeSeries from "./pages/analytics/InterruptedTimeSeries";
-import DifferenceInDifferences from "./pages/analytics/DifferenceInDifferences";
-import MixedEffects from "./pages/analytics/MixedEffects";
-import SpatialAnalysis from "./pages/analytics/SpatialAnalysis";
-import NetworkMetaAnalysis from "./pages/analytics/NetworkMetaAnalysis";
+import BudgetTracker from './pages/BudgetTracker';
+import ProgressTracker from './pages/ProgressTracker';
+import DataDictionary from './pages/DataDictionary';
+import CohortBuilder from './pages/CohortBuilder';
+import SyntaxExporter from './pages/SyntaxExporter';
 
-function NavBar({ user, onLogout }: { user: any, onLogout: () => void }) {
-  const [menuOpen, setMenuOpen] = useState(false);
+// Advanced analytics
+import InterruptedTimeSeries from './pages/analytics/InterruptedTimeSeries';
+import DifferenceInDifferences from './pages/analytics/DifferenceInDifferences';
+import MixedEffects from './pages/analytics/MixedEffects';
+import SpatialAnalysis from './pages/analytics/SpatialAnalysis';
+import NetworkMetaAnalysis from './pages/analytics/NetworkMetaAnalysis';
 
-  const links = [
-    { to: "/student",           label: "Student" },
-    { to: "/ngo",               label: "NGO" },
-    { to: "/journal",           label: "Journal" },
-    { to: "/methodology",       label: "Methodology" },
-    { to: "/cohort",            label: "Cohort" },
-    { to: "/survival",          label: "Survival" },
-    { to: "/samplesize",        label: "Sample Size" },
-    { to: "/audit",             label: "Audit" },
-    { to: "/clean",             label: "Clean Data" },
-    { to: "/guided",            label: "Guided" },
-    { to: "/journal-assistant", label: "J. Assistant" },
-    { to: "/instrument",        label: "Instruments" },
-    { to: "/psm",               label: "PSM" },
-    { to: "/descriptive",       label: "Descriptive" },
-    { to: "/visualise",         label: "Visualise" },
-    { to: "/collaborate",       label: "Collaborate" },
-    { to: "/forest-plot",       label: "Forest Plot" },
-    { to: "/samples",           label: "Samples" },
-    { to: "/ai-assistant",      label: "AI Assistant" },
-    { to: "/progress",          label: "Progress" },
-    { to: "/literature",        label: "Literature" },
-    { to: "/codebook",          label: "Codebook" },
-    { to: "/versioning",        label: "Versioning" },
-    { to: "/syntax",            label: "Syntax" },
-    { to: "/prisma",            label: "PRISMA" },
-    { to: "/studies",           label: "Studies" },
-    { to: "/rob",               label: "Risk of Bias" },
-    { to: "/dictionary",        label: "Dictionary" },
-    { to: "/subgroup",          label: "Subgroup" },
-    { to: "/sensitivity",       label: "Sensitivity" },
-    { to: "/budget",            label: "Budget" },
-    { to: "/table1",            label: "Table 1" },
-  ];
 
-  return (
-    <nav className="navbar" style={{
-      background: "#1C2B3A", padding: "0.5rem 1.5rem",
-      display: "flex", alignItems: "center",
-      justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem"
-    }}>
-      <Link to="/" style={{ color: "#C0533A", fontWeight: 700, fontSize: "1.2rem", textDecoration: "none" }}>
-        ResearchFlow
-      </Link>
-
-      {/* Hamburger button — hidden on desktop, visible on mobile via mobile.css */}
-      <button
-        className="hamburger"
-        onClick={() => setMenuOpen(o => !o)}
-        aria-label={menuOpen ? "Close menu" : "Open menu"}
-        style={{
-          display: "none",
-          background: "transparent",
-          border: "1px solid rgba(255,255,255,0.3)",
-          color: "white",
-          padding: "0.35rem 0.6rem",
-          borderRadius: 4,
-          cursor: "pointer",
-          fontSize: "1.2rem",
-          lineHeight: 1,
-        }}
-      >
-        {menuOpen ? "✕" : "☰"}
-      </button>
-
-      {/* Nav links — shown inline on desktop, collapsed on mobile */}
-      <div className={`navbar-links${menuOpen ? " open" : ""}`} style={{
-        display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap"
-      }}>
-        {links.map(l => (
-          <Link key={l.to} to={l.to} onClick={() => setMenuOpen(false)} style={{
-            color: "white", textDecoration: "none", fontSize: "0.82rem",
-            background: "rgba(255,255,255,0.12)", padding: "0.3rem 0.65rem", borderRadius: 4
-          }}>
-            {l.label}
-          </Link>
-        ))}
-        <span style={{ color: "#aaa", fontSize: "0.8rem", marginLeft: "0.5rem" }}>{user.name}</span>
-        <button onClick={onLogout} style={{
-          background: "transparent", border: "1px solid #555",
-          color: "#aaa", padding: "0.3rem 0.8rem", borderRadius: 4,
-          cursor: "pointer", fontSize: "0.8rem"
-        }}>
-          Sign Out
-        </button>
-      </div>
-    </nav>
-  );
-}
-
+// ─── App ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
   const [user, setUser]   = useState<any>(null);
@@ -156,6 +85,8 @@ export default function App() {
   function handleLogin(userData: any, userToken: string) {
     setUser(userData);
     setToken(userToken);
+    localStorage.setItem('rf_user', JSON.stringify(userData));
+    localStorage.setItem('rf_token', userToken);
   }
 
   function handleLogout() {
@@ -173,42 +104,77 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <NavBar user={user} onLogout={handleLogout} />
-      <Routes>
-        <Route path="/"        element={<Dashboard user={user} />} />
-        <Route path="/student" element={<StudentWizard />} />
-        <Route path="/ngo"     element={<NGOPipeline />} />
-        <Route path="/journal" element={<JournalVerification />} />
-        <Route path="/methodology" element={<MethodologyMemory user={user} />} />
-        <Route path="/cohort" element={<CohortBuilder />} />
-        <Route path="/survival" element={<SurvivalAnalysis />} />
-        <Route path="/samplesize" element={<SampleSize />} />
-        <Route path="/ai-assistant" element={<AIAssistant />} />
-        <Route path="/progress" element={<ProgressTracker />} />
-        <Route path="/literature" element={<LiteratureReview />} />
-        <Route path="/codebook" element={<CodebookGenerator />} />
-        <Route path="/versioning" element={<DataVersioning />} />
-        <Route path="/syntax" element={<SyntaxExporter />} />
-        <Route path="/prisma" element={<PRISMADiagram />} />
-        <Route path="/studies" element={<StudyDashboard />} />
-        <Route path="/rob" element={<RiskOfBias />} />
-        <Route path="/dictionary" element={<DataDictionary />} />
-        <Route path="/subgroup" element={<SubgroupAnalysis />} />
-        <Route path="/sensitivity" element={<SensitivityAnalysis />} />
-        <Route path="/budget" element={<BudgetTracker />} />
-        <Route path="/table1" element={<Table1Generator />} />
-        <Route path="/samples" element={<SampleDatasets />} />
-        <Route path="/audit" element={<AuditTrail user={user} />} />
-        <Route path="/clean" element={<DataCleaningStudio />} />
-        <Route path="/guided" element={<GuidedAnalysis />} />
-        <Route path="/journal-assistant" element={<JournalAssistant />} />
-        <Route path="/instrument" element={<InstrumentRecognition />} />
-        <Route path="/psm" element={<PropensityMatching />} />
-        <Route path="/descriptive" element={<DescriptiveStats />} />
-        <Route path="/visualise" element={<VisualisationStudio />} />
-        <Route path="/collaborate" element={<Collaboration user={user} />} />
-        <Route path="/forest-plot" element={<ForestPlot />} />
-      </Routes>
+      <ProjectProvider>
+        <Routes>
+          {/* ── Product Landing ── */}
+          <Route path="/" element={<ProductLanding />} />
+
+          {/* ── Student Wizard ── */}
+          <Route path="/student" element={<StudentLayout user={user} onLogout={handleLogout} />}>
+            <Route index element={<StudySetupPage />} />
+            <Route path="setup"       element={<StudySetupPage />} />
+            <Route path="upload"      element={<DataUploadPage />} />
+            <Route path="analysis"    element={<GuidedAnalysisPage />} />
+            <Route path="results"     element={<ResultsReviewPage />} />
+            <Route path="report"      element={<ReportGenerationPage />} />
+            {/* Existing tools accessible within Student Wizard */}
+            <Route path="table1"      element={<Table1Generator />} />
+            <Route path="descriptive" element={<DescriptiveStats />} />
+            <Route path="survival"    element={<SurvivalAnalysis />} />
+            <Route path="samplesize"  element={<SampleSize />} />
+            <Route path="codebook"    element={<CodebookGenerator />} />
+            <Route path="literature"  element={<LiteratureReview />} />
+            <Route path="prisma"      element={<PRISMADiagram />} />
+            <Route path="subgroup"    element={<SubgroupAnalysis />} />
+            <Route path="sensitivity" element={<SensitivityAnalysis />} />
+            <Route path="forest-plot" element={<ForestPlot />} />
+            <Route path="visualise"   element={<VisualisationStudio />} />
+            <Route path="samples"     element={<SampleDatasets />} />
+          </Route>
+
+          {/* ── NGO Platform ── */}
+          <Route path="/ngo" element={<NGOLayout user={user} onLogout={handleLogout} />}>
+            <Route index                     element={<NGOPipeline />} />
+            <Route path="projects"           element={<StudyDashboard />} />
+            <Route path="forms"              element={<InstrumentRecognition />} />
+            <Route path="clean"              element={<DataCleaningStudio />} />
+            <Route path="versioning"         element={<DataVersioning />} />
+            <Route path="budget"             element={<BudgetTracker />} />
+            <Route path="ethics"             element={<ProgressTracker />} />
+            <Route path="analysis/survival"  element={<SurvivalAnalysis />} />
+            <Route path="analysis/psm"       element={<PropensityMatching />} />
+            <Route path="analysis/subgroup"  element={<SubgroupAnalysis />} />
+            <Route path="analysis/sensitivity" element={<SensitivityAnalysis />} />
+            <Route path="analysis/meta"      element={<ForestPlot />} />
+            <Route path="analysis/forest-plot" element={<ForestPlot />} />
+            <Route path="analysis/its"       element={<InterruptedTimeSeries />} />
+            <Route path="analysis/did"       element={<DifferenceInDifferences />} />
+            <Route path="analysis/mixed"     element={<MixedEffects />} />
+            <Route path="analysis/spatial"   element={<SpatialAnalysis />} />
+            <Route path="analysis/network-meta" element={<NetworkMetaAnalysis />} />
+            <Route path="prisma"             element={<PRISMADiagram />} />
+            <Route path="reports"            element={<SyntaxExporter />} />
+            <Route path="studies"            element={<StudyDashboard />} />
+            <Route path="dictionary"         element={<DataDictionary />} />
+            <Route path="cohort"             element={<CohortBuilder />} />
+          </Route>
+
+          {/* ── Journal Component ── */}
+          <Route path="/journal" element={<JournalLayout user={user} onLogout={handleLogout} />}>
+            <Route index               element={<JournalVerification />} />
+            <Route path="submissions"  element={<JournalAssistant />} />
+            <Route path="verify"       element={<JournalVerification />} />
+            <Route path="rob"          element={<RiskOfBias />} />
+            <Route path="audit"        element={<AuditTrail user={user} />} />
+            <Route path="reports"      element={<JournalAssistant />} />
+          </Route>
+
+          {/* ── Shared utility routes ── */}
+          <Route path="/ai-assistant"  element={<AIAssistant />} />
+          <Route path="/collaborate"   element={<Collaboration user={user} />} />
+          <Route path="/methodology"   element={<MethodologyMemory user={user} />} />
+        </Routes>
+      </ProjectProvider>
     </BrowserRouter>
   );
 }
