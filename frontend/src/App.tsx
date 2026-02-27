@@ -23,13 +23,17 @@ import ReportGenerationPage from './products/student/pages/ReportGenerationPage'
 
 // ─── Existing page components (all preserved) ─────────────────────────────────
 import NGOPipeline from './pages/NGOPipeline';
-import JournalVerification from './pages/JournalVerification';
-import JournalAssistant from './pages/JournalAssistant';
-import RiskOfBias from './pages/RiskOfBias';
-import AuditTrail from './pages/AuditTrail';
 import MethodologyMemory from './pages/MethodologyMemory';
 import Collaboration from './pages/Collaboration';
 import AIAssistant from './pages/AIAssistant';
+
+// ─── Journal Component Pages ──────────────────────────────────────────────────
+import { JournalProvider } from './products/journal/context/JournalContext';
+import JournalDashboardPage from './products/journal/pages/JournalDashboardPage';
+import SubmissionIntakePage from './products/journal/pages/SubmissionIntakePage';
+import SubmissionReviewPage from './products/journal/pages/SubmissionReviewPage';
+import BatchVerificationPage from './products/journal/pages/BatchVerificationPage';
+import JournalSettingsPage from './products/journal/pages/JournalSettingsPage';
 
 // Shared analysis tools (used in both Student and NGO)
 import Table1Generator from './pages/Table1Generator';
@@ -177,13 +181,12 @@ export default function App() {
           </Route>
 
           {/* ── Journal Component ── */}
-          <Route path="/journal" element={<JournalLayout user={user} onLogout={handleLogout} />}>
-            <Route index               element={<JournalVerification />} />
-            <Route path="submissions"  element={<JournalAssistant />} />
-            <Route path="verify"       element={<JournalVerification />} />
-            <Route path="rob"          element={<RiskOfBias />} />
-            <Route path="audit"        element={<AuditTrail user={user} />} />
-            <Route path="reports"      element={<JournalAssistant />} />
+          <Route path="/journal" element={<JournalProvider><JournalLayout user={user} onLogout={handleLogout} /></JournalProvider>}>
+            <Route index                        element={<JournalDashboardPage />} />
+            <Route path="intake"               element={<SubmissionIntakePage />} />
+            <Route path="submission/:id"       element={<SubmissionReviewPage />} />
+            <Route path="pipeline"             element={<BatchVerificationPage />} />
+            <Route path="settings"             element={<JournalSettingsPage />} />
           </Route>
 
           {/* ── Shared utility routes ── */}
