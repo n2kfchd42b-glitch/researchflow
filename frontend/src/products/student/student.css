@@ -445,3 +445,237 @@
     padding: 0.875rem;
   }
 }
+
+/* ─── Learning Tips ──────────────────────────────────────────────── */
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.learning-tip {
+  animation: slideDown 0.25s ease;
+}
+
+/* ─── Spinner ────────────────────────────────────────────────────── */
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.rf-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #E5E9EF;
+  border-top-color: var(--rf-blue);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ─── Research Structure Panel ───────────────────────────────────── */
+
+.research-structure-panel {
+  background: #F0F4F8;
+  border-radius: 10px;
+  padding: 1.25rem;
+  border: 1px solid #D5E3F0;
+  border-left: 4px solid var(--rf-blue);
+}
+
+/* ─── Data Intelligence Panel ────────────────────────────────────── */
+
+.data-intelligence-card {
+  background: white;
+  border: 1px solid #E5E9EF;
+  border-radius: 8px;
+  padding: 0.875rem;
+  font-size: 0.82rem;
+  transition: box-shadow 0.15s;
+}
+
+.data-intelligence-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* ─── Analysis Pipeline Visual ───────────────────────────────────── */
+
+.pipeline-box {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  text-align: center;
+  min-width: 120px;
+  flex: 0 0 auto;
+}
+
+/* ─── Role Pill Tags ─────────────────────────────────────────────── */
+
+.role-pill {
+  padding: 1px 8px;
+  border-radius: 99px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.role-pill-outcome    { background: #EBF5FB; color: #2E86C1; border: 1px solid #AED6F140; }
+.role-pill-exposure   { background: #FDEDEC; color: #C0533A; border: 1px solid #F1948A40; }
+.role-pill-covariate  { background: #E9F7EF; color: #5A8A6A; border: 1px solid #A9DFBF40; }
+.role-pill-id         { background: #F2F3F4; color: #666;    border: 1px solid #D5D8DC40; }
+.role-pill-time       { background: #F5EEF8; color: #7D3C98; border: 1px solid #C39BD340; }
+.role-pill-unassigned { background: transparent; color: #bbb; border: 1px dashed #D5D8DC; }
+
+/* ─── Interpretation Card Layers ─────────────────────────────────── */
+
+.interp-layer-plain    { background: #E9F7EF; border: 1px solid #A9DFBF; border-radius: 8px; padding: 0.875rem 1rem; }
+.interp-layer-stats    { background: #EBF5FB; border: 1px solid #AED6F1; border-radius: 8px; overflow: hidden; }
+.interp-layer-academic { background: #F5EEF8; border: 1px solid #C39BD3; border-radius: 8px; overflow: hidden; }
+.interp-warnings       { background: #FEF9E7; border: 1px solid #F9E79F; border-radius: 8px; padding: 0.75rem 1rem; }
+
+/* ─── Assumption Traffic Lights ──────────────────────────────────── */
+
+.assumption-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ─── Step Success Banner ────────────────────────────────────────── */
+
+.step-success-banner {
+  border-radius: 10px;
+  padding: 0.875rem 1.25rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* ─── Empty State ────────────────────────────────────────────────── */
+
+.wizard-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  background: white;
+  border-radius: 12px;
+  border: 1px dashed #D5D8DC;
+}
+
+/* ─── Academic Table ─────────────────────────────────────────────── */
+
+.academic-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Georgia, serif;
+  font-size: 0.85rem;
+}
+
+.academic-table th {
+  border-bottom: 2px solid #1C2B3A;
+  padding: 0.5rem 0.75rem;
+  text-align: right;
+  font-weight: 700;
+  color: #1C2B3A;
+}
+
+.academic-table th:first-child {
+  text-align: left;
+}
+
+.academic-table td {
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid #EEF1F5;
+  text-align: right;
+  color: #333;
+}
+
+.academic-table td:first-child {
+  text-align: left;
+}
+
+.academic-table tr:nth-child(even) td {
+  background: #FAFAFA;
+}
+
+/* ─── Tooltip Popover ────────────────────────────────────────────── */
+
+.tooltip-popover {
+  position: absolute;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  color: var(--rf-navy);
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  width: 300px;
+  line-height: 1.5;
+  z-index: 200;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  border: 1px solid #E5E9EF;
+}
+
+/* ─── Research Question Builder ──────────────────────────────────── */
+
+.rq-builder {
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #E5E9EF;
+  padding: 1.25rem;
+  margin-top: 1rem;
+}
+
+.rq-generated {
+  background: #F0F4F8;
+  border-radius: 8px;
+  padding: 0.875rem;
+  border: 1px solid #D5E3F0;
+  margin-top: 1rem;
+}
+
+/* ─── Mobile Responsive Additions ───────────────────────────────── */
+
+@media (max-width: 768px) {
+  .pipeline-flow {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+
+  .pipeline-arrow {
+    transform: rotate(90deg);
+  }
+
+  .rq-builder-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .intelligence-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .learning-toggle-label {
+    display: none;
+  }
+}
+
+@media (max-width: 375px) {
+  .rec-panel {
+    padding: 0.875rem;
+  }
+
+  .report-section-title {
+    font-size: 1rem;
+  }
+
+  .action-bar {
+    padding: 0.75rem 1rem;
+  }
+}
