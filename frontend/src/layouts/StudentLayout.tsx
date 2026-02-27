@@ -3,6 +3,7 @@ import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom';
 import { GraduationCap, Menu, X, CheckCircle, Circle, Lock } from 'lucide-react';
 import ProjectSelector from '../components/ProjectSelector';
 import StepIndicator from '../products/student/components/StepIndicator';
+import LearningToggle from '../products/student/components/LearningToggle';
 import { StudentWizardProvider, useStudentWizard } from '../products/student/context/StudentWizardContext';
 
 const WORKFLOW_STEPS = [
@@ -188,6 +189,7 @@ function StudentLayoutInner({ user, onLogout }: { user: any; onLogout: () => voi
           <div style={{ flex: 1 }}>
             <ProjectSelector />
           </div>
+          <LearningToggle />
           <span style={{ fontSize: '0.85rem', color: '#666' }}>{user?.name}</span>
           <button
             onClick={onLogout}
