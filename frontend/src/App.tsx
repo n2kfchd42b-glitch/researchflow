@@ -51,11 +51,27 @@ import StudyDashboard from './pages/StudyDashboard';
 import InstrumentRecognition from './pages/InstrumentRecognition';
 import DataCleaningStudio from './pages/DataCleaningStudio';
 import DataVersioning from './pages/DataVersioning';
+<<<<<<< HEAD
 import BudgetTracker from './pages/BudgetTracker';
 import ProgressTracker from './pages/ProgressTracker';
 import DataDictionary from './pages/DataDictionary';
 import CohortBuilder from './pages/CohortBuilder';
 import SyntaxExporter from './pages/SyntaxExporter';
+=======
+import Dashboard from './pages/Dashboard';
+import InterruptedTimeSeries from "./pages/analytics/InterruptedTimeSeries";
+import DifferenceInDifferences from "./pages/analytics/DifferenceInDifferences";
+import MixedEffects from "./pages/analytics/MixedEffects";
+import SpatialAnalysis from "./pages/analytics/SpatialAnalysis";
+import NetworkMetaAnalysis from "./pages/analytics/NetworkMetaAnalysis";
+import { NGOPlatformProvider } from './products/ngo/context/NGOPlatformContext';
+import NGOLayout from './layouts/NGOLayout';
+import NGODashboardPage from './products/ngo/pages/NGODashboardPage';
+import IndicatorBuilderPage from './products/ngo/pages/IndicatorBuilderPage';
+import ReportGeneratorPage from './products/ngo/pages/ReportGeneratorPage';
+import ProjectWorkspacePage from './products/ngo/pages/ProjectWorkspacePage';
+import DataManagementPage from './products/ngo/pages/DataManagementPage';
+>>>>>>> ca8b493 (NGO Platform: full workflow, UI, context, and polish pass complete)
 
 // Advanced analytics
 import InterruptedTimeSeries from './pages/analytics/InterruptedTimeSeries';
@@ -103,6 +119,7 @@ export default function App() {
   }
 
   return (
+<<<<<<< HEAD
     <BrowserRouter>
       <ProjectProvider>
         <Routes>
@@ -176,5 +193,61 @@ export default function App() {
         </Routes>
       </ProjectProvider>
     </BrowserRouter>
+=======
+    <ProjectProvider>
+      <NGOPlatformProvider>
+        <BrowserRouter>
+          <NavBar user={user} onLogout={handleLogout} />
+          <Routes>
+            <Route path="/"        element={<Dashboard user={user} />} />
+            <Route path="/student" element={<StudentWizard />} />
+            <Route path="/ngo/*" element={<NGOLayout />}>
+              <Route path="dashboard" element={<NGODashboardPage />} />
+              <Route path="indicators" element={<IndicatorBuilderPage />} />
+              <Route path="reports/generate" element={<ReportGeneratorPage />} />
+              <Route path="projects/:projectId" element={<ProjectWorkspacePage projectId={":projectId"} />} />
+              <Route path="data/:datasetId" element={<DataManagementPage datasetId={":datasetId"} />} />
+            </Route>
+            <Route path="/ngo" element={<NGOPipeline />} />
+            <Route path="/journal" element={<JournalVerification />} />
+            <Route path="/methodology" element={<MethodologyMemory user={user} />} />
+            <Route path="/cohort" element={<CohortBuilder />} />
+            <Route path="/survival" element={<SurvivalAnalysis />} />
+            <Route path="/samplesize" element={<SampleSize />} />
+            <Route path="/ai-assistant" element={<AIAssistant />} />
+            <Route path="/progress" element={<ProgressTracker />} />
+            <Route path="/literature" element={<LiteratureReview />} />
+            <Route path="/codebook" element={<CodebookGenerator />} />
+            <Route path="/versioning" element={<DataVersioning />} />
+            <Route path="/syntax" element={<SyntaxExporter />} />
+            <Route path="/prisma" element={<PRISMADiagram />} />
+            <Route path="/studies" element={<StudyDashboard />} />
+            <Route path="/rob" element={<RiskOfBias />} />
+            <Route path="/dictionary" element={<DataDictionary />} />
+            <Route path="/subgroup" element={<SubgroupAnalysis />} />
+            <Route path="/sensitivity" element={<SensitivityAnalysis />} />
+            <Route path="/sensitivity" element={<SensitivityAnalysis />} />
+            <Route path="/table1" element={<Table1Generator />} />
+            <Route path="/audit" element={<AuditTrail user={user} />} />
+            <Route path="/clean" element={<DataCleaningStudio />} />
+            <Route path="/guided" element={<GuidedAnalysis />} />
+            <Route path="/journal-assistant" element={<JournalAssistant />} />
+            <Route path="/instrument" element={<InstrumentRecognition />} />
+            <Route path="/psm" element={<PropensityMatching />} />
+            <Route path="/descriptive" element={<DescriptiveStats />} />
+            <Route path="/visualise" element={<VisualisationStudio />} />
+            <Route path="/collaborate" element={<Collaboration user={user} />} />
+            <Route path="/forest-plot" element={<ForestPlot />} />
+            <Route path="/samples" element={<SampleDatasets />} />
+            <Route path="/its" element={<InterruptedTimeSeries />} />
+            <Route path="/did" element={<DifferenceInDifferences />} />
+            <Route path="/mixed-effects" element={<MixedEffects />} />
+            <Route path="/spatial" element={<SpatialAnalysis />} />
+            <Route path="/network-meta" element={<NetworkMetaAnalysis />} />
+          </Routes>
+        </BrowserRouter>
+      </NGOPlatformProvider>
+    </ProjectProvider>
+>>>>>>> ca8b493 (NGO Platform: full workflow, UI, context, and polish pass complete)
   );
 }

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState } from 'react';
 import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom';
 import { Building2, Menu, X, ChevronDown, ChevronRight } from 'lucide-react';
@@ -223,3 +224,62 @@ export default function NGOLayout({ user, onLogout }: { user: any; onLogout: () 
     </div>
   );
 }
+=======
+import React from 'react';
+import { Outlet, Link, useLocation } from 'react-router-dom';
+import ProgramSelector from '../products/ngo/components/ProgramSelector';
+import RoleSwitcher from '../products/ngo/components/RoleSwitcher';
+import { useNGOPlatform } from '../products/ngo/context/NGOPlatformContext';
+
+const navItems = [
+  { to: '/ngo/dashboard', label: 'Dashboard', icon: '🏠', roles: ['program-manager', 'data-analyst', 'field-coordinator'] },
+  { to: '/ngo/projects', label: 'Projects', icon: '📁', roles: ['program-manager', 'data-analyst', 'field-coordinator'] },
+  { to: '/ngo/indicators', label: 'Indicators', icon: '🎯', roles: ['program-manager', 'data-analyst'] },
+  { to: '/ngo/budget', label: 'Budget', icon: '💸', roles: ['program-manager'] },
+  { to: '/ngo/ethics', label: 'Ethics', icon: '📝', roles: ['program-manager'] },
+  { to: '/ngo/reports/generate', label: 'Report Generator', icon: '📄', roles: ['program-manager', 'data-analyst'] },
+  { to: '/ngo/monitoring', label: 'Monitoring', icon: '📊', roles: ['program-manager', 'field-coordinator'] },
+  { to: '/ngo/data-clean', label: 'Data Cleaning', icon: '🧹', roles: ['data-analyst'] },
+  { to: '/ngo/versioning', label: 'Data Versioning', icon: '🕒', roles: ['data-analyst'] },
+  { to: '/ngo/analysis', label: 'Analysis Suite', icon: '🧮', roles: ['data-analyst'] },
+  { to: '/ngo/forms', label: 'Forms', icon: '📝', roles: ['field-coordinator'] },
+  { to: '/ngo/upload', label: 'Data Upload', icon: '⬆️', roles: ['field-coordinator'] },
+];
+
+const NGOLayout: React.FC = () => {
+  const { state } = useNGOPlatform();
+  const location = useLocation();
+  const [showAll, setShowAll] = React.useState(false);
+  const visibleNav = showAll ? navItems : navItems.filter(item => item.roles.includes(state.userRole));
+
+  return (
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#F8F9F9' }}>
+      <aside style={{ width: 260, background: '#1C2B3A', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '100vh' }}>
+        <div>
+          <div style={{ padding: 16, borderBottom: '1px solid #2E86C1', background: '#fff' }}>
+            <ProgramSelector />
+          </div>
+          <nav style={{ marginTop: 16 }}>
+            {visibleNav.map(item => (
+              <Link key={item.to} to={item.to} style={{ display: 'flex', alignItems: 'center', padding: '10px 24px', color: location.pathname === item.to ? '#C0533A' : '#fff', textDecoration: 'none', background: location.pathname === item.to ? '#F8F9F9' : 'transparent', borderRadius: 8, margin: '4px 8px' }}>
+                <span style={{ marginRight: 12 }}>{item.icon}</span> {item.label}
+              </Link>
+            ))}
+          </nav>
+          <div style={{ margin: 16 }}>
+            <label style={{ color: '#fff', fontSize: 13 }}>
+              <input type="checkbox" checked={showAll} onChange={e => setShowAll(e.target.checked)} style={{ marginRight: 6 }} />Show All
+            </label>
+          </div>
+        </div>
+        <RoleSwitcher />
+      </aside>
+      <main style={{ flex: 1, minHeight: '100vh', background: '#F8F9F9', padding: 0 }}>
+        <Outlet />
+      </main>
+    </div>
+  );
+};
+
+export default NGOLayout;
+>>>>>>> ca8b493 (NGO Platform: full workflow, UI, context, and polish pass complete)
