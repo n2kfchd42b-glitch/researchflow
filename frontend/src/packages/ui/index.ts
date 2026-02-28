@@ -15,6 +15,7 @@ export { default as MetricCard }       from './MetricCard';
 export { default as ReportExporter }   from './ReportExporter';
 export { default as StepIndicator }    from './StepIndicator';
 export { default as ValidationWarning } from './ValidationWarning';
+export { default as AIOutputPanel }    from './AIOutputPanel';
 
 // Theme utilities
 export { getTheme, THEME_TOKENS }      from './theme';
@@ -31,3 +32,4 @@ export type { MetricCardProps }                              from './MetricCard'
 export type { ReportExporterProps, ExportFormat }            from './ReportExporter';
 export type { StepIndicatorProps, Step }                     from './StepIndicator';
 export type { ValidationWarningProps, WarningSeverity }      from './ValidationWarning';
+export type { AIOutputPanelProps }                           from './AIOutputPanel';
