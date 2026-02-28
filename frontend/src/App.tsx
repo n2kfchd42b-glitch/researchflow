@@ -1,33 +1,83 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './mobile.css';
-import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import Landing from './pages/Landing';
-import StudentWizard from './pages/StudentWizard';
+
+class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  state = { error: null };
+  static getDerivedStateFromError(error: Error) { return { error }; }
+  componentDidCatch(error: Error, info: ErrorInfo) { console.error('App error:', error, info); }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ minHeight: '100vh', background: '#1C2B3A', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+          <div style={{ color: '#fff', maxWidth: 600, textAlign: 'center' }}>
+            <h2 style={{ color: '#C0533A', marginBottom: '1rem' }}>Something went wrong</h2>
+            <pre style={{ background: '#0d1b2a', padding: '1rem', borderRadius: 8, textAlign: 'left', fontSize: 13, overflowX: 'auto', color: '#f87171' }}>
+              {(this.state.error as Error).message}
+            </pre>
+            <button onClick={() => { localStorage.clear(); window.location.reload(); }}
+              style={{ marginTop: '1.5rem', padding: '0.6rem 1.5rem', background: '#C0533A', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
+              Clear session &amp; reload
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+import Login from './pages/Login';
+
+// ─── Product Landing ──────────────────────────────────────────────────────────
+import ProductLanding from './pages/ProductLanding';
+
+// ─── Layouts ──────────────────────────────────────────────────────────────────
+import StudentLayout from './layouts/StudentLayout';
+import NGOLayout from './layouts/NGOLayout';
+import JournalLayout from './layouts/JournalLayout';
+
+// ─── Student Wizard Pages (5-step flow) ───────────────────────────────────────
+import StudySetupPage from './products/student/pages/StudySetupPage';
+import DataUploadPage from './products/student/pages/DataUploadPage';
+import GuidedAnalysisPage from './products/student/pages/GuidedAnalysisPage';
+import ResultsReviewPage from './products/student/pages/ResultsReviewPage';
+import ReportGenerationPage from './products/student/pages/ReportGenerationPage';
+
+// ─── Existing page components (all preserved) ─────────────────────────────────
 import NGOPipeline from './pages/NGOPipeline';
-import JournalVerification from './pages/JournalVerification';
 import MethodologyMemory from './pages/MethodologyMemory';
-import CohortBuilder from './pages/CohortBuilder';
+import Collaboration from './pages/Collaboration';
+import AIAssistant from './pages/AIAssistant';
+
+// ─── Journal Component Pages ──────────────────────────────────────────────────
+import { JournalProvider } from './products/journal/context/JournalContext';
+import JournalDashboardPage from './products/journal/pages/JournalDashboardPage';
+import SubmissionIntakePage from './products/journal/pages/SubmissionIntakePage';
+import SubmissionReviewPage from './products/journal/pages/SubmissionReviewPage';
+import BatchVerificationPage from './products/journal/pages/BatchVerificationPage';
+import JournalSettingsPage from './products/journal/pages/JournalSettingsPage';
+
+// ─── Shared analysis tools (used in both Student and NGO) ────────────────────
+import Table1Generator from './pages/Table1Generator';
+import DescriptiveStats from './pages/DescriptiveStats';
 import SurvivalAnalysis from './pages/SurvivalAnalysis';
 import SampleSize from './pages/SampleSize';
-import AuditTrail from './pages/AuditTrail';
-import DataCleaningStudio from './pages/DataCleaningStudio';
-import GuidedAnalysis from './pages/GuidedAnalysis';
-import JournalAssistant from './pages/JournalAssistant';
-import Login from './pages/Login';
-import InstrumentRecognition from './pages/InstrumentRecognition';
-import PropensityMatching from './pages/PropensityMatching';
-import DescriptiveStats from './pages/DescriptiveStats';
-import VisualisationStudio from './pages/VisualisationStudio';
-import Collaboration from './pages/Collaboration';
-import ForestPlot from './pages/ForestPlot';
-import SampleDatasets from './pages/SampleDatasets';
-import SyntaxExporter from './pages/SyntaxExporter';
+import CodebookGenerator from './pages/CodebookGenerator';
+import LiteratureReview from './pages/LiteratureReview';
 import PRISMADiagram from './pages/PRISMADiagram';
-import StudyDashboard from './pages/StudyDashboard';
-import RiskOfBias from './pages/RiskOfBias';
-import DataDictionary from './pages/DataDictionary';
 import SubgroupAnalysis from './pages/SubgroupAnalysis';
 import SensitivityAnalysis from './pages/SensitivityAnalysis';
+import ForestPlot from './pages/ForestPlot';
+import VisualisationStudio from './pages/VisualisationStudio';
+import SampleDatasets from './pages/SampleDatasets';
+import PropensityMatching from './pages/PropensityMatching';
+
+// ─── NGO-specific pages ───────────────────────────────────────────────────────
+import StudyDashboard from './pages/StudyDashboard';
+import InstrumentRecognition from './pages/InstrumentRecognition';
+import DataCleaningStudio from './pages/DataCleaningStudio';
+import DataVersioning from './pages/DataVersioning';
 import BudgetTracker from './pages/BudgetTracker';
 import Table1Generator from './pages/Table1Generator';
 import AIAssistant from './pages/AIAssistant';
@@ -429,6 +479,7 @@ export default function App() {
   }
 
   return (
+    <ErrorBoundary>
     <BrowserRouter>
       <NavBar user={user} onLogout={handleLogout} onProfileUpdate={setUser} />
       <Routes>
@@ -467,5 +518,6 @@ export default function App() {
         <Route path="/samples"          element={<SampleDatasets />} />
       </Routes>
     </BrowserRouter>
+    </ErrorBoundary>
   );
 }

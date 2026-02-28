@@ -22,6 +22,19 @@ class User(Base):
     created_at    = Column(DateTime, default=datetime.utcnow)
     studies       = relationship("Study", back_populates="owner")
 
+class Project(Base):
+    __tablename__ = "projects"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    name = Column(String, nullable=False)
+    description = Column(Text)
+    owner_id = Column(String, ForeignKey("users.id"))
+    owner = relationship("User", back_populates="projects")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    studies = relationship("Study", back_populates="project")
+    references = relationship("Reference", back_populates="project")
+    assessments = relationship("Assessment", back_populates="project")
+    dataset_versions = relationship("DatasetVersion", back_populates="project")
+
 class Study(Base):
     __tablename__ = "studies"
     id = Column(String, primary_key=True, default=generate_uuid)
@@ -30,6 +43,8 @@ class Study(Base):
     study_type = Column(String)
     owner_id = Column(String, ForeignKey("users.id"))
     owner = relationship("User", back_populates="studies")
+    project_id = Column(String, ForeignKey("projects.id"))
+    project = relationship("Project", back_populates="studies")
     status = Column(String, default="draft")
     config = Column(JSON)
     rigor_score = Column(Float)
@@ -38,6 +53,41 @@ class Study(Base):
     updated_at = Column(DateTime, default=datetime.utcnow)
     datasets = relationship("Dataset", back_populates="study")
     results = relationship("AnalysisResult", back_populates="study")
+    assessments = relationship("Assessment", back_populates="study")
+# New Reference model
+class Reference(Base):
+    __tablename__ = "references"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    title = Column(String, nullable=False)
+    authors = Column(String)
+    journal = Column(String)
+    year = Column(Integer)
+    doi = Column(String)
+    project_id = Column(String, ForeignKey("projects.id"))
+    project = relationship("Project", back_populates="references")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+# New Assessment model
+class Assessment(Base):
+    __tablename__ = "assessments"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    type = Column(String)  # RoB2, ROBINS-I, Newcastle-Ottawa
+    rating = Column(String)
+    study_id = Column(String, ForeignKey("studies.id"))
+    study = relationship("Study", back_populates="assessments")
+    project_id = Column(String, ForeignKey("projects.id"))
+    project = relationship("Project", back_populates="assessments")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+# New DatasetVersion model
+class DatasetVersion(Base):
+    __tablename__ = "dataset_versions"
+    id = Column(String, primary_key=True, default=generate_uuid)
+    dataset_name = Column(String, nullable=False)
+    version_label = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    project_id = Column(String, ForeignKey("projects.id"))
+    project = relationship("Project", back_populates="dataset_versions")
 
 class Dataset(Base):
     __tablename__ = "datasets"

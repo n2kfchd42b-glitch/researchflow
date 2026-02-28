@@ -10,7 +10,7 @@ r = requests.get(f"{BASE}/health")
 print(f"1. Health: {r.json()}")
 
 # Test 2: Upload dataset
-with open("../data/samples/health_dataset.csv", "rb") as f:
+with open("data/samples/health_dataset.csv", "rb") as f:
     r = requests.post(
         f"{BASE}/upload", 
         files={"file": ("health_dataset.csv", f, "text/csv")}

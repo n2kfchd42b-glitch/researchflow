@@ -116,10 +116,6 @@ export default function VisualisationStudio() {
   function exportPNG() {
     alert("To save your chart: right-click on the chart and select Save Image As.");
   }
-  }
-      alert('Export requires html2canvas. Try right-click → Save image on the chart.');
-    });
-  }
 
   const columns  = uploadResult ? Object.keys(uploadResult.column_types) : [];
   const chartData = buildChartData(rawData, xCol, yCol, chartType);
@@ -222,7 +218,7 @@ export default function VisualisationStudio() {
         <ResponsiveContainer width="100%" height={chartHeight}>
           <PieChart>
             <Pie data={chartData} dataKey="value" nameKey="name" cx="50%" cy="50%"
-              outerRadius={chartHeight / 3} label={showValues ? ({ name, percent }: { name: string, percent?: number }) => `${name} ${((percent || 0) * 100).toFixed(1)}%` : undefined}
+              outerRadius={chartHeight / 3} label={showValues ? ({ name, percent }: { name?: string, percent?: number }) => `${name ?? ''} ${((percent || 0) * 100).toFixed(1)}%` : undefined}
               opacity={opacity}>
               {chartData.map((_: any, index: number) => (
                 <Cell key={index} fill={palette[index % palette.length]} />

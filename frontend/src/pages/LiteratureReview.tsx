@@ -438,11 +438,13 @@ export default function LiteratureReview() {
   const [saved, setSaved]             = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setRefs(JSON.parse(stored));
-    } catch (e) {}
-  }, []);
+    if (!projectId) return;
+    setLoading(true);
+    fetch(`/api/references?project_id=${projectId}`)
+      .then(res => res.json())
+      .then(data => setRefs(data))
+      .finally(() => setLoading(false));
+  }, [projectId]);
 
   function save(updated: Reference[]) {
     setRefs(updated);
@@ -457,14 +459,18 @@ export default function LiteratureReview() {
     setForm(emptyRef()); setShowAdd(false);
   }
 
-  function updateRef() {
+  async function updateRef() {
     if (!editing) return;
     save(refs.map(r => r.id === editing.id ? { ...form, id: editing.id } : r));
     setEditing(null); setForm(emptyRef()); setShowAdd(false);
   }
 
-  function deleteRef(id: string) {
-    if (window.confirm('Delete this reference?')) save(refs.filter(r => r.id !== id));
+  async function deleteRef(id: string, confirm = true) {
+    if (confirm && !window.confirm('Delete this reference?')) return;
+    const res = await fetch(`/api/references/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      save(refs.filter(r => r.id !== id));
+    }
   }
 
   function startEdit(ref: Reference) {
@@ -512,6 +518,14 @@ export default function LiteratureReview() {
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href = url; a.download = 'evidence_extraction.csv'; a.click();
+  }
+
+  if (!projectId) {
+    return (
+      <div className="card" style={{ margin: '2rem auto', maxWidth: 500, textAlign: 'center' }}>
+        <h2>Please select or create a project to continue.</h2>
+      </div>
+    );
   }
 
   const filtered = refs.filter(r => {
