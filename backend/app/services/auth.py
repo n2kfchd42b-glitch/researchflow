@@ -12,12 +12,55 @@ Token lifecycle
 
 from datetime import datetime, timedelta
 from typing import Optional
-import hashlib, os, uuid
-from jose import JWTError, jwt
+import hashlib
+import hmac
+import base64
+import json
+import os
 
-SECRET_KEY                  = os.getenv("SECRET_KEY", "researchflow-secret-key-change-in-production")
-ALGORITHM                   = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24          # 24 hours
+# ── Minimal pure-Python HS256 JWT (no external crypto dependency) ────────────
+
+class JWTError(Exception):
+    pass
+
+class _JWT:
+    @staticmethod
+    def _b64url_encode(data: bytes) -> str:
+        return base64.urlsafe_b64encode(data).rstrip(b'=').decode()
+
+    @staticmethod
+    def _b64url_decode(s: str) -> bytes:
+        pad = 4 - len(s) % 4
+        return base64.urlsafe_b64decode(s + '=' * (pad % 4))
+
+    def encode(self, payload: dict, key: str, algorithm: str = 'HS256') -> str:
+        header = self._b64url_encode(json.dumps({'alg': 'HS256', 'typ': 'JWT'}).encode())
+        body   = self._b64url_encode(json.dumps(payload, default=str).encode())
+        sig_input = f"{header}.{body}".encode()
+        sig = hmac.new(key.encode(), sig_input, hashlib.sha256).digest()
+        return f"{header}.{body}.{self._b64url_encode(sig)}"
+
+    def decode(self, token: str, key: str, algorithms=None) -> dict:
+        try:
+            header_b64, body_b64, sig_b64 = token.split('.')
+        except ValueError:
+            raise JWTError("Invalid token format")
+        sig_input = f"{header_b64}.{body_b64}".encode()
+        expected_sig = hmac.new(key.encode(), sig_input, hashlib.sha256).digest()
+        provided_sig = self._b64url_decode(sig_b64)
+        if not hmac.compare_digest(expected_sig, provided_sig):
+            raise JWTError("Signature verification failed")
+        payload = json.loads(self._b64url_decode(body_b64))
+        exp = payload.get('exp')
+        if exp and datetime.utcnow().timestamp() > exp:
+            raise JWTError("Token expired")
+        return payload
+
+jwt = _JWT()
+
+SECRET_KEY = "researchflow-secret-key-change-in-production"
+ALGORITHM  = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 
 # ── Crypto helpers ────────────────────────────────────────────────────────────
 

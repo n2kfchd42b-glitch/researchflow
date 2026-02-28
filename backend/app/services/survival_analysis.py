@@ -1,7 +1,11 @@
 import pandas as pd
 import numpy as np
-from lifelines import KaplanMeierFitter
-from lifelines.statistics import logrank_test
+try:
+    from lifelines import KaplanMeierFitter
+    from lifelines.statistics import logrank_test
+except ImportError:
+    KaplanMeierFitter = None  # type: ignore
+    logrank_test = None  # type: ignore
 
 def run_kaplan_meier(df, duration_col, event_col, group_col=None):
     if duration_col not in df.columns:

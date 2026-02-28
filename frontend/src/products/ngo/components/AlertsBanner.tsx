@@ -17,7 +17,7 @@ const NGO_SEVERITY_MAP: Record<string, AlertSeverity> = {
 const AlertsBanner: React.FC<{ projectId?: string }> = ({ projectId }) => {
   const { generateAlerts, dismissAlert } = useNGOPlatform();
 
-  let alerts: any[] = generateAlerts();
+  let alerts = generateAlerts();
   if (projectId) alerts = alerts.filter((a: any) => a.projectId === projectId);
   alerts = alerts.filter((a: any) => !a.dismissed);
 
@@ -26,7 +26,7 @@ const AlertsBanner: React.FC<{ projectId?: string }> = ({ projectId }) => {
 
   return (
     <div style={{ marginBottom: 16 }}>
-      {visible.map(a => (
+      {visible.map((a: any) => (
         <AlertBanner
           key={a.id}
           severity={NGO_SEVERITY_MAP[a.severity] ?? 'info'}

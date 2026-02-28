@@ -419,15 +419,12 @@ function BulkImportModal({ onImport, onClose }: { onImport: (refs: Reference[]) 
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
-
 export default function LiteratureReview() {
+  const { projectId } = useProject();
   const [refs, setRefs]               = useState<Reference[]>([]);
   const [activeTab, setActiveTab]     = useState('library');
   const [showAdd, setShowAdd]         = useState(false);
   const [showPICO, setShowPICO]       = useState(false);
-  const [showBulk, setShowBulk]       = useState(false);
-  const [showExtract, setShowExtract] = useState(false);
   const [editing, setEditing]         = useState<Reference | null>(null);
   const [form, setForm]               = useState<Reference>(emptyRef());
   const [search, setSearch]           = useState('');
@@ -436,6 +433,7 @@ export default function LiteratureReview() {
   const [citStyle, setCitStyle]       = useState<'vancouver' | 'apa'>('vancouver');
   const [copied, setCopied]           = useState(false);
   const [saved, setSaved]             = useState(false);
+  const [loading, setLoading]         = useState(false);
 
   useEffect(() => {
     if (!projectId) return;
@@ -453,10 +451,20 @@ export default function LiteratureReview() {
     setTimeout(() => setSaved(false), 1500);
   }
 
-  function addRef() {
-    if (!form.title || !form.authors) return;
-    save([...refs, { ...form, id: Date.now().toString(), added_at: new Date().toISOString() }]);
-    setForm(emptyRef()); setShowAdd(false);
+  async function addRef() {
+    if (!form.title || !form.authors || !projectId) return;
+    const payload = { ...form, project_id: projectId };
+    const res = await fetch('/api/references', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) {
+      const newRef = await res.json();
+      save([...refs, newRef]);
+      setForm(emptyRef());
+      setShowAdd(false);
+    }
   }
 
   async function updateRef() {
@@ -529,10 +537,11 @@ export default function LiteratureReview() {
   }
 
   const filtered = refs.filter(r => {
-    const q = search.toLowerCase();
     const matchSearch = !search ||
-      r.title.toLowerCase().includes(q) || r.authors.toLowerCase().includes(q) ||
-      r.key_finding.toLowerCase().includes(q) || r.country.toLowerCase().includes(q);
+      r.title.toLowerCase().includes(search.toLowerCase()) ||
+      r.authors.toLowerCase().includes(search.toLowerCase()) ||
+      r.key_finding.toLowerCase().includes(search.toLowerCase()) ||
+      r.country.toLowerCase().includes(search.toLowerCase());
     const matchTheme = filterTheme === 'All' || r.theme === filterTheme;
     const matchGrade = filterGrade === 'All' || r.grade === filterGrade;
     return matchSearch && matchTheme && matchGrade;
@@ -542,7 +551,9 @@ export default function LiteratureReview() {
   const gradeDist     = GRADE_LEVELS.map(g => ({ grade: g, count: refs.filter(r => r.grade === g).length }));
   const extractedRefs = refs.filter(r => r.effect_type || r.rob_rating);
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  const gradeDistribution = GRADE_LEVELS.map(g => ({
+    grade: g, count: refs.filter(r => r.grade === g).length,
+  }));
 
   return (
     <div className="page">
@@ -551,197 +562,113 @@ export default function LiteratureReview() {
         <div>
           <h1 style={{ color: '#1C2B3A', marginBottom: 0 }}>Literature Review Manager</h1>
           <p style={{ marginBottom: 0, fontSize: '0.88rem', color: '#888' }}>
-            Organise evidence · DOI/PMID import · Evidence extraction · Bulk import
+            Track and organise your research references with evidence grading.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          {saved && <span style={{ color: '#5A8A6A', fontSize: '0.82rem' }}>✓ Saved</span>}
-          <button className="btn" style={{ background: '#eee', color: '#555', fontSize: '0.85rem' }} onClick={() => setShowPICO(true)}>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button
+            className="btn"
+            style={{ background: '#f0f4f8', color: '#444' }}
+            onClick={() => setShowPICO(true)}
+          >
             PICO Framework
           </button>
-          <button className="btn" style={{ background: '#eee', color: '#555', fontSize: '0.85rem' }} onClick={() => setShowBulk(true)}>
-            📥 Bulk Import
-          </button>
-          <button className="btn btn-primary" onClick={() => { setForm(emptyRef()); setEditing(null); setShowAdd(true); }}>
+          <button
+            className="btn btn-primary"
+            onClick={() => { setEditing(null); setForm(emptyRef()); setShowAdd(true); }}
+          >
             + Add Reference
           </button>
         </div>
       </div>
 
-      {/* STATS */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0.75rem', marginBottom: '1.5rem' }}>
-        {[
-          { label: 'Total References',  value: refs.length,                                           color: '#1C2B3A' },
-          { label: 'High Quality',      value: refs.filter(r => r.grade === 'High').length,           color: '#5A8A6A' },
-          { label: 'Study Designs',     value: new Set(refs.map(r => r.design)).size,                  color: '#2196f3' },
-          { label: 'Data Extracted',    value: extractedRefs.length,                                   color: '#C0533A' },
-        ].map(item => (
-          <div key={item.label} className="card" style={{ textAlign: 'center', padding: '1rem' }}>
-            <p style={{ fontSize: '1.8rem', fontWeight: 700, color: item.color, marginBottom: 4 }}>{item.value}</p>
-            <p style={{ fontSize: '0.78rem', color: '#888', marginBottom: 0 }}>{item.label}</p>
-          </div>
-        ))}
-      </div>
+      {saved && (
+        <div style={{ background: '#e8f5e9', color: '#2e7d32', padding: '0.5rem 1rem', borderRadius: 6, marginBottom: '1rem', fontSize: '0.88rem' }}>
+          Saved!
+        </div>
+      )}
 
-      {/* TABS */}
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '1rem', borderBottom: '2px solid #eee' }}>
         {[
-          { id: 'library',     label: '📚 Library'         },
-          { id: 'themes',      label: '🏷️ By Theme'        },
-          { id: 'evidence',    label: '⭐ Evidence Table'   },
-          { id: 'extraction',  label: '🧪 Extraction'       },
-          { id: 'bibliography',label: '📄 Bibliography'     },
+          { key: 'library',      label: `Library (${refs.length})` },
+          { key: 'themes',       label: 'By Theme' },
+          { key: 'synthesis',    label: 'Evidence Synthesis' },
+          { key: 'bibliography', label: 'Bibliography' },
         ].map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id)} className="btn" style={{
-            background: activeTab === tab.id ? '#1C2B3A' : '#eee',
-            color:      activeTab === tab.id ? 'white'   : '#444',
-            padding: '0.5rem 1rem',
-          }}>
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            style={{
+              padding: '0.5rem 1rem',
+              background: 'none',
+              border: 'none',
+              borderBottom: activeTab === tab.key ? '2px solid #5A8A6A' : '2px solid transparent',
+              color: activeTab === tab.key ? '#5A8A6A' : '#666',
+              fontWeight: activeTab === tab.key ? 700 : 400,
+              cursor: 'pointer',
+              fontSize: '0.88rem',
+              marginBottom: '-2px',
+            }}
+          >
             {tab.label}
-            {tab.id === 'extraction' && extractedRefs.length > 0 && (
-              <span style={{ marginLeft: 6, background: '#C0533A', color: 'white', borderRadius: 10, fontSize: '0.68rem', padding: '0.1rem 0.45rem', fontWeight: 700 }}>
-                {extractedRefs.length}
-              </span>
-            )}
           </button>
         ))}
       </div>
 
-      {/* SEARCH + FILTER */}
-      {(activeTab === 'library' || activeTab === 'evidence' || activeTab === 'extraction') && (
-        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-          <input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search title, author, finding, country..."
-            style={{ flex: 1, padding: '0.6rem 1rem', borderRadius: 8, border: '1px solid #ccc', fontSize: '0.88rem', minWidth: 200 }} />
-          <select value={filterTheme} onChange={e => setFilterTheme(e.target.value)}
-            style={{ padding: '0.6rem', borderRadius: 8, border: '1px solid #ccc', fontSize: '0.88rem' }}>
-            <option value="All">All Themes</option>
-            {THEMES.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
-          <select value={filterGrade} onChange={e => setFilterGrade(e.target.value)}
-            style={{ padding: '0.6rem', borderRadius: 8, border: '1px solid #ccc', fontSize: '0.88rem' }}>
-            <option value="All">All Quality</option>
-            {GRADE_LEVELS.map(g => <option key={g} value={g}>{g}</option>)}
-          </select>
-        </div>
-      )}
-
-      {/* ── LIBRARY TAB ─────────────────────────────────────────────────────── */}
+      {/* LIBRARY TAB */}
       {activeTab === 'library' && (
         <div>
-          {filtered.length === 0 && (
-            <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📚</div>
-              <h2>No references yet</h2>
-              <p style={{ color: '#888' }}>Add a reference manually, paste a DOI/PMID, or bulk-import a CSV.</p>
-              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1rem' }}>
-                <button className="btn btn-primary" onClick={() => { setForm(emptyRef()); setShowAdd(true); }}>+ Add Reference</button>
-                <button className="btn" style={{ background: '#eee', color: '#555' }} onClick={() => setShowBulk(true)}>📥 Bulk Import CSV</button>
-              </div>
+          <div className="card" style={{ marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              <input
+                placeholder="Search by title, author, finding, country..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                style={{ flex: 1, minWidth: 200, padding: '0.5rem 0.75rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.85rem' }}
+              />
+              <select
+                value={filterTheme}
+                onChange={e => setFilterTheme(e.target.value)}
+                style={{ padding: '0.5rem 0.75rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.85rem' }}
+              >
+                <option value="All">All Themes</option>
+                {THEMES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <select
+                value={filterGrade}
+                onChange={e => setFilterGrade(e.target.value)}
+                style={{ padding: '0.5rem 0.75rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.85rem' }}
+              >
+                <option value="All">All GRADE</option>
+                {GRADE_LEVELS.map(g => <option key={g} value={g}>{g}</option>)}
+              </select>
             </div>
-          )}
-          {filtered.map(ref => (
-            <div key={ref.id} className="card" style={{ marginBottom: '0.75rem', borderLeft: `4px solid ${GRADE_COLORS[ref.grade] || '#888'}` }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
-                    <span style={{ padding: '0.2rem 0.6rem', borderRadius: 10, fontSize: '0.72rem', fontWeight: 700, background: (GRADE_COLORS[ref.grade] || '#888') + '22', color: GRADE_COLORS[ref.grade] || '#888' }}>
-                      GRADE: {ref.grade}
-                    </span>
-                    <span style={{ padding: '0.2rem 0.6rem', borderRadius: 10, fontSize: '0.72rem', background: '#f0f0f0', color: '#555' }}>Level {ref.level}</span>
-                    <span style={{ padding: '0.2rem 0.6rem', borderRadius: 10, fontSize: '0.72rem', background: '#f0f0f0', color: '#555' }}>{ref.design}</span>
-                    <span style={{ padding: '0.2rem 0.6rem', borderRadius: 10, fontSize: '0.72rem', background: '#fff5f3', color: '#C0533A', fontWeight: 600 }}>{ref.theme}</span>
-                    {ref.country && <span style={{ padding: '0.2rem 0.6rem', borderRadius: 10, fontSize: '0.72rem', background: '#f0f8ff', color: '#2196f3' }}>📍 {ref.country}</span>}
-                    {ref.rob_rating && (
-                      <span style={{ padding: '0.2rem 0.6rem', borderRadius: 10, fontSize: '0.72rem', fontWeight: 700, background: (ROB_COLORS[ref.rob_rating] || '#888') + '22', color: ROB_COLORS[ref.rob_rating] || '#888' }}>
-                        RoB: {ref.rob_rating}
-                      </span>
-                    )}
-                    {ref.effect_type && ref.effect_value && (
-                      <span style={{ padding: '0.2rem 0.6rem', borderRadius: 10, fontSize: '0.72rem', background: '#f5f0ff', color: '#7c3aed', fontWeight: 600 }}>
-                        {ref.effect_type} {ref.effect_value}{ref.ci_lower && ref.ci_upper ? ` (${ref.ci_lower}–${ref.ci_upper})` : ''}
-                      </span>
-                    )}
-                    {ref.doi && <a href={`https://doi.org/${ref.doi}`} target="_blank" rel="noopener noreferrer" style={{ padding: '0.2rem 0.6rem', borderRadius: 10, fontSize: '0.72rem', background: '#f5f0ff', color: '#7c3aed', textDecoration: 'none' }}>DOI ↗</a>}
-                    {ref.pmid && <a href={`https://pubmed.ncbi.nlm.nih.gov/${ref.pmid}`} target="_blank" rel="noopener noreferrer" style={{ padding: '0.2rem 0.6rem', borderRadius: 10, fontSize: '0.72rem', background: '#fff0e6', color: '#c2410c', textDecoration: 'none' }}>PubMed ↗</a>}
-                  </div>
-                  <h3 style={{ marginBottom: 4, fontSize: '0.95rem', color: '#1C2B3A' }}>{ref.title}</h3>
-                  <p style={{ fontSize: '0.82rem', color: '#888', marginBottom: 4 }}>
-                    {ref.authors} · <em>{ref.journal}</em> · {ref.year}
-                    {ref.sample_size > 0 && ` · n = ${ref.sample_size.toLocaleString()}`}
-                  </p>
-                  {ref.key_finding && <p style={{ fontSize: '0.85rem', color: '#555', marginBottom: 0, fontStyle: 'italic' }}>"{ref.key_finding}"</p>}
-                  {ref.notes && <p style={{ fontSize: '0.78rem', color: '#888', marginTop: 4, marginBottom: 0 }}>📝 {ref.notes}</p>}
-                </div>
-                <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
-                  <button onClick={() => startEdit(ref)} className="btn" style={{ background: '#eee', color: '#555', padding: '0.3rem 0.7rem', fontSize: '0.78rem' }}>Edit</button>
-                  <button onClick={() => deleteRef(ref.id)} className="btn" style={{ background: '#fff5f5', color: '#f44336', padding: '0.3rem 0.7rem', fontSize: '0.78rem' }}>×</button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ── THEMES TAB ──────────────────────────────────────────────────────── */}
-      {activeTab === 'themes' && (
-        <div>
-          {THEMES.map(theme => {
-            const themeRefs = themeGroups[theme] || [];
-            if (!themeRefs.length) return null;
-            return (
-              <div key={theme} className="card" style={{ marginBottom: '1rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                  <h2 style={{ marginBottom: 0, color: '#C0533A' }}>{theme}</h2>
-                  <span className="badge badge-blue">{themeRefs.length} studies</span>
-                </div>
-                {themeRefs.map(ref => (
-                  <div key={ref.id} style={{ padding: '0.6rem 0', borderBottom: '1px solid #f0f0f0', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                    <span style={{ padding: '0.15rem 0.5rem', borderRadius: 10, fontSize: '0.7rem', fontWeight: 700, background: (GRADE_COLORS[ref.grade] || '#888') + '22', color: GRADE_COLORS[ref.grade] || '#888', flexShrink: 0 }}>{ref.grade}</span>
-                    <div>
-                      <p style={{ fontWeight: 600, fontSize: '0.88rem', marginBottom: 2 }}>{ref.title}</p>
-                      <p style={{ fontSize: '0.78rem', color: '#888', marginBottom: ref.key_finding ? 2 : 0 }}>{ref.authors} ({ref.year}) · {ref.design}</p>
-                      {ref.key_finding && <p style={{ fontSize: '0.78rem', color: '#555', fontStyle: 'italic', marginBottom: 0 }}>{ref.key_finding}</p>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            );
-          })}
-          {refs.length === 0 && (
-            <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-              <p style={{ color: '#888' }}>Add references and assign themes to see them organised here.</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── EVIDENCE TABLE TAB ──────────────────────────────────────────────── */}
-      {activeTab === 'evidence' && (
-        <div className="card">
-          <h2>Evidence Quality Table</h2>
-          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-            {gradeDist.map(g => (
-              <div key={g.grade} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <div style={{ width: 12, height: 12, borderRadius: '50%', background: GRADE_COLORS[g.grade] }} />
-                <span style={{ fontSize: '0.82rem' }}>{g.grade}: <strong>{g.count}</strong></span>
-              </div>
-            ))}
           </div>
-          {filtered.length === 0 ? <p style={{ color: '#888' }}>No references found.</p> : (
+          {loading ? (
+            <p>Loading references…</p>
+          ) : (
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', background: 'white', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.07)' }}>
                 <thead>
                   <tr style={{ background: '#1C2B3A', color: 'white' }}>
-                    {['Author(s)', 'Year', 'Design', 'N', 'Country', 'Key Finding', 'GRADE', 'Level'].map(h => (
-                      <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontSize: '0.78rem', whiteSpace: 'nowrap' }}>{h}</th>
-                    ))}
+                    <th style={{ padding: '10px', textAlign: 'left' }}>Author</th>
+                    <th style={{ padding: '10px', textAlign: 'left' }}>Year</th>
+                    <th style={{ padding: '10px', textAlign: 'left' }}>Design</th>
+                    <th style={{ padding: '10px', textAlign: 'left' }}>N</th>
+                    <th style={{ padding: '10px', textAlign: 'left' }}>Country</th>
+                    <th style={{ padding: '10px', textAlign: 'left' }}>Key Finding</th>
+                    <th style={{ padding: '10px', textAlign: 'left' }}>GRADE</th>
+                    <th style={{ padding: '10px', textAlign: 'left' }}>Level</th>
+                    <th style={{ padding: '10px', textAlign: 'left' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((ref, i) => (
                     <tr key={ref.id} style={{ background: i % 2 === 0 ? '#f8f7f4' : 'white', borderBottom: '1px solid #eee' }}>
-                      <td style={{ padding: '8px 10px', fontWeight: 600, maxWidth: 150 }}>{ref.authors.split(',')[0]}{ref.authors.split(',').length > 1 ? ' et al.' : ''}</td>
+                      <td style={{ padding: '8px 10px', fontWeight: 600, maxWidth: 150 }}>
+                        {ref.authors.split(',')[0]}{ref.authors.split(',').length > 1 ? ' et al.' : ''}
+                      </td>
                       <td style={{ padding: '8px 10px' }}>{ref.year}</td>
                       <td style={{ padding: '8px 10px' }}>{ref.design}</td>
                       <td style={{ padding: '8px 10px' }}>{ref.sample_size > 0 ? ref.sample_size.toLocaleString() : '—'}</td>
@@ -753,6 +680,20 @@ export default function LiteratureReview() {
                       <td style={{ padding: '8px 10px' }}>
                         <span style={{ padding: '0.2rem 0.5rem', borderRadius: 6, fontSize: '0.72rem', fontWeight: 700, background: (LEVEL_COLORS[ref.level] || '#888') + '22', color: LEVEL_COLORS[ref.level] || '#888' }}>{ref.level}</span>
                       </td>
+                      <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
+                        <button
+                          onClick={() => startEdit(ref)}
+                          style={{ marginRight: 6, padding: '0.2rem 0.5rem', fontSize: '0.75rem', borderRadius: 4, border: '1px solid #ccc', background: 'white', cursor: 'pointer' }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deleteRef(ref.id)}
+                          style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', borderRadius: 4, border: '1px solid #f44336', background: 'white', color: '#f44336', cursor: 'pointer' }}
+                        >
+                          Delete
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -762,128 +703,73 @@ export default function LiteratureReview() {
         </div>
       )}
 
-      {/* ── EXTRACTION TAB (Feature #41) ─────────────────────────────────────── */}
-      {activeTab === 'extraction' && (
+      {/* THEMES TAB */}
+      {activeTab === 'themes' && (
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <div>
-              <h2 style={{ marginBottom: 2 }}>Evidence Synthesis Table</h2>
-              <p style={{ fontSize: '0.82rem', color: '#888', margin: 0 }}>
-                Structured data extraction — effect sizes, 95% CI, risk of bias, and adjustment variables
-              </p>
-            </div>
-            <button className="btn btn-sage" onClick={exportExtractionCSV} style={{ fontSize: '0.85rem' }}>
-              ⬇️ Export CSV
-            </button>
-          </div>
-
-          {filtered.length === 0 ? (
-            <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-              <p style={{ color: '#888' }}>No references match the current filter.</p>
-            </div>
-          ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
-                <thead>
-                  <tr style={{ background: '#1C2B3A', color: 'white' }}>
-                    {['Author (Year)', 'Design', 'N', 'Effect Size', '95% CI', 'RoB', 'Adjustment Variables', 'GRADE'].map(h => (
-                      <th key={h} style={{ padding: '8px 10px', textAlign: 'left', whiteSpace: 'nowrap', fontSize: '0.75rem' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((ref, i) => {
-                    const hasEffect = ref.effect_type || ref.effect_value;
-                    const hasCI     = ref.ci_lower && ref.ci_upper;
-                    const hasRoB    = !!ref.rob_rating;
-                    return (
-                      <tr key={ref.id} style={{ background: i % 2 === 0 ? '#f8f7f4' : 'white', borderBottom: '1px solid #eee' }}>
-                        <td style={{ padding: '8px 10px', maxWidth: 160 }}>
-                          <div style={{ fontWeight: 600, fontSize: '0.82rem' }}>
-                            {ref.authors.split(',')[0]}{ref.authors.split(',').length > 1 ? ' et al.' : ''}
-                          </div>
-                          <div style={{ fontSize: '0.72rem', color: '#888' }}>{ref.year} · {ref.journal.split(' ').slice(0, 3).join(' ')}</div>
-                        </td>
-                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>{ref.design}</td>
-                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>{ref.sample_size > 0 ? ref.sample_size.toLocaleString() : <span style={{ color: '#ccc' }}>—</span>}</td>
-                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
-                          {hasEffect ? (
-                            <span style={{ background: '#f5f0ff', color: '#7c3aed', borderRadius: 6, padding: '0.2rem 0.5rem', fontWeight: 700, fontSize: '0.78rem' }}>
-                              {ref.effect_type} {ref.effect_value}
-                            </span>
-                          ) : (
-                            <button onClick={() => startEdit(ref)} style={{ background: 'none', border: '1px dashed #ccc', borderRadius: 6, color: '#aaa', fontSize: '0.72rem', cursor: 'pointer', padding: '0.2rem 0.5rem' }}>
-                              + add
-                            </button>
-                          )}
-                        </td>
-                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
-                          {hasCI ? (
-                            <span style={{ fontSize: '0.8rem' }}>{ref.ci_lower} – {ref.ci_upper}</span>
-                          ) : (
-                            <span style={{ color: '#ccc' }}>—</span>
-                          )}
-                        </td>
-                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
-                          {hasRoB ? (
-                            <span style={{ padding: '0.2rem 0.5rem', borderRadius: 6, fontSize: '0.72rem', fontWeight: 700, background: (ROB_COLORS[ref.rob_rating] || '#888') + '22', color: ROB_COLORS[ref.rob_rating] || '#888' }}>
-                              {ref.rob_rating}
-                            </span>
-                          ) : (
-                            <button onClick={() => startEdit(ref)} style={{ background: 'none', border: '1px dashed #ccc', borderRadius: 6, color: '#aaa', fontSize: '0.72rem', cursor: 'pointer', padding: '0.2rem 0.5rem' }}>
-                              + add
-                            </button>
-                          )}
-                        </td>
-                        <td style={{ padding: '8px 10px', maxWidth: 200, whiteSpace: 'normal' }}>
-                          {ref.adjustment_vars || <span style={{ color: '#ccc' }}>—</span>}
-                        </td>
-                        <td style={{ padding: '8px 10px', whiteSpace: 'nowrap' }}>
-                          <span style={{ padding: '0.2rem 0.5rem', borderRadius: 6, fontSize: '0.72rem', fontWeight: 700, background: (GRADE_COLORS[ref.grade] || '#888') + '22', color: GRADE_COLORS[ref.grade] || '#888' }}>
-                            {ref.grade}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* Coverage summary */}
-          {refs.length > 0 && (
-            <div className="card" style={{ marginTop: '1rem', background: '#f8f7f4' }}>
-              <p style={{ fontSize: '0.82rem', color: '#555', marginBottom: 6, fontWeight: 700 }}>Extraction coverage</p>
-              <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-                {[
-                  { label: 'Effect size', count: refs.filter(r => r.effect_type || r.effect_value).length },
-                  { label: '95% CI',      count: refs.filter(r => r.ci_lower && r.ci_upper).length },
-                  { label: 'RoB rated',  count: refs.filter(r => r.rob_rating).length },
-                  { label: 'Adjustment vars', count: refs.filter(r => r.adjustment_vars).length },
-                ].map(item => (
-                  <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <div style={{ width: 80, height: 6, background: '#e0e0e0', borderRadius: 3, overflow: 'hidden' }}>
-                      <div style={{ width: `${refs.length > 0 ? (item.count / refs.length) * 100 : 0}%`, height: '100%', background: '#5A8A6A', borderRadius: 3 }} />
+          {THEMES.map(theme => (
+            themeGroups[theme].length > 0 && (
+              <div key={theme} className="card" style={{ marginBottom: '1rem' }}>
+                <h3 style={{ color: '#1C2B3A', marginBottom: '0.75rem' }}>{theme} ({themeGroups[theme].length})</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {themeGroups[theme].map(ref => (
+                    <div key={ref.id} style={{ padding: '0.75rem', background: '#f8f7f4', borderRadius: 6, fontSize: '0.85rem' }}>
+                      <div style={{ fontWeight: 600 }}>
+                        {ref.authors.split(',')[0]}{ref.authors.split(',').length > 1 ? ' et al.' : ''} ({ref.year}). {ref.title}
+                      </div>
+                      {ref.key_finding && <div style={{ color: '#666', marginTop: '0.25rem' }}>{ref.key_finding}</div>}
                     </div>
-                    <span style={{ fontSize: '0.78rem', color: '#555' }}>{item.label}: <strong>{item.count}/{refs.length}</strong></span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )
+          ))}
+          {refs.length === 0 && <p style={{ color: '#888' }}>No references yet.</p>}
         </div>
       )}
 
-      {/* ── BIBLIOGRAPHY TAB ────────────────────────────────────────────────── */}
+      {/* EVIDENCE SYNTHESIS TAB */}
+      {activeTab === 'synthesis' && (
+        <div>
+          <div className="card" style={{ marginBottom: '1rem' }}>
+            <h3 style={{ color: '#1C2B3A', marginBottom: '1rem' }}>GRADE Evidence Distribution</h3>
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              {gradeDistribution.map(({ grade, count }) => (
+                <div key={grade} style={{ padding: '1rem 1.5rem', borderRadius: 8, background: (GRADE_COLORS[grade] || '#888') + '18', borderLeft: `4px solid ${GRADE_COLORS[grade] || '#888'}`, minWidth: 120 }}>
+                  <div style={{ fontSize: '1.75rem', fontWeight: 700, color: GRADE_COLORS[grade] || '#888' }}>{count}</div>
+                  <div style={{ fontSize: '0.82rem', color: '#666' }}>{grade}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="card">
+            <h3 style={{ color: '#1C2B3A', marginBottom: '1rem' }}>Study Design Distribution</h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+              {STUDY_DESIGNS.map(design => {
+                const count = refs.filter(r => r.design === design).length;
+                if (count === 0) return null;
+                return (
+                  <div key={design} style={{ padding: '0.4rem 0.9rem', borderRadius: 20, background: '#f0f4f8', fontSize: '0.82rem', color: '#444' }}>
+                    {design}: <strong>{count}</strong>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* BIBLIOGRAPHY TAB */}
       {activeTab === 'bibliography' && (
         <div>
           <div className="card" style={{ marginBottom: '1rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <h2 style={{ marginBottom: 0 }}>Reference List</h2>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <select value={citStyle} onChange={e => setCitStyle(e.target.value as any)}
-                  style={{ padding: '0.4rem 0.75rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.85rem' }}>
+                <select
+                  value={citStyle}
+                  onChange={e => setCitStyle(e.target.value as 'vancouver' | 'apa')}
+                  style={{ padding: '0.4rem 0.75rem', borderRadius: 6, border: '1px solid #ccc', fontSize: '0.85rem' }}
+                >
                   <option value="vancouver">Vancouver</option>
                   <option value="apa">APA</option>
                 </select>
@@ -905,18 +791,35 @@ export default function LiteratureReview() {
           <div className="card" style={{ borderLeft: '4px solid #5A8A6A' }}>
             <h2>Export Options</h2>
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-              {[
-                { label: '⬇️ Download Vancouver (.txt)', fn: () => { const t = refs.map((r,i) => vancouverCite(r,i+1)).join('\n\n'); download(t,'references_vancouver.txt','text/plain'); } },
-                { label: '⬇️ Download APA (.txt)',       fn: () => { const t = refs.map(r => apaCite(r)).join('\n\n'); download(t,'references_apa.txt','text/plain'); } },
-                { label: '⬇️ Download CSV',              fn: () => {
-                  const h = ['Title','Authors','Journal','Year','Volume','Issue','Pages','DOI','PMID','Design','GRADE','Level','Theme','Country','Sample Size','Key Finding','Notes','Effect Type','Effect Value','CI Lower','CI Upper','RoB Rating','Adjustment Variables'];
-                  const d = refs.map(r => [r.title,r.authors,r.journal,r.year,r.volume,r.issue,r.pages,r.doi,r.pmid,r.design,r.grade,r.level,r.theme,r.country,r.sample_size,r.key_finding,r.notes,r.effect_type,r.effect_value,r.ci_lower,r.ci_upper,r.rob_rating,r.adjustment_vars]);
-                  const csv = [h,...d].map(row => row.map(v => `"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
-                  download(csv,'literature_review.csv','text/csv');
-                }},
-              ].map(btn => (
-                <button key={btn.label} className="btn" style={{ background: '#eee', color: '#444' }} onClick={btn.fn}>{btn.label}</button>
-              ))}
+              <button className="btn" style={{ background: '#eee', color: '#444' }} onClick={() => {
+                const text = refs.map((r, i) => vancouverCite(r, i + 1)).join('\n\n');
+                const blob = new Blob([text], { type: 'text/plain' });
+                const url  = URL.createObjectURL(blob);
+                const a    = document.createElement('a');
+                a.href = url; a.download = 'references_vancouver.txt'; a.click();
+              }}>
+                ⬇️ Download Vancouver (.txt)
+              </button>
+              <button className="btn" style={{ background: '#eee', color: '#444' }} onClick={() => {
+                const text = refs.map(r => apaCite(r)).join('\n\n');
+                const blob = new Blob([text], { type: 'text/plain' });
+                const url  = URL.createObjectURL(blob);
+                const a    = document.createElement('a');
+                a.href = url; a.download = 'references_apa.txt'; a.click();
+              }}>
+                ⬇️ Download APA (.txt)
+              </button>
+              <button className="btn" style={{ background: '#eee', color: '#444' }} onClick={() => {
+                const headers = ['Title', 'Authors', 'Journal', 'Year', 'Volume', 'Issue', 'Pages', 'DOI', 'Design', 'GRADE', 'Level', 'Theme', 'Country', 'Sample Size', 'Key Finding', 'Notes'];
+                const rows = refs.map(r => [r.title, r.authors, r.journal, r.year, r.volume, r.issue, r.pages, r.doi, r.design, r.grade, r.level, r.theme, r.country, r.sample_size, r.key_finding, r.notes]);
+                const csv  = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url  = URL.createObjectURL(blob);
+                const a    = document.createElement('a');
+                a.href = url; a.download = 'literature_review.csv'; a.click();
+              }}>
+                ⬇️ Download CSV
+              </button>
             </div>
           </div>
         </div>

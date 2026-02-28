@@ -18,7 +18,7 @@ const NGODashboardPage: React.FC = () => {
     : null;
 
   const programList = state.activeProgramId
-    ? state.programs.filter(p => p.id === state.activeProgramId)
+    ? state.programs.filter((p: any) => p.id === state.activeProgramId)
     : state.programs;
 
   const handleCreateProgram = () => {
@@ -102,9 +102,9 @@ const NGODashboardPage: React.FC = () => {
         />
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
-          {programList.map(program => {
-            const progIndicators = state.indicators.filter(i => program.projectIds.includes(i.projectId));
-            const onTrack = progIndicators.filter(i => i.currentValue !== null && i.targetValue !== null && i.currentValue >= i.targetValue).length;
+          {programList.map((program: any) => {
+            const progIndicators = state.indicators.filter((i: any) => program.projectIds.includes(i.projectId));
+            const onTrack = progIndicators.filter((i: any) => i.currentValue !== null && i.targetValue !== null && i.currentValue >= i.targetValue).length;
             return (
               <div
                 key={program.id}

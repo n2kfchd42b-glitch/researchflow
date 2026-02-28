@@ -4,7 +4,11 @@ from typing import Dict, Any
 from scipy import stats
 import statsmodels.api as sm
 from statsmodels.stats.outliers_influence import variance_inflation_factor
-from lifelines import KaplanMeierFitter, CoxPHFitter
+try:
+    from lifelines import KaplanMeierFitter, CoxPHFitter
+except ImportError:
+    KaplanMeierFitter = None  # type: ignore
+    CoxPHFitter = None  # type: ignore
 
 class StatisticsEngine:
 

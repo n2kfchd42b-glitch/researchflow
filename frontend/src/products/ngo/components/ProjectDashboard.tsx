@@ -16,24 +16,24 @@ export function ProjectDashboard() {
     : null;
 
   const programIndicators = activeProgram
-    ? state.indicators.filter(i => activeProgram.projectIds.includes(i.projectId))
+    ? state.indicators.filter((i: any) => activeProgram.projectIds.includes(i.projectId))
     : state.indicators;
 
   const onTrack = programIndicators.filter(
-    i => i.currentValue !== null && i.targetValue !== null && i.currentValue >= i.targetValue
+    (i: any) => i.currentValue !== null && i.targetValue !== null && i.currentValue >= i.targetValue
   ).length;
 
   const totalIndicators    = programIndicators.length;
-  const dataQualityScores  = Object.values(state.dataQualityScores);
+  const dataQualityScores  = Object.values(state.dataQualityScores as Record<string, number>);
   const avgQuality = dataQualityScores.length
-    ? Math.round(dataQualityScores.reduce((s, v) => s + v.overall, 0) / dataQualityScores.length)
+    ? Math.round(dataQualityScores.reduce((s: number, v: number) => s + v, 0) / dataQualityScores.length)
     : 0;
 
   // Indicator status breakdown for chart
   const statusData: ChartDataPoint[] = [
     { name: 'On Track',    value: onTrack,                           color: '#5A8A6A' },
     { name: 'Off Track',   value: totalIndicators - onTrack,         color: '#E74C3C' },
-    { name: 'No Data',     value: programIndicators.filter(i => i.currentValue === null).length, color: '#9CA3AF' },
+    { name: 'No Data',     value: programIndicators.filter((i: any) => i.currentValue === null).length, color: '#9CA3AF' },
   ].filter(d => d.value > 0);
 
   return (

@@ -1,8 +1,22 @@
+import time
+import logging
 import os
-from fastapi import FastAPI
+
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("researchflow")
+
+from fastapi import FastAPI, APIRouter, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router
-from app.core.database import create_tables, run_migrations
+from app.api.projects import router as projects_router
+from app.api.references import router as references_router
+from app.api.studies import router as studies_router
+from app.api.assessments import router as assessments_router
+from app.routers.analysis_router import router as analysis_router
 
 app = FastAPI(
     title="ResearchFlow API",
@@ -57,20 +71,14 @@ api_v1.include_router(analysis_router, tags=["Advanced Analytics"])
 app.include_router(api_v1)
 
 
-
-@app.on_event("startup")
-def on_startup():
-    create_tables()   # CREATE TABLE IF NOT EXISTS — safe to re-run
-    run_migrations()  # ALTER TABLE ADD COLUMN — safe to re-run
-
-
 @app.get("/")
 def root():
     return {
         "platform": "ResearchFlow",
         "version": "2.0.0",
         "status": "running",
-        "modules": ["ingestion", "analytics", "reporting", "verification"],
+        "products": ["student", "ngo", "journal"],
+        "modules": ["ingestion", "analytics", "reporting", "verification"]
     }
 
 
@@ -86,9 +94,8 @@ async def health():
     }
 
 
-# ─── Uvicorn Entrypoint ───────────────────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8001))
-    host = os.getenv("HOST", "0.0.0.0")
-    uvicorn.run("app.main:app", host=host, port=port, reload=False)
+    host = os.getenv("HOST", "127.0.0.1")
+    uvicorn.run("app.main:app", host=host, port=port, reload=True)
