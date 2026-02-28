@@ -170,6 +170,22 @@ class JournalRequest(BaseModel):
     setting:           str = 'sub-Saharan Africa'
     open_access_only:  bool = False
 
+class PSMRequest(BaseModel):
+    dataset_id:     str
+    treatment_col:  str
+    covariate_cols: List[str]
+    caliper:        float = 0.2
+    ratio:          int   = 1
+
+class MetaAnalysisRequest(BaseModel):
+    studies: List[dict]
+
+class WorkspaceRequest(BaseModel):
+    name:        str
+    description: str = ""
+    owner_email: str
+    owner_name:  str
+
 from fastapi import Request as _FRequest
 
 @router.post("/auth/register")
