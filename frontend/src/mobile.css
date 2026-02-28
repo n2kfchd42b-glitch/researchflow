@@ -2,8 +2,44 @@
    RESEARCHFLOW MOBILE RESPONSIVE STYLES
    ============================================ */
 
-/* Base mobile breakpoint */
+/* ─── Product layout shells ──────────────────────────── */
+.layout-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+.layout-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem;
+  align-items: center;
+}
+
+/* Product landing 3-column grid */
+.product-cards-grid {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+/* ─── Mobile breakpoint ──────────────────────────────── */
 @media (max-width: 768px) {
+  /* Layout shells — collapse sidebar to hamburger */
+  .layout-sidebar {
+    display: none !important;
+  }
+
+  .layout-hamburger {
+    display: flex !important;
+  }
+
+  /* Product landing — stack cards vertically */
+  .product-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+
 
   /* PAGE */
   .page {

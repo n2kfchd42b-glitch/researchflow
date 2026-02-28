@@ -1,237 +1,178 @@
 import React, { useState } from 'react';
-import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom';
-import { GraduationCap, Menu, X, CheckCircle, Circle, Lock } from 'lucide-react';
+import { Outlet, Link, useLocation } from 'react-router-dom';
+import { GraduationCap, Menu } from 'lucide-react';
 import ProjectSelector from '../components/ProjectSelector';
-import StepIndicator from '../products/student/components/StepIndicator';
-import LearningToggle from '../products/student/components/LearningToggle';
-import { StudentWizardProvider, useStudentWizard } from '../products/student/context/StudentWizardContext';
 
-const WORKFLOW_STEPS = [
-  { label: 'Study Setup',      path: '/student/setup',    step: 1 },
-  { label: 'Data Upload',      path: '/student/upload',   step: 2 },
-  { label: 'Guided Analysis',  path: '/student/analysis', step: 3 },
-  { label: 'Results Review',   path: '/student/results',  step: 4 },
-  { label: 'Report Generation',path: '/student/report',   step: 5 },
+interface Props {
+  user?: any;
+  onLogout?: () => void;
+}
+
+const STEPS = [
+  { label: 'Study Setup',        path: '/student/setup',     step: 1 },
+  { label: 'Data Upload',        path: '/student/upload',    step: 2 },
+  { label: 'Guided Analysis',    path: '/student/analysis',  step: 3 },
+  { label: 'Results Review',     path: '/student/results',   step: 4 },
+  { label: 'Report Generation',  path: '/student/report',    step: 5 },
 ];
 
 const TOOLS = [
-  { label: 'Table 1',          path: '/student/table1' },
-  { label: 'Descriptive Stats',path: '/student/descriptive' },
-  { label: 'Survival Analysis',path: '/student/survival' },
-  { label: 'Sample Size',      path: '/student/samplesize' },
-  { label: 'Codebook',         path: '/student/codebook' },
-  { label: 'Literature Review',path: '/student/literature' },
-  { label: 'PRISMA',           path: '/student/prisma' },
-  { label: 'Subgroup',         path: '/student/subgroup' },
-  { label: 'Sensitivity',      path: '/student/sensitivity' },
-  { label: 'Forest Plot',      path: '/student/forest-plot' },
-  { label: 'Visualization',    path: '/student/visualise' },
-  { label: 'Sample Datasets',  path: '/student/samples' },
+  { label: 'Table 1',             path: '/student/table1' },
+  { label: 'Descriptive Stats',   path: '/student/descriptive' },
+  { label: 'Survival Analysis',   path: '/student/survival' },
+  { label: 'Sample Size',         path: '/student/samplesize' },
+  { label: 'Codebook',            path: '/student/codebook' },
+  { label: 'Literature Review',   path: '/student/literature' },
+  { label: 'PRISMA',              path: '/student/prisma' },
+  { label: 'Subgroup Analysis',   path: '/student/subgroup' },
+  { label: 'Sensitivity Analysis',path: '/student/sensitivity' },
+  { label: 'Forest Plot',         path: '/student/forest-plot' },
+  { label: 'Visualisation Studio',path: '/student/visualise' },
+  { label: 'Sample Datasets',     path: '/student/samples' },
 ];
 
-function SidebarContent({ onClose, user, onLogout }: { onClose?: () => void; user: any; onLogout: () => void }) {
-  const { state } = useStudentWizard();
-  const navigate = useNavigate();
+const ACCENT  = '#C0533A';
+const NAV_BG  = '#1C2B3A';
 
-  const getStepStatus = (step: number) => {
-    if (step <= state.maxCompletedStep) return 'completed';
-    if (step === state.currentStep) return 'current';
-    return 'locked';
+const StudentLayout: React.FC<Props> = ({ user, onLogout }) => {
+  const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const displayName =
+    user?.name ??
+    (() => { try { return JSON.parse(localStorage.getItem('rf_user') || '{}').name; } catch { return null; } })() ??
+    'User';
+
+  const handleLogout = () => {
+    if (onLogout) {
+      onLogout();
+    } else {
+      localStorage.removeItem('rf_user');
+      localStorage.removeItem('rf_token');
+      window.location.reload();
+    }
   };
 
-  return (
-    <>
-      {/* Sidebar header */}
-      <div style={{
-        padding: '1.25rem 1rem',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.6rem',
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
-      }}>
-        <GraduationCap size={22} color="#2E86C1" />
-        <span style={{ fontWeight: 700, fontSize: '1rem', color: 'white' }}>Student Wizard</span>
-        {onClose && (
-          <button onClick={onClose} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#aaa', cursor: 'pointer' }}>
-            <X size={18} />
-          </button>
-        )}
+  const isActive = (path: string) =>
+    location.pathname === path || location.pathname.startsWith(path + '/');
+
+  const sidebarContent = (
+    <div style={{ width: 260, background: NAV_BG, display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
+      {/* Brand header */}
+      <div style={{ padding: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
+          <GraduationCap size={22} color={ACCENT} />
+          <span style={{ color: 'white', fontWeight: 700, fontSize: '1.05rem' }}>Student Wizard</span>
+        </div>
+        <Link to="/" style={{ color: '#7a9ab3', fontSize: '0.75rem', textDecoration: 'none' }}>
+          ← ResearchFlow
+        </Link>
       </div>
 
-      {/* Nav content */}
-      <nav style={{ padding: '0.75rem 0', flex: 1, overflowY: 'auto' }}>
-        {/* WORKFLOW group */}
-        <div style={{ padding: '0.5rem 1rem 0.25rem', fontSize: '0.7rem', color: '#6B8099', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-          Workflow
-        </div>
-        {WORKFLOW_STEPS.map(({ label, path, step }) => {
-          const status = getStepStatus(step);
-          const isLocked = status === 'locked';
+      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '1rem' }}>
+        {/* Wizard Steps */}
+        <p style={{ color: '#506070', fontSize: '0.67rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '1rem 1.25rem 0.4rem', margin: 0 }}>
+          Wizard Steps
+        </p>
+        {STEPS.map(s => {
+          const active = isActive(s.path);
           return (
-            <div
-              key={path}
-              onClick={() => {
-                if (!isLocked) {
-                  navigate(path);
-                  onClose?.();
-                }
-              }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.6rem',
-                padding: '0.55rem 1rem',
-                cursor: isLocked ? 'not-allowed' : 'pointer',
-                opacity: isLocked ? 0.5 : 1,
-                color: 'white',
-                fontSize: '0.875rem',
-                transition: 'background 0.15s',
-              }}
-              onMouseEnter={e => { if (!isLocked) (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.08)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}
-            >
-              {status === 'completed' && <CheckCircle size={14} color="#5A8A6A" />}
-              {status === 'current' && (
-                <span style={{
-                  width: 10, height: 10, borderRadius: '50%', background: '#2E86C1',
-                  animation: 'pulse 1.5s infinite', display: 'inline-block', flexShrink: 0,
-                }} />
-              )}
-              {status === 'locked' && <Lock size={12} color="#6B8099" />}
-              {label}
-            </div>
+            <Link key={s.path} to={s.path} onClick={() => setSidebarOpen(false)} style={{
+              display: 'flex', alignItems: 'center', gap: '0.75rem',
+              padding: '0.6rem 1.25rem', textDecoration: 'none',
+              background: active ? `${ACCENT}18` : 'transparent',
+              borderLeft: `3px solid ${active ? ACCENT : 'transparent'}`,
+              color: active ? ACCENT : '#b0bec5',
+              fontSize: '0.875rem',
+            }}>
+              <span style={{
+                width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                background: active ? ACCENT : 'rgba(255,255,255,0.1)',
+                color: active ? 'white' : '#6a8090',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '0.68rem', fontWeight: 700,
+              }}>{s.step}</span>
+              {s.label}
+            </Link>
           );
         })}
 
-        {/* TOOLS group */}
-        <div style={{ padding: '1rem 1rem 0.25rem', fontSize: '0.7rem', color: '#6B8099', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-          Tools
+        {/* Tools */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginTop: '0.5rem' }}>
+          <p style={{ color: '#506070', fontSize: '0.67rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '1rem 1.25rem 0.4rem', margin: 0 }}>
+            Tools
+          </p>
+          {TOOLS.map(t => {
+            const active = isActive(t.path);
+            return (
+              <Link key={t.path} to={t.path} onClick={() => setSidebarOpen(false)} style={{
+                display: 'block', padding: '0.52rem 1.25rem', textDecoration: 'none',
+                background: active ? `${ACCENT}18` : 'transparent',
+                borderLeft: `3px solid ${active ? ACCENT : 'transparent'}`,
+                color: active ? ACCENT : '#b0bec5',
+                fontSize: '0.855rem',
+              }}>
+                {t.label}
+              </Link>
+            );
+          })}
         </div>
-        {TOOLS.map(({ label, path }) => (
-          <NavLink
-            key={path}
-            to={path}
-            onClick={onClose}
-            style={({ isActive }) => ({
-              display: 'block',
-              padding: '0.5rem 1rem',
-              color: isActive ? '#C0533A' : 'rgba(255,255,255,0.8)',
-              textDecoration: 'none',
-              fontSize: '0.85rem',
-              background: isActive ? 'rgba(192,83,58,0.12)' : 'transparent',
-              borderRight: isActive ? '3px solid #C0533A' : '3px solid transparent',
-              transition: 'background 0.15s',
-            })}
-          >
-            {label}
-          </NavLink>
-        ))}
-      </nav>
-    </>
+      </div>
+    </div>
   );
-}
-
-function StudentLayoutInner({ user, onLogout }: { user: any; onLogout: () => void }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#F4F7FA' }}>
-      {/* Desktop Sidebar */}
-      <aside style={{
-        width: 260,
-        background: '#1C2B3A',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        height: '100vh',
-        zIndex: 100,
-        overflowY: 'auto',
-      }} className="sidebar-desktop">
-        <SidebarContent user={user} onLogout={onLogout} />
-      </aside>
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      {/* Desktop sidebar */}
+      <div className="layout-sidebar">{sidebarContent}</div>
 
-      {/* Mobile sidebar overlay */}
+      {/* Mobile overlay */}
       {sidebarOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex' }}>
-          <div style={{ width: 260, background: '#1C2B3A', display: 'flex', flexDirection: 'column', height: '100vh', overflowY: 'auto' }}>
-            <SidebarContent user={user} onLogout={onLogout} onClose={() => setSidebarOpen(false)} />
+        <>
+          <div
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 299 }}
+            onClick={() => setSidebarOpen(false)}
+          />
+          <div style={{ position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 300 }}>
+            {sidebarContent}
           </div>
-          <div style={{ flex: 1, background: 'rgba(0,0,0,0.5)' }} onClick={() => setSidebarOpen(false)} />
-        </div>
+        </>
       )}
 
-      {/* Main content area */}
-      <div style={{ marginLeft: 0, flex: 1, display: 'flex', flexDirection: 'column' }} className="main-with-sidebar">
+      {/* Main area */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
         {/* Top bar */}
         <header style={{
-          background: 'white',
-          borderBottom: '1px solid #E5E9EF',
-          padding: '0.75rem 1.5rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1rem',
-          position: 'sticky',
-          top: 0,
-          zIndex: 50,
+          background: 'white', borderBottom: '1px solid #e5e7eb',
+          padding: '0 1.25rem', height: 56, flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          <button
-            className="hamburger-btn"
-            onClick={() => setSidebarOpen(true)}
-            style={{ display: 'none', background: 'none', border: '1px solid #ddd', borderRadius: 6, padding: '0.3rem 0.5rem', cursor: 'pointer' }}
-          >
-            <Menu size={18} />
-          </button>
-          <Link to="/" style={{ fontWeight: 700, color: '#C0533A', textDecoration: 'none', fontSize: '1rem' }}>
-            ResearchFlow
-          </Link>
-          <div style={{ flex: 1 }}>
-            <ProjectSelector />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button className="layout-hamburger" onClick={() => setSidebarOpen(true)}>
+              <Menu size={20} color={NAV_BG} />
+            </button>
+            <Link to="/" style={{ color: ACCENT, fontWeight: 700, textDecoration: 'none' }}>
+              ResearchFlow
+            </Link>
           </div>
-          <LearningToggle />
-          <span style={{ fontSize: '0.85rem', color: '#666' }}>{user?.name}</span>
-          <button
-            onClick={onLogout}
-            style={{ background: 'none', border: '1px solid #ddd', borderRadius: 6, padding: '0.35rem 0.75rem', cursor: 'pointer', fontSize: '0.8rem', color: '#555' }}
-          >
-            Sign Out
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <ProjectSelector />
+            <span style={{ color: '#777', fontSize: '0.83rem' }}>{displayName}</span>
+            <button onClick={handleLogout} style={{
+              background: 'transparent', border: '1px solid #ddd',
+              color: '#555', padding: '0.3rem 0.75rem', borderRadius: 6,
+              cursor: 'pointer', fontSize: '0.8rem',
+            }}>Sign Out</button>
+          </div>
         </header>
 
-        {/* Step indicator */}
-        <div style={{ background: 'white', borderBottom: '1px solid #E5E9EF', padding: '1rem 1.5rem' }}>
-          <StepIndicator />
-        </div>
-
         {/* Page content */}
-        <main style={{ flex: 1, padding: '1.5rem', overflow: 'auto' }}>
+        <main style={{ flex: 1, overflowY: 'auto', background: '#F4F7FA' }}>
           <Outlet />
         </main>
       </div>
-
-      <style>{`
-        @media (max-width: 768px) {
-          .sidebar-desktop { display: none !important; }
-          .hamburger-btn { display: flex !important; }
-          .main-with-sidebar { margin-left: 0 !important; }
-        }
-        @media (min-width: 769px) {
-          .main-with-sidebar { margin-left: 260px !important; }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.6; transform: scale(1.15); }
-        }
-      `}</style>
     </div>
   );
-}
+};
 
-export default function StudentLayout({ user, onLogout }: { user: any; onLogout: () => void }) {
-  return (
-    <StudentWizardProvider>
-      <StudentLayoutInner user={user} onLogout={onLogout} />
-    </StudentWizardProvider>
-  );
-}
+export default StudentLayout;

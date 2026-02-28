@@ -57,19 +57,7 @@ app.include_router(router)
 app.include_router(projects_router)
 app.include_router(references_router)
 app.include_router(assessments_router)
-app.include_router(studies_router)
 app.include_router(analysis_router)
-
-# Versioned routes
-api_v1 = APIRouter(prefix="/api/v1")
-api_v1.include_router(router, tags=["Core"])
-api_v1.include_router(projects_router, tags=["Projects"])
-api_v1.include_router(references_router, tags=["References"])
-api_v1.include_router(assessments_router, tags=["Assessments"])
-api_v1.include_router(studies_router, tags=["Studies"])
-api_v1.include_router(analysis_router, tags=["Advanced Analytics"])
-app.include_router(api_v1)
-
 
 @app.get("/")
 def root():
