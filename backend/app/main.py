@@ -26,7 +26,7 @@ app = FastAPI(
 
 # Credentials-safe CORS — must list explicit origins (not "*") when
 # allow_credentials=True so browsers send cookies cross-origin.
-_raw_origins = os.getenv(
+_raw_origins = os.getenv("CORS_ORIGINS") or os.getenv(
     "ALLOWED_ORIGINS",
     "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000"
 )
