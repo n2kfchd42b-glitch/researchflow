@@ -34,6 +34,7 @@ export function VerificationPanel({ submissionId }: VerificationPanelProps) {
         : '📋',
   }));
 
+  const datasetHash = submission.dataset?.sha256Hash;
   const payload: Record<string, unknown> = {
     context: 'journal',
     submissionId,

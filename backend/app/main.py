@@ -24,9 +24,18 @@ app = FastAPI(
     version="2.0.0"
 )
 
+# Credentials-safe CORS — must list explicit origins (not "*") when
+# allow_credentials=True so browsers send cookies cross-origin.
+_raw_origins = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000"
+)
+ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,     # required for httpOnly cookie to be sent
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -40,6 +49,8 @@ async def log_requests(request: Request, call_next):
     logger.info(f"{request.method} {request.url.path} → {response.status_code} ({duration}s)")
     return response
 
+
+# ─── Routes ───────────────────────────────────────────────────────────────────
 
 # Legacy routes (no prefix) — backward compatibility
 app.include_router(router)
@@ -79,7 +90,7 @@ async def health():
         "products": ["student", "ngo", "journal"],
         "api_prefix": "/api/v1",
         "legacy_support": True,
-        "endpoints_count": len(app.routes)
+        "endpoints_count": len(app.routes),
     }
 
 
