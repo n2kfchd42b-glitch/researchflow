@@ -6,7 +6,7 @@
  */
 import React from 'react';
 import { AlertBanner, AlertSeverity } from '../../../packages/ui';
-import { useNGOPlatform } from '../context/NGOPlatformContext';
+import { useNGO } from '../context/NGOPlatformContext';
 
 const NGO_SEVERITY_MAP: Record<string, AlertSeverity> = {
   info:     'info',
@@ -15,7 +15,7 @@ const NGO_SEVERITY_MAP: Record<string, AlertSeverity> = {
 };
 
 const AlertsBanner: React.FC<{ projectId?: string }> = ({ projectId }) => {
-  const { generateAlerts, dismissAlert } = useNGOPlatform();
+  const { generateAlerts, dismissAlert } = useNGO();
 
   let alerts = generateAlerts();
   if (projectId) alerts = alerts.filter((a: any) => a.projectId === projectId);

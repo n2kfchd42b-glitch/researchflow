@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Database, Upload, AlertCircle, Copy, TrendingDown, Tag, RefreshCw, GitBranch, BookOpen, ChevronDown } from 'lucide-react';
 import { useNGO, DatasetRef } from '../context/NGOPlatformContext';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, BoxPlot } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import StatusBadge from '../components/StatusBadge';
 
 const CLEANING_TABS = ['Missing Data', 'Duplicates', 'Outliers', 'Recode', 'Transform', 'Dictionary'] as const;
@@ -342,7 +342,7 @@ function OutliersTab() {
           <BarChart data={demoData} margin={{ top: 4, right: 8, left: 8, bottom: 4 }}>
             <XAxis dataKey="idx" hide />
             <YAxis tick={{ fontSize: 10 }} />
-            <Tooltip formatter={(v: number) => [v, 'Value']} />
+            <Tooltip formatter={(v: any) => [v, 'Value']} />
             <Bar dataKey="value" fill="#5A8A6A" />
           </BarChart>
         </ResponsiveContainer>

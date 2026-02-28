@@ -63,7 +63,7 @@ export default function BudgetTrackerPage() {
     if (!byMonth[month]) byMonth[month] = {};
     byMonth[month][item.category] = (byMonth[month][item.category] || 0) + item.spent;
   });
-  const monthlyData = Object.entries(byMonth).map(([month, cats]) => ({
+  const monthlyData: Record<string, any>[] = Object.entries(byMonth).map(([month, cats]) => ({
     month,
     ...cats,
     total: Object.values(cats).reduce((s, v) => s + v, 0),
@@ -202,7 +202,7 @@ export default function BudgetTrackerPage() {
                 <Pie data={pieData} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={2} dataKey="value">
                   {pieData.map((entry, i) => <Cell key={i} fill={CATEGORY_COLORS[entry.key] || '#95A5A6'} />)}
                 </Pie>
-                <Tooltip formatter={(v: number) => `$${v.toLocaleString()}`} />
+                <Tooltip formatter={(v: any) => `$${Number(v).toLocaleString()}`} />
                 <Legend formatter={(v) => <span style={{ fontSize: '0.75rem' }}>{v}</span>} />
               </PieChart>
             </ResponsiveContainer>
@@ -219,7 +219,7 @@ export default function BudgetTrackerPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
                 <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `$${v >= 1000 ? `${Math.round(v/1000)}k` : v}`} />
-                <Tooltip formatter={(v: number) => `$${v.toLocaleString()}`} />
+                <Tooltip formatter={(v: any) => `$${Number(v).toLocaleString()}`} />
                 {ALL_CATEGORIES.filter(c => monthlyData.some(m => m[c])).map(cat => (
                   <Bar key={cat} dataKey={cat} name={CATEGORY_LABELS[cat]} stackId="a" fill={CATEGORY_COLORS[cat]} />
                 ))}

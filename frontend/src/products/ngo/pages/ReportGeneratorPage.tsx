@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNGOPlatform } from '../context/NGOPlatformContext';
+import { useNGO } from '../context/NGOPlatformContext';
 import { ReportExporter } from '../../../packages/ui';
 
 const templates = [
@@ -41,7 +41,7 @@ const templates = [
 ];
 
 const ReportGeneratorPage: React.FC = () => {
-  const { state, generateReport } = useNGOPlatform();
+  const { state, generateReport } = useNGO();
   const [step, setStep] = useState(1);
   const [selected, setSelected] = useState<any>(null);
   const [report, setReport] = useState<any>({});

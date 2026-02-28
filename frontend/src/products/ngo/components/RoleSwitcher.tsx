@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNGOPlatform } from '../context/NGOPlatformContext';
+import { useNGO } from '../context/NGOPlatformContext';
 
 const roles = [
   { value: 'program-manager', label: 'Program Manager' },
@@ -8,7 +8,7 @@ const roles = [
 ];
 
 const RoleSwitcher: React.FC = () => {
-  const { state, setUserRole } = useNGOPlatform();
+  const { state, setUserRole } = useNGO();
   return (
     <div style={{ padding: '10px 12px', borderTop: '1px solid rgba(255,255,255,0.1)', background: '#1C2B3A' }}>
       <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>View as</div>

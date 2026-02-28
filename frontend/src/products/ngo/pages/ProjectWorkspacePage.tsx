@@ -85,7 +85,7 @@ export default function ProjectWorkspacePage() {
   const budgetColor = budgetPct >= 90 ? '#C0533A' : budgetPct >= 70 ? '#E67E22' : '#27AE60';
 
   function saveProjectName() {
-    if (editName.trim()) updateProject(project.id, { name: editName.trim() });
+    if (editName.trim()) updateProject(project!.id, { name: editName.trim() });
     setEditingName(false);
   }
 

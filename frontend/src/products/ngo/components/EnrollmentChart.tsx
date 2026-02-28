@@ -29,7 +29,7 @@ export default function EnrollmentChart({ sites }: EnrollmentChartProps) {
         <XAxis type="number" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
         <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={90} tickLine={false} axisLine={false} />
         <Tooltip
-          formatter={(value: number, name: string) => [value, name === 'actual' ? 'Enrolled' : 'Target']}
+          formatter={((value: any, name: any) => [value, name === 'actual' ? 'Enrolled' : 'Target']) as any}
           labelFormatter={(label) => data.find(d => d.name === label)?.fullName || label}
         />
         <Bar dataKey="target" fill="#E0E4E8" radius={[0, 4, 4, 0]} barSize={14} />
