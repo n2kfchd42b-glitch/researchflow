@@ -9,9 +9,39 @@ import ProjectSelector from '../components/ProjectSelector';
 import { NGOPlatformProvider, useNGO } from '../products/ngo/context/NGOPlatformContext';
 import '../products/ngo/ngo.css';
 
-const ACTIVE_COLOR = '#5A8A6A';
+const ANALYSIS_GROUP: NavGroup = {
+  group: 'Analysis Suite',
+  roles: ['data-analyst'],
+  items: [
+    { to: '/ngo/analysis/survival',     label: 'Survival Analysis',    roles: ['data-analyst'] },
+    { to: '/ngo/analysis/psm',          label: 'Propensity Matching',  roles: ['data-analyst'] },
+    { to: '/ngo/analysis/subgroup',     label: 'Subgroup Analysis',    roles: ['data-analyst'] },
+    { to: '/ngo/analysis/sensitivity',  label: 'Sensitivity Analysis', roles: ['data-analyst'] },
+    { to: '/ngo/analysis/meta',         label: 'Meta-Analysis',        roles: ['data-analyst'] },
+    { to: '/ngo/analysis/forest-plot',  label: 'Forest Plot',          roles: ['data-analyst'] },
+    { to: '/ngo/analysis/its',          label: 'Interrupted Time Series', roles: ['data-analyst'] },
+    { to: '/ngo/analysis/did',          label: 'Difference-in-Differences', roles: ['data-analyst'] },
+    { to: '/ngo/analysis/mixed',        label: 'Mixed Effects',        roles: ['data-analyst'] },
+    { to: '/ngo/analysis/spatial',      label: 'Spatial Analysis',     roles: ['data-analyst'] },
+    { to: '/ngo/analysis/network-meta', label: 'Network Meta-Analysis',roles: ['data-analyst'] },
+  ],
+};
 
-function SidebarContent({ onClose, user, onLogout }: { onClose?: () => void; user: any; onLogout: () => void }) {
+const linkStyle = (isActive: boolean): React.CSSProperties => ({
+  display: 'block',
+  padding: '0.45rem 1rem',
+  color: isActive ? SAGE : 'rgba(255,255,255,0.82)',
+  textDecoration: 'none',
+  fontSize: '0.855rem',
+  background: isActive ? 'rgba(90,138,106,0.18)' : 'transparent',
+  borderRight: isActive ? `3px solid ${SAGE}` : '3px solid transparent',
+  transition: 'background 0.15s',
+  borderRadius: '4px 0 0 4px',
+});
+
+function SidebarContent({ onClose, showAll }: { onClose?: () => void; showAll: boolean }) {
+  const { state } = useNGOPlatform();
+  const role = state.userRole;
   const [analysisOpen, setAnalysisOpen] = useState(false);
   const { state } = useNGO();
 
@@ -73,6 +103,9 @@ function SidebarContent({ onClose, user, onLogout }: { onClose?: () => void; use
     { label: 'Table 1',         path: '/ngo/table1' },
     { label: 'Descriptive',     path: '/ngo/descriptive' },
   ];
+
+  const visibleTop = showAll ? TOP_NAV : TOP_NAV.filter(i => i.roles.includes(role));
+  const showAnalysis = showAll || ANALYSIS_GROUP.roles.includes(role);
 
   return (
     <>
@@ -185,8 +218,9 @@ function SidebarContent({ onClose, user, onLogout }: { onClose?: () => void; use
   );
 }
 
-export default function NGOLayout({ user, onLogout }: { user: any; onLogout: () => void }) {
+export default function NGOLayout({ user, onLogout }: { user?: any; onLogout?: () => void }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   return (
     <NGOPlatformProvider>

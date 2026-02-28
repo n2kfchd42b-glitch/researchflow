@@ -4,12 +4,10 @@ import { BookOpen, Menu, X } from 'lucide-react';
 import ProjectSelector from '../components/ProjectSelector';
 
 const NAV_ITEMS = [
-  { label: 'Dashboard',    path: '/journal',             end: true },
-  { label: 'Submissions',  path: '/journal/submissions', end: false },
-  { label: 'Verification', path: '/journal/verify',      end: false },
-  { label: 'Risk of Bias', path: '/journal/rob',         end: false },
-  { label: 'Audit Trail',  path: '/journal/audit',       end: false },
-  { label: 'Reports',      path: '/journal/reports',     end: false },
+  { label: 'Dashboard',     path: '/journal',           end: true  },
+  { label: 'New Intake',    path: '/journal/intake',    end: false },
+  { label: 'Pipeline View', path: '/journal/pipeline',  end: false },
+  { label: 'Settings',      path: '/journal/settings',  end: false },
 ];
 
 const ACTIVE_COLOR = '#7D3C98';
