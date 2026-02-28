@@ -18,15 +18,15 @@ const AlertsBanner: React.FC<{ projectId?: string }> = ({ projectId }) => {
   const { generateAlerts, dismissAlert } = useNGOPlatform();
 
   let alerts = generateAlerts();
-  if (projectId) alerts = alerts.filter(a => a.projectId === projectId);
-  alerts = alerts.filter(a => !a.dismissed);
+  if (projectId) alerts = alerts.filter((a: any) => a.projectId === projectId);
+  alerts = alerts.filter((a: any) => !a.dismissed);
 
   const visible = alerts.slice(0, 5);
   const moreCount = alerts.length - visible.length;
 
   return (
     <div style={{ marginBottom: 16 }}>
-      {visible.map(a => (
+      {visible.map((a: any) => (
         <AlertBanner
           key={a.id}
           severity={NGO_SEVERITY_MAP[a.severity] ?? 'info'}

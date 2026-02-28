@@ -20,11 +20,11 @@ export function VerificationPanel({ submissionId }: VerificationPanelProps) {
 
   if (!submission) return null;
 
-  const auditEvents: ActivityEvent[] = (submission.auditTrail ?? []).map(e => ({
+  const auditEvents: ActivityEvent[] = (submission.auditLog ?? []).map(e => ({
     id: e.id,
-    actor: e.actor,
+    actor: e.performedBy,
     action: e.action,
-    detail: e.detail,
+    detail: e.details,
     timestamp: e.timestamp,
     category: e.category,
     icon: e.category === 'submission'   ? '📄'
@@ -39,7 +39,7 @@ export function VerificationPanel({ submissionId }: VerificationPanelProps) {
     submissionId,
     manuscriptId: submission.manuscriptId,
     title: submission.title,
-    datasetHash: submission.datasetHash,
+    datasetHash: submission.dataset?.sha256Hash,
     verificationReport: submission.verificationReport,
   };
 
@@ -78,7 +78,7 @@ export function VerificationPanel({ submissionId }: VerificationPanelProps) {
       }}>
         <Link2 size={14} color="#2a4a7a" aria-hidden="true" />
         <span style={{ color: '#374151' }}>Linked to submitted dataset</span>
-        {submission.datasetHash && (
+        {submission.dataset?.sha256Hash && (
           <code style={{
             marginLeft: 'auto',
             background: '#D8E4F5',
@@ -88,7 +88,7 @@ export function VerificationPanel({ submissionId }: VerificationPanelProps) {
             color: '#2a4a7a',
             fontFamily: 'monospace',
           }}>
-            SHA-256: {submission.datasetHash.slice(0, 12)}…
+            SHA-256: {submission.dataset?.sha256Hash?.slice(0, 12)}…
           </code>
         )}
       </div>
