@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useNGOPlatform } from '../context/NGOPlatformContext';
+import { useNGO } from '../context/NGOPlatformContext';
 
 const ReproducibilityPackage: React.FC<{ projectId: string }> = ({ projectId }) => {
-  const { state } = useNGOPlatform();
+  const { state } = useNGO();
   const [show, setShow] = useState(false);
   const [success, setSuccess] = useState(false);
 

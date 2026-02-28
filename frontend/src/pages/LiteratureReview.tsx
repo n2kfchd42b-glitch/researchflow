@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useProject } from '../context/ProjectContext';
 
 const STORAGE_KEY = 'researchflow_literature';
 
@@ -213,6 +214,85 @@ function guessMapping(headers: string[]): Record<string, string> {
   return map;
 }
 
+function BulkImportModal({ onImport, onClose }: { onImport: (refs: Reference[]) => void; onClose: () => void }) {
+  const [csvText, setCsvText] = useState('');
+  const [mapping, setMapping] = useState<Record<string, string>>({});
+  const [headers, setHeaders] = useState<string[]>([]);
+  const [rows, setRows]       = useState<string[][]>([]);
+  const [error, setError]     = useState('');
+
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const text = ev.target?.result as string;
+      setCsvText(text);
+      const parsed = parseCSV(text);
+      if (parsed.length < 2) { setError('CSV must have a header row and at least one data row.'); return; }
+      const hdrs = parsed[0];
+      setHeaders(hdrs);
+      setRows(parsed.slice(1));
+      setMapping(guessMapping(hdrs));
+      setError('');
+    };
+    reader.readAsText(file);
+  }
+
+  function doImport() {
+    if (!rows.length) { setError('No data rows found.'); return; }
+    const imported: Reference[] = rows.filter(r => r.some(c => c)).map(row => {
+      const ref = emptyRef();
+      headers.forEach((h, i) => {
+        const field = mapping[h];
+        if (!field) return;
+        const val = row[i] ?? '';
+        if (field === 'year' || field === 'sample_size') (ref as any)[field] = parseInt(val) || 0;
+        else (ref as any)[field] = val;
+      });
+      ref.id = Date.now().toString() + Math.random().toString(36).slice(2);
+      return ref;
+    });
+    onImport(imported);
+  }
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ background: '#1C2B3A', borderRadius: 12, padding: '2rem', maxWidth: 600, width: '90%', maxHeight: '80vh', overflowY: 'auto' }}>
+        <h3 style={{ color: '#C0533A', marginBottom: '1rem' }}>Bulk Import References</h3>
+        {error && <p style={{ color: '#f87171', marginBottom: '0.5rem' }}>{error}</p>}
+        <input type="file" accept=".csv" onChange={handleFile} style={{ marginBottom: '1rem', color: '#fff' }} />
+        {headers.length > 0 && (
+          <div>
+            <p style={{ color: '#9AABB8', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Map CSV columns to fields:</p>
+            {headers.map(h => (
+              <div key={h} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+                <span style={{ color: '#fff', minWidth: 140, fontSize: '0.85rem' }}>{h}</span>
+                <select value={mapping[h] || ''} onChange={e => setMapping(m => ({ ...m, [h]: e.target.value }))}
+                  style={{ padding: '0.3rem', borderRadius: 4, background: '#0d1b2a', color: '#fff', border: '1px solid #2C3E52', fontSize: '0.85rem' }}>
+                  <option value="">— skip —</option>
+                  {KNOWN_COLS.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+            ))}
+            <p style={{ color: '#9AABB8', fontSize: '0.8rem', marginTop: '0.5rem' }}>{rows.length} data rows found.</p>
+          </div>
+        )}
+        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+          <button onClick={doImport} disabled={!rows.length}
+            style={{ padding: '0.5rem 1.25rem', background: '#C0533A', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 700 }}>
+            Import
+          </button>
+          <button onClick={onClose}
+            style={{ padding: '0.5rem 1.25rem', background: '#2C3E52', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const LiteratureReview: React.FC = () => {
   const { projectId } = useProject();
   const [refs, setRefs]               = useState<Reference[]>([]);
@@ -228,6 +308,8 @@ const LiteratureReview: React.FC = () => {
   const [copied, setCopied]           = useState(false);
   const [saved, setSaved]             = useState(false);
   const [loading, setLoading]         = useState(false);
+  const [showBulk, setShowBulk]       = useState(false);
+  const [showExtract, setShowExtract] = useState(false);
 
   useEffect(() => {
     if (!projectId) return;
@@ -344,6 +426,9 @@ const LiteratureReview: React.FC = () => {
   const themeGroups   = THEMES.reduce((acc, t) => { acc[t] = refs.filter(r => r.theme === t); return acc; }, {} as Record<string, Reference[]>);
   const gradeDist     = GRADE_LEVELS.map(g => ({ grade: g, count: refs.filter(r => r.grade === g).length }));
   const extractedRefs = refs.filter(r => r.effect_type || r.rob_rating);
+
+  const lbl: React.CSSProperties = { fontWeight: 700, fontSize: '0.78rem', color: '#9AABB8', display: 'block', marginBottom: 4, letterSpacing: '0.04em' };
+  const inp: React.CSSProperties = { width: '100%', padding: '0.5rem 0.7rem', borderRadius: 6, border: '1px solid #2C3E52', background: '#0d1b2a', color: '#fff', fontSize: '0.88rem' };
 
   const gradeDistribution = GRADE_LEVELS.map(g => ({
     grade: g, count: refs.filter(r => r.grade === g).length,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNGOPlatform } from '../context/NGOPlatformContext';
+import { useNGO } from '../context/NGOPlatformContext';
 
 interface DataPipelineBarProps {
   datasetId: string;
@@ -15,7 +15,7 @@ const stages = [
 ];
 
 const DataPipelineBar: React.FC<DataPipelineBarProps> = ({ datasetId, currentStage }) => {
-  const { getDatasetPipeline } = useNGOPlatform();
+  const { getDatasetPipeline } = useNGO();
   const pipeline = getDatasetPipeline(datasetId);
   const currentIdx = stages.findIndex(s => s.key === currentStage);
 

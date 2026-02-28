@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useNGOPlatform } from '../context/NGOPlatformContext';
+import { useNGO } from '../context/NGOPlatformContext';
 
 interface DatasetVersionTimelineProps {
   datasetId: string;
 }
 
 const DatasetVersionTimeline: React.FC<DatasetVersionTimelineProps> = ({ datasetId }) => {
-  const { getDatasetVersions, restoreDatasetVersion } = useNGOPlatform();
+  const { getDatasetVersions, restoreDatasetVersion } = useNGO();
   const versions = getDatasetVersions(datasetId).slice().reverse(); // Latest first
   const [compareIdx, setCompareIdx] = useState<number | null>(null);
 

@@ -1,30 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Component } from 'react';
+import type { ReactNode, ErrorInfo } from 'react';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import './mobile.css';
-
-class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
-  state = { error: null };
-  static getDerivedStateFromError(error: Error) { return { error }; }
-  componentDidCatch(error: Error, info: ErrorInfo) { console.error('App error:', error, info); }
-  render() {
-    if (this.state.error) {
-      return (
-        <div style={{ minHeight: '100vh', background: '#1C2B3A', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
-          <div style={{ color: '#fff', maxWidth: 600, textAlign: 'center' }}>
-            <h2 style={{ color: '#C0533A', marginBottom: '1rem' }}>Something went wrong</h2>
-            <pre style={{ background: '#0d1b2a', padding: '1rem', borderRadius: 8, textAlign: 'left', fontSize: 13, overflowX: 'auto', color: '#f87171' }}>
-              {(this.state.error as Error).message}
-            </pre>
-            <button onClick={() => { localStorage.clear(); window.location.reload(); }}
-              style={{ marginTop: '1.5rem', padding: '0.6rem 1.5rem', background: '#C0533A', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
-              Clear session &amp; reload
-            </button>
-          </div>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 import Login from './pages/Login';
@@ -83,6 +60,22 @@ import VisualisationStudio from './pages/VisualisationStudio';
 import SampleDatasets from './pages/SampleDatasets';
 import PropensityMatching from './pages/PropensityMatching';
 
+// ─── Analytics pages ──────────────────────────────────────────────────────────
+import InterruptedTimeSeries from './pages/analytics/InterruptedTimeSeries';
+import DifferenceInDifferences from './pages/analytics/DifferenceInDifferences';
+import MixedEffects from './pages/analytics/MixedEffects';
+import SpatialAnalysis from './pages/analytics/SpatialAnalysis';
+import NetworkMetaAnalysis from './pages/analytics/NetworkMetaAnalysis';
+
+// ─── Other missing pages ──────────────────────────────────────────────────────
+import SyntaxExporter from './pages/SyntaxExporter';
+import DataDictionary from './pages/DataDictionary';
+import CohortBuilder from './pages/CohortBuilder';
+import JournalVerification from './pages/JournalVerification';
+import JournalAssistant from './pages/JournalAssistant';
+import RiskOfBias from './pages/RiskOfBias';
+import AuditTrail from './pages/AuditTrail';
+
 // ─── NGO-specific pages ───────────────────────────────────────────────────────
 import StudyDashboard from './pages/StudyDashboard';
 import InstrumentRecognition from './pages/InstrumentRecognition';
@@ -91,6 +84,32 @@ import DataVersioning from './pages/DataVersioning';
 import BudgetTracker from './pages/BudgetTracker';
 import ProgressTracker from './pages/ProgressTracker';
 import Dashboard from './pages/Dashboard';
+import { ProjectProvider } from './context/ProjectContext';
+
+class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  state = { error: null };
+  static getDerivedStateFromError(error: Error) { return { error }; }
+  componentDidCatch(error: Error, info: ErrorInfo) { console.error('App error:', error, info); }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ minHeight: '100vh', background: '#1C2B3A', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+          <div style={{ color: '#fff', maxWidth: 600, textAlign: 'center' }}>
+            <h2 style={{ color: '#C0533A', marginBottom: '1rem' }}>Something went wrong</h2>
+            <pre style={{ background: '#0d1b2a', padding: '1rem', borderRadius: 8, textAlign: 'left', fontSize: 13, overflowX: 'auto', color: '#f87171' }}>
+              {(this.state.error as Error).message}
+            </pre>
+            <button onClick={() => { localStorage.clear(); window.location.reload(); }}
+              style={{ marginTop: '1.5rem', padding: '0.6rem 1.5rem', background: '#C0533A', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
+              Clear session &amp; reload
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const NAV_LINKS = [
   { to: "/student",           label: "Student" },

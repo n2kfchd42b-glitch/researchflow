@@ -76,7 +76,7 @@ export default function BudgetChart({ budgetItems, totalBudget }: BudgetChartPro
                 <Cell key={index} fill={CATEGORY_COLORS[entry.key] || '#95A5A6'} />
               ))}
             </Pie>
-            <Tooltip formatter={(v: number) => `$${v.toLocaleString()}`} />
+            <Tooltip formatter={(v: any) => `$${Number(v).toLocaleString()}`} />
             <Legend formatter={(v) => <span style={{ fontSize: '0.75rem' }}>{v}</span>} />
           </PieChart>
         </ResponsiveContainer>

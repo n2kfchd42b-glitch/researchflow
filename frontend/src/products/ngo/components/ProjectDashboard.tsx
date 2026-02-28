@@ -1,7 +1,7 @@
 import React from 'react';
 import { BarChart2, Users, DollarSign, Activity, TrendingUp } from 'lucide-react';
 import { MetricCard, ChartCard, ChartDataPoint } from '../../../packages/ui';
-import { useNGOPlatform } from '../context/NGOPlatformContext';
+import { useNGO } from '../context/NGOPlatformContext';
 import ProgramSelector from './ProgramSelector';
 
 /**
@@ -9,7 +9,7 @@ import ProgramSelector from './ProgramSelector';
  * and ChartCard components. Supports multi-project switching via ProgramSelector.
  */
 export function ProjectDashboard() {
-  const { state } = useNGOPlatform();
+  const { state } = useNGO();
 
   const activeProgram = state.activeProgramId
     ? state.programs.find((p: any) => p.id === state.activeProgramId)

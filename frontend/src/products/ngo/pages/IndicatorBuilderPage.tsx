@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useNGOPlatform } from '../context/NGOPlatformContext';
+import { useNGO } from '../context/NGOPlatformContext';
 import EmptyState from '../components/EmptyState';
 
 const IndicatorBuilderPage: React.FC = () => {
-  const { state, createIndicator, updateIndicator, deleteIndicator, recalculateIndicator } = useNGOPlatform();
+  const { state, createIndicator, updateIndicator, deleteIndicator, recalculateIndicator } = useNGO();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
     name: '',

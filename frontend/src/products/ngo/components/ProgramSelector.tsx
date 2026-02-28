@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useNGOPlatform } from '../context/NGOPlatformContext';
+import { useNGO } from '../context/NGOPlatformContext';
 
 const ProgramSelector: React.FC = () => {
-  const { state, setActiveProgram, createProgram } = useNGOPlatform();
+  const { state, setActiveProgram, createProgram } = useNGO();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: '', country: '', donor: '', totalBudget: 0, startDate: '', endDate: '', description: '', logoUrl: null });
 

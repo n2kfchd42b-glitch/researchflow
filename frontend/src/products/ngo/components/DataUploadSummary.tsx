@@ -1,12 +1,12 @@
 import React from 'react';
-import { useNGOPlatform } from '../context/NGOPlatformContext';
+import { useNGO } from '../context/NGOPlatformContext';
 
 interface DataUploadSummaryProps {
   dataset: any;
 }
 
 const DataUploadSummary: React.FC<DataUploadSummaryProps> = ({ dataset }) => {
-  const { calculateQualityScore, setDataQualityScore } = useNGOPlatform();
+  const { calculateQualityScore, setDataQualityScore } = useNGO();
   const columns = dataset.columns || [];
 
   // useMemo prevents recomputing on every render; dataset.id as the only dep

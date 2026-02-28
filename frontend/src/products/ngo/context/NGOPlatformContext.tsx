@@ -113,6 +113,11 @@ export interface NGOState {
   budgetItems: BudgetItem[];
   ethicsSubmissions: EthicsSubmission[];
   recentActivity: ActivityItem[];
+  activeProgramId: string | null;
+  programs: any[];
+  userRole: string;
+  indicators: any[];
+  dataQualityScores: Record<string, any>;
 }
 
 // ─── Actions ──────────────────────────────────────────────────────────────────
@@ -188,6 +193,11 @@ const INITIAL_STATE: NGOState = {
     { id: 'act-004', type: 'budget-entry', description: 'Added expense: Field coordinator salaries (Q1) - KES 28,500', timestamp: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(), projectId: 'proj-demo-001', user: 'Amina Hassan' },
     { id: 'act-005', type: 'team-change', description: 'Added James Ochieng as Field Coordinator (Kisumu North)', timestamp: new Date(Date.now() - 88 * 24 * 60 * 60 * 1000).toISOString(), projectId: 'proj-demo-001', user: 'Dr. Sarah Kimani' },
   ],
+  activeProgramId: null,
+  programs: [],
+  userRole: 'researcher',
+  indicators: [],
+  dataQualityScores: {},
 };
 
 // ─── Reducer ──────────────────────────────────────────────────────────────────
@@ -290,6 +300,21 @@ interface NGOContextType {
   addEthicsSubmission: (submission: EthicsSubmission) => void;
   addActivity: (activity: Omit<ActivityItem, 'id' | 'timestamp'>) => void;
   getProjectStats: (id: string) => ProjectStats;
+  generateAlerts: () => any[];
+  dismissAlert: (alertId: string) => void;
+  getDatasetPipeline: (datasetId?: string) => any;
+  calculateQualityScore: (...args: any[]) => any;
+  setDataQualityScore: (...args: any[]) => void;
+  getDatasetVersions: (datasetId: string) => any[];
+  restoreDatasetVersion: (...args: any[]) => void;
+  setActiveProgram: (programId: string | null) => void;
+  createProgram: (program: any) => void;
+  setUserRole: (role: string) => void;
+  createIndicator: (indicator: any) => void;
+  updateIndicator: (id: string, updates: any) => void;
+  deleteIndicator: (id: string) => void;
+  recalculateIndicator: (id: string) => void;
+  generateReport: (config: any) => any;
 }
 
 interface ProjectStats {
@@ -470,6 +495,21 @@ export function NGOPlatformProvider({ children }: { children: ReactNode }) {
       addEthicsSubmission,
       addActivity,
       getProjectStats,
+      generateAlerts: () => [],
+      dismissAlert: () => {},
+      getDatasetPipeline: () => null,
+      calculateQualityScore: () => 0,
+      setDataQualityScore: () => {},
+      getDatasetVersions: () => [],
+      restoreDatasetVersion: () => {},
+      setActiveProgram: () => {},
+      createProgram: () => {},
+      setUserRole: () => {},
+      createIndicator: () => {},
+      updateIndicator: () => {},
+      deleteIndicator: () => {},
+      recalculateIndicator: () => {},
+      generateReport: () => null,
     }}>
       {children}
     </NGOContext.Provider>
