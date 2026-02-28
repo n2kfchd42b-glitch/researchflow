@@ -113,7 +113,6 @@ class SurvivalRequest(BaseModel):
     event_col:    str
     group_col:    Optional[str] = None
 
-<<<<<<< HEAD
 class OutlierRequest(BaseModel):
     dataset_id: str
     column:     str
@@ -134,32 +133,6 @@ class GuidedAnalysisRequest(BaseModel):
     outcome_col:       str
     predictor_cols:    list
     study_design:      str = 'observational'
-=======
-# --- Endpoints ---
-@router.post("/upload")
-async def upload_dataset(file: UploadFile = File(...)):
-    try:
-        suffix = os.path.splitext(file.filename)[1].lower()
-        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-            content = await file.read()
-            tmp.write(content)
-            tmp_path = tmp.name
-        engine = DataIngestionEngine()
-        # ...existing code...
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error uploading dataset: {str(e)}")
-
-class RecodeRequest(BaseModel):
-    dataset_id: str
-    column: str
-    mapping: dict
-
-class GuidedAnalysisRequest(BaseModel):
-    dataset_id: str
-    outcome_col: str
-    predictor_cols: list
-    study_design: str = 'observational'
->>>>>>> ca8b493 (NGO Platform: full workflow, UI, context, and polish pass complete)
     research_question: str = ''
 
 class JournalRequest(BaseModel):
