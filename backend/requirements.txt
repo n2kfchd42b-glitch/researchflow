@@ -12,3 +12,4 @@ reportlab
 python-jose[cryptography]
 pydantic
 scipy
+sqlalchemy
