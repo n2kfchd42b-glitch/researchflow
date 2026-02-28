@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from fastapi import APIRouter, UploadFile, File, HTTPException, Response, Depends
+from fastapi import APIRouter, UploadFile, File, HTTPException, Response, Depends, Request, Header
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional, List
@@ -573,49 +573,6 @@ def remove_duplicates(dataset_id: str):
               dataset_id=dataset_id)
     return {"removed": before - len(df_clean), "rows_remaining": len(df_clean)}
 
-
-# ------------------- IMPORTS -------------------
-from datetime import datetime
-from fastapi import APIRouter, UploadFile, File, HTTPException, Request, Header
-from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
-from typing import Optional
-import pandas as pd
-import tempfile
-import os
-import uuid
-import io
-import sys
-sys.path.insert(0, '.')
-
-from app.analytics.ingestion import DataIngestionEngine
-from app.analytics.statistics import StatisticsEngine
-from app.analytics.rigor import RigorScoreEngine
-from app.services.report_generator import ReportGenerator
-from app.services.auth import register_user, login_user, decode_token
-from app.services.methodology_memory import save_template, get_templates, get_template, delete_template, get_community_templates
-from app.services.cohort_builder import build_cohort, get_column_summary
-from app.services.survival_analysis import run_kaplan_meier
-from app.services.audit_trail import log_event, get_audit_log, get_reproducibility_report
-from app.services.protocol_intelligence import parse_protocol_file
-from app.services.data_cleaner import detect_outliers, detect_duplicates, impute_missing, recode_variable, get_cleaning_summary
-from app.services.guided_analysis import recommend_tests
-from app.services.journal_assistant import get_journal_package
-
-router = APIRouter()
-studies = {}
-datasets = {}
-
-# ------------------- HELPER FUNCTION -------------------
-def get_dataset_df(dataset_id: str):
-    if dataset_id in datasets and 'df' in datasets[dataset_id]:
-        return datasets[dataset_id]['df']
-    path = f'/tmp/{dataset_id}.csv'
-    if os.path.exists(path):
-        df = pd.read_csv(path)
-        datasets[dataset_id] = {'df': df, 'created_at': datetime.utcnow().isoformat()}
-        return df
-    raise HTTPException(status_code=404, detail="Dataset not found")
 
 # ------------------- PYDANTIC MODELS -------------------
 class StudyPayload(BaseModel):
