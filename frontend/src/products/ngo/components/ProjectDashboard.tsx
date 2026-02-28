@@ -12,7 +12,7 @@ export function ProjectDashboard() {
   const { state } = useNGOPlatform();
 
   const activeProgram = state.activeProgramId
-    ? state.programs.find(p => p.id === state.activeProgramId)
+    ? state.programs.find((p: any) => p.id === state.activeProgramId)
     : null;
 
   const programIndicators = activeProgram
@@ -26,7 +26,7 @@ export function ProjectDashboard() {
   const totalIndicators    = programIndicators.length;
   const dataQualityScores  = Object.values(state.dataQualityScores);
   const avgQuality = dataQualityScores.length
-    ? Math.round(dataQualityScores.reduce((s, v) => s + v, 0) / dataQualityScores.length)
+    ? Math.round(dataQualityScores.reduce((s, v) => s + v.overall, 0) / dataQualityScores.length)
     : 0;
 
   // Indicator status breakdown for chart
