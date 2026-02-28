@@ -35,7 +35,7 @@ import SubmissionReviewPage from './products/journal/pages/SubmissionReviewPage'
 import BatchVerificationPage from './products/journal/pages/BatchVerificationPage';
 import JournalSettingsPage from './products/journal/pages/JournalSettingsPage';
 
-// Shared analysis tools (used in both Student and NGO)
+// ─── Shared analysis tools (used in both Student and NGO) ────────────────────
 import Table1Generator from './pages/Table1Generator';
 import DescriptiveStats from './pages/DescriptiveStats';
 import SurvivalAnalysis from './pages/SurvivalAnalysis';
@@ -50,40 +50,31 @@ import VisualisationStudio from './pages/VisualisationStudio';
 import SampleDatasets from './pages/SampleDatasets';
 import PropensityMatching from './pages/PropensityMatching';
 
-// NGO-specific pages
+// ─── NGO-specific pages ───────────────────────────────────────────────────────
 import StudyDashboard from './pages/StudyDashboard';
 import InstrumentRecognition from './pages/InstrumentRecognition';
 import DataCleaningStudio from './pages/DataCleaningStudio';
 import DataVersioning from './pages/DataVersioning';
-<<<<<<< HEAD
 import BudgetTracker from './pages/BudgetTracker';
 import ProgressTracker from './pages/ProgressTracker';
 import DataDictionary from './pages/DataDictionary';
 import CohortBuilder from './pages/CohortBuilder';
 import SyntaxExporter from './pages/SyntaxExporter';
-=======
-import Dashboard from './pages/Dashboard';
-import InterruptedTimeSeries from "./pages/analytics/InterruptedTimeSeries";
-import DifferenceInDifferences from "./pages/analytics/DifferenceInDifferences";
-import MixedEffects from "./pages/analytics/MixedEffects";
-import SpatialAnalysis from "./pages/analytics/SpatialAnalysis";
-import NetworkMetaAnalysis from "./pages/analytics/NetworkMetaAnalysis";
-import { NGOPlatformProvider } from './products/ngo/context/NGOPlatformContext';
-import NGOLayout from './layouts/NGOLayout';
-import NGODashboardPage from './products/ngo/pages/NGODashboardPage';
-import IndicatorBuilderPage from './products/ngo/pages/IndicatorBuilderPage';
-import ReportGeneratorPage from './products/ngo/pages/ReportGeneratorPage';
-import ProjectWorkspacePage from './products/ngo/pages/ProjectWorkspacePage';
-import DataManagementPage from './products/ngo/pages/DataManagementPage';
->>>>>>> ca8b493 (NGO Platform: full workflow, UI, context, and polish pass complete)
 
-// Advanced analytics
+// ─── Advanced analytics ───────────────────────────────────────────────────────
 import InterruptedTimeSeries from './pages/analytics/InterruptedTimeSeries';
 import DifferenceInDifferences from './pages/analytics/DifferenceInDifferences';
 import MixedEffects from './pages/analytics/MixedEffects';
 import SpatialAnalysis from './pages/analytics/SpatialAnalysis';
 import NetworkMetaAnalysis from './pages/analytics/NetworkMetaAnalysis';
 
+// ─── NGO Platform enhancements ────────────────────────────────────────────────
+import { NGOPlatformProvider } from './products/ngo/context/NGOPlatformContext';
+import NGODashboardPage from './products/ngo/pages/NGODashboardPage';
+import IndicatorBuilderPage from './products/ngo/pages/IndicatorBuilderPage';
+import ReportGeneratorPage from './products/ngo/pages/ReportGeneratorPage';
+import ProjectWorkspacePage from './products/ngo/pages/ProjectWorkspacePage';
+import DataManagementPage from './products/ngo/pages/DataManagementPage';
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 
@@ -123,134 +114,86 @@ export default function App() {
   }
 
   return (
-<<<<<<< HEAD
     <BrowserRouter>
       <ProjectProvider>
-        <Routes>
-          {/* ── Product Landing ── */}
-          <Route path="/" element={<ProductLanding />} />
+        <NGOPlatformProvider>
+          <Routes>
+            {/* ── Product Landing ── */}
+            <Route path="/" element={<ProductLanding />} />
 
-          {/* ── Student Wizard ── */}
-          <Route path="/student" element={<StudentLayout user={user} onLogout={handleLogout} />}>
-            <Route index element={<StudySetupPage />} />
-            <Route path="setup"       element={<StudySetupPage />} />
-            <Route path="upload"      element={<DataUploadPage />} />
-            <Route path="analysis"    element={<GuidedAnalysisPage />} />
-            <Route path="results"     element={<ResultsReviewPage />} />
-            <Route path="report"      element={<ReportGenerationPage />} />
-            {/* Existing tools accessible within Student Wizard */}
-            <Route path="table1"      element={<Table1Generator />} />
-            <Route path="descriptive" element={<DescriptiveStats />} />
-            <Route path="survival"    element={<SurvivalAnalysis />} />
-            <Route path="samplesize"  element={<SampleSize />} />
-            <Route path="codebook"    element={<CodebookGenerator />} />
-            <Route path="literature"  element={<LiteratureReview />} />
-            <Route path="prisma"      element={<PRISMADiagram />} />
-            <Route path="subgroup"    element={<SubgroupAnalysis />} />
-            <Route path="sensitivity" element={<SensitivityAnalysis />} />
-            <Route path="forest-plot" element={<ForestPlot />} />
-            <Route path="visualise"   element={<VisualisationStudio />} />
-            <Route path="samples"     element={<SampleDatasets />} />
-          </Route>
+            {/* ── Student Wizard ── */}
+            <Route path="/student" element={<StudentLayout user={user} onLogout={handleLogout} />}>
+              <Route index element={<StudySetupPage />} />
+              <Route path="setup"       element={<StudySetupPage />} />
+              <Route path="upload"      element={<DataUploadPage />} />
+              <Route path="analysis"    element={<GuidedAnalysisPage />} />
+              <Route path="results"     element={<ResultsReviewPage />} />
+              <Route path="report"      element={<ReportGenerationPage />} />
+              {/* Existing tools accessible within Student Wizard */}
+              <Route path="table1"      element={<Table1Generator />} />
+              <Route path="descriptive" element={<DescriptiveStats />} />
+              <Route path="survival"    element={<SurvivalAnalysis />} />
+              <Route path="samplesize"  element={<SampleSize />} />
+              <Route path="codebook"    element={<CodebookGenerator />} />
+              <Route path="literature"  element={<LiteratureReview />} />
+              <Route path="prisma"      element={<PRISMADiagram />} />
+              <Route path="subgroup"    element={<SubgroupAnalysis />} />
+              <Route path="sensitivity" element={<SensitivityAnalysis />} />
+              <Route path="forest-plot" element={<ForestPlot />} />
+              <Route path="visualise"   element={<VisualisationStudio />} />
+              <Route path="samples"     element={<SampleDatasets />} />
+            </Route>
 
-          {/* ── NGO Platform ── */}
-          <Route path="/ngo" element={<NGOLayout user={user} onLogout={handleLogout} />}>
-            <Route index                     element={<NGOPipeline />} />
-            <Route path="projects"           element={<StudyDashboard />} />
-            <Route path="forms"              element={<InstrumentRecognition />} />
-            <Route path="clean"              element={<DataCleaningStudio />} />
-            <Route path="versioning"         element={<DataVersioning />} />
-            <Route path="budget"             element={<BudgetTracker />} />
-            <Route path="ethics"             element={<ProgressTracker />} />
-            <Route path="analysis/survival"  element={<SurvivalAnalysis />} />
-            <Route path="analysis/psm"       element={<PropensityMatching />} />
-            <Route path="analysis/subgroup"  element={<SubgroupAnalysis />} />
-            <Route path="analysis/sensitivity" element={<SensitivityAnalysis />} />
-            <Route path="analysis/meta"      element={<ForestPlot />} />
-            <Route path="analysis/forest-plot" element={<ForestPlot />} />
-            <Route path="analysis/its"       element={<InterruptedTimeSeries />} />
-            <Route path="analysis/did"       element={<DifferenceInDifferences />} />
-            <Route path="analysis/mixed"     element={<MixedEffects />} />
-            <Route path="analysis/spatial"   element={<SpatialAnalysis />} />
-            <Route path="analysis/network-meta" element={<NetworkMetaAnalysis />} />
-            <Route path="prisma"             element={<PRISMADiagram />} />
-            <Route path="reports"            element={<SyntaxExporter />} />
-            <Route path="studies"            element={<StudyDashboard />} />
-            <Route path="dictionary"         element={<DataDictionary />} />
-            <Route path="cohort"             element={<CohortBuilder />} />
-          </Route>
+            {/* ── NGO Platform ── */}
+            <Route path="/ngo" element={<NGOLayout user={user} onLogout={handleLogout} />}>
+              <Route index                          element={<NGODashboardPage />} />
+              <Route path="dashboard"               element={<NGODashboardPage />} />
+              <Route path="projects"                element={<StudyDashboard />} />
+              <Route path="projects/:projectId"     element={<ProjectWorkspacePage />} />
+              <Route path="data/:datasetId"         element={<DataManagementPage />} />
+              <Route path="indicators"              element={<IndicatorBuilderPage />} />
+              <Route path="forms"                   element={<InstrumentRecognition />} />
+              <Route path="clean"                   element={<DataCleaningStudio />} />
+              <Route path="versioning"              element={<DataVersioning />} />
+              <Route path="budget"                  element={<BudgetTracker />} />
+              <Route path="ethics"                  element={<ProgressTracker />} />
+              <Route path="monitoring"              element={<StudyDashboard />} />
+              <Route path="analysis/survival"       element={<SurvivalAnalysis />} />
+              <Route path="analysis/psm"            element={<PropensityMatching />} />
+              <Route path="analysis/subgroup"       element={<SubgroupAnalysis />} />
+              <Route path="analysis/sensitivity"    element={<SensitivityAnalysis />} />
+              <Route path="analysis/meta"           element={<ForestPlot />} />
+              <Route path="analysis/forest-plot"    element={<ForestPlot />} />
+              <Route path="analysis/its"            element={<InterruptedTimeSeries />} />
+              <Route path="analysis/did"            element={<DifferenceInDifferences />} />
+              <Route path="analysis/mixed"          element={<MixedEffects />} />
+              <Route path="analysis/spatial"        element={<SpatialAnalysis />} />
+              <Route path="analysis/network-meta"   element={<NetworkMetaAnalysis />} />
+              <Route path="prisma"                  element={<PRISMADiagram />} />
+              <Route path="reports"                 element={<SyntaxExporter />} />
+              <Route path="reports/generate"        element={<ReportGeneratorPage />} />
+              <Route path="studies"                 element={<StudyDashboard />} />
+              <Route path="dictionary"              element={<DataDictionary />} />
+              <Route path="cohort"                  element={<CohortBuilder />} />
+              <Route path="pipeline"                element={<NGOPipeline />} />
+            </Route>
 
-          {/* ── Journal Component ── */}
-          <Route path="/journal" element={<JournalProvider><JournalLayout user={user} onLogout={handleLogout} /></JournalProvider>}>
-            <Route index                        element={<JournalDashboardPage />} />
-            <Route path="intake"               element={<SubmissionIntakePage />} />
-            <Route path="submission/:id"       element={<SubmissionReviewPage />} />
-            <Route path="pipeline"             element={<BatchVerificationPage />} />
-            <Route path="settings"             element={<JournalSettingsPage />} />
-          </Route>
+            {/* ── Journal Component ── */}
+            <Route path="/journal" element={<JournalProvider><JournalLayout user={user} onLogout={handleLogout} /></JournalProvider>}>
+              <Route index                        element={<JournalDashboardPage />} />
+              <Route path="intake"               element={<SubmissionIntakePage />} />
+              <Route path="submission/:id"       element={<SubmissionReviewPage />} />
+              <Route path="pipeline"             element={<BatchVerificationPage />} />
+              <Route path="settings"             element={<JournalSettingsPage />} />
+            </Route>
 
-          {/* ── Shared utility routes ── */}
-          <Route path="/ai-assistant"  element={<AIAssistant />} />
-          <Route path="/collaborate"   element={<Collaboration user={user} />} />
-          <Route path="/methodology"   element={<MethodologyMemory user={user} />} />
-        </Routes>
+            {/* ── Shared utility routes ── */}
+            <Route path="/ai-assistant"  element={<AIAssistant />} />
+            <Route path="/collaborate"   element={<Collaboration user={user} />} />
+            <Route path="/methodology"   element={<MethodologyMemory user={user} />} />
+          </Routes>
+        </NGOPlatformProvider>
       </ProjectProvider>
     </BrowserRouter>
-=======
-    <ProjectProvider>
-      <NGOPlatformProvider>
-        <BrowserRouter>
-          <NavBar user={user} onLogout={handleLogout} />
-          <Routes>
-            <Route path="/"        element={<Dashboard user={user} />} />
-            <Route path="/student" element={<StudentWizard />} />
-            <Route path="/ngo/*" element={<NGOLayout />}>
-              <Route path="dashboard" element={<NGODashboardPage />} />
-              <Route path="indicators" element={<IndicatorBuilderPage />} />
-              <Route path="reports/generate" element={<ReportGeneratorPage />} />
-              <Route path="projects/:projectId" element={<ProjectWorkspacePage projectId={":projectId"} />} />
-              <Route path="data/:datasetId" element={<DataManagementPage datasetId={":datasetId"} />} />
-            </Route>
-            <Route path="/ngo" element={<NGOPipeline />} />
-            <Route path="/journal" element={<JournalVerification />} />
-            <Route path="/methodology" element={<MethodologyMemory user={user} />} />
-            <Route path="/cohort" element={<CohortBuilder />} />
-            <Route path="/survival" element={<SurvivalAnalysis />} />
-            <Route path="/samplesize" element={<SampleSize />} />
-            <Route path="/ai-assistant" element={<AIAssistant />} />
-            <Route path="/progress" element={<ProgressTracker />} />
-            <Route path="/literature" element={<LiteratureReview />} />
-            <Route path="/codebook" element={<CodebookGenerator />} />
-            <Route path="/versioning" element={<DataVersioning />} />
-            <Route path="/syntax" element={<SyntaxExporter />} />
-            <Route path="/prisma" element={<PRISMADiagram />} />
-            <Route path="/studies" element={<StudyDashboard />} />
-            <Route path="/rob" element={<RiskOfBias />} />
-            <Route path="/dictionary" element={<DataDictionary />} />
-            <Route path="/subgroup" element={<SubgroupAnalysis />} />
-            <Route path="/sensitivity" element={<SensitivityAnalysis />} />
-            <Route path="/sensitivity" element={<SensitivityAnalysis />} />
-            <Route path="/table1" element={<Table1Generator />} />
-            <Route path="/audit" element={<AuditTrail user={user} />} />
-            <Route path="/clean" element={<DataCleaningStudio />} />
-            <Route path="/guided" element={<GuidedAnalysis />} />
-            <Route path="/journal-assistant" element={<JournalAssistant />} />
-            <Route path="/instrument" element={<InstrumentRecognition />} />
-            <Route path="/psm" element={<PropensityMatching />} />
-            <Route path="/descriptive" element={<DescriptiveStats />} />
-            <Route path="/visualise" element={<VisualisationStudio />} />
-            <Route path="/collaborate" element={<Collaboration user={user} />} />
-            <Route path="/forest-plot" element={<ForestPlot />} />
-            <Route path="/samples" element={<SampleDatasets />} />
-            <Route path="/its" element={<InterruptedTimeSeries />} />
-            <Route path="/did" element={<DifferenceInDifferences />} />
-            <Route path="/mixed-effects" element={<MixedEffects />} />
-            <Route path="/spatial" element={<SpatialAnalysis />} />
-            <Route path="/network-meta" element={<NetworkMetaAnalysis />} />
-          </Routes>
-        </BrowserRouter>
-      </NGOPlatformProvider>
-    </ProjectProvider>
->>>>>>> ca8b493 (NGO Platform: full workflow, UI, context, and polish pass complete)
   );
 }
