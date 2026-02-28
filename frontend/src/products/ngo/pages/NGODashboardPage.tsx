@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import AlertsBanner from '../components/AlertsBanner';
-import ProgramDashboard from '../components/ProgramDashboard';
+import { ProjectDashboard } from '../components/ProjectDashboard';
 import SuccessToast from '../components/SuccessToast';
 import EmptyState from '../components/EmptyState';
 import { useNGOPlatform } from '../context/NGOPlatformContext';
@@ -45,7 +45,7 @@ const NGODashboardPage: React.FC = () => {
 
       <AlertsBanner />
 
-      {activeProgram && <ProgramDashboard />}
+      {activeProgram && <ProjectDashboard />}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, marginTop: activeProgram ? 0 : 8 }}>
         <h2 style={{ margin: 0, color: '#1C2B3A', fontSize: 20, fontWeight: 700 }}>
