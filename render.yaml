@@ -28,6 +28,8 @@ services:
         source: /*
         destination: /index.html
     envVars:
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=1536
       # Set this in the Render dashboard to your backend URL, e.g.:
       # https://researchflow-backend.onrender.com
       - key: REACT_APP_API_URL
