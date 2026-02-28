@@ -11,15 +11,16 @@ def generate_uuid():
 
 class User(Base):
     __tablename__ = "users"
-    id = Column(String, primary_key=True, default=generate_uuid)
-    name = Column(String, nullable=False)
-    email = Column(String, unique=True, nullable=False)
-    role = Column(String, nullable=False)
-    institution = Column(String)
-    country = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    projects = relationship("Project", back_populates="owner")
-    studies = relationship("Study", back_populates="owner")
+    id            = Column(String,   primary_key=True, default=generate_uuid)
+    name          = Column(String,   nullable=False)
+    email         = Column(String,   unique=True, nullable=False)
+    role          = Column(String,   nullable=False)
+    organisation  = Column(String)           # legacy alias → kept for FK compat
+    institution   = Column(String,   default="")
+    country       = Column(String,   default="")
+    password_hash = Column(String)           # PBKDF2-HMAC-SHA256 salt:key hex
+    created_at    = Column(DateTime, default=datetime.utcnow)
+    studies       = relationship("Study", back_populates="owner")
 
 class Project(Base):
     __tablename__ = "projects"

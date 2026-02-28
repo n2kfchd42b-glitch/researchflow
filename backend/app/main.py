@@ -24,22 +24,18 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# ─── CORS ─────────────────────────────────────────────────────────────────────
-# CORS_ORIGINS env var lets you override allowed origins in production.
-# Set it to your Render frontend URL, e.g.:
-#   CORS_ORIGINS=https://researchflow-frontend.onrender.com
-# Multiple origins are comma-separated. Falls back to localhost for dev.
-
+# Credentials-safe CORS — must list explicit origins (not "*") when
+# allow_credentials=True so browsers send cookies cross-origin.
 _raw_origins = os.getenv(
-    "CORS_ORIGINS",
-    "http://localhost:3000,http://localhost:3001"
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000"
 )
 ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
+    allow_credentials=True,     # required for httpOnly cookie to be sent
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -61,19 +57,7 @@ app.include_router(router)
 app.include_router(projects_router)
 app.include_router(references_router)
 app.include_router(assessments_router)
-app.include_router(studies_router)
 app.include_router(analysis_router)
-
-# Versioned routes
-api_v1 = APIRouter(prefix="/api/v1")
-api_v1.include_router(router, tags=["Core"])
-api_v1.include_router(projects_router, tags=["Projects"])
-api_v1.include_router(references_router, tags=["References"])
-api_v1.include_router(assessments_router, tags=["Assessments"])
-api_v1.include_router(studies_router, tags=["Studies"])
-api_v1.include_router(analysis_router, tags=["Advanced Analytics"])
-app.include_router(api_v1)
-
 
 @app.get("/")
 def root():
@@ -82,7 +66,7 @@ def root():
         "version": "2.0.0",
         "status": "running",
         "products": ["student", "ngo", "journal"],
-        "modules": ["ingestion", "analytics", "reporting", "verification"],
+        "modules": ["ingestion", "analytics", "reporting", "verification"]
     }
 
 
@@ -98,9 +82,8 @@ async def health():
     }
 
 
-# ─── Uvicorn Entrypoint ───────────────────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8001))
-    host = os.getenv("HOST", "0.0.0.0")
-    uvicorn.run("app.main:app", host=host, port=port, reload=False)
+    host = os.getenv("HOST", "127.0.0.1")
+    uvicorn.run("app.main:app", host=host, port=port, reload=True)

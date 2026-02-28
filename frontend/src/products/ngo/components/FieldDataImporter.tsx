@@ -67,7 +67,7 @@ const FieldDataImporter: React.FC<FieldDataImporterProps> = ({ onUpload }) => {
               <span style={{ marginRight: 8 }}>{d.type === 'kobo' ? '🟢' : d.type === 'odk' ? '🟡' : d.type === 'excel' ? '📄' : d.type === 'gps' ? '📍' : '🔀'}</span>
               <span style={{ color: '#2E86C1', fontWeight: 500 }}>{d.message}</span>
               <button style={{ marginLeft: 12, background: '#5A8A6A', color: '#fff', borderRadius: 4, border: 'none', padding: '2px 8px', fontSize: 13 }}>{d.action}</button>
-              <button style={{ marginLeft: 8, background: '#e0e0e0', color: '#1C2B3A', borderRadius: 4, border: 'none', padding: '2px 8px', fontSize: 13 }} onClick={() => setDismissed(prev => new Set(Array.from(prev).concat([idx])))}>Dismiss</button>
+              <button style={{ marginLeft: 8, background: '#e0e0e0', color: '#1C2B3A', borderRadius: 4, border: 'none', padding: '2px 8px', fontSize: 13 }} onClick={() => setDismissed(prev => new Set(Array.from(prev).concat(idx)))}>Dismiss</button>
             </div>
           ))}
         </div>

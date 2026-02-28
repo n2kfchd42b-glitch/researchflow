@@ -104,7 +104,7 @@ export function DataTable<T extends Record<string, unknown>>({
     });
   };
 
-  const selectedIds = [...selected];
+  const selectedIds = Array.from(selected);
 
   const thStyle: React.CSSProperties = {
     padding: '0.65rem 0.85rem',

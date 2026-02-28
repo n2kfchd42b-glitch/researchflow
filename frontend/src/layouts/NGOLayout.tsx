@@ -1,264 +1,195 @@
 import React, { useState } from 'react';
-import { Outlet, NavLink, Link } from 'react-router-dom';
-import { Building2, Menu, X, ChevronDown, ChevronRight } from 'lucide-react';
-import ProgramSelector from '../products/ngo/components/ProgramSelector';
-import RoleSwitcher from '../products/ngo/components/RoleSwitcher';
-import { useNGOPlatform } from '../products/ngo/context/NGOPlatformContext';
+import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Building2, Menu, ChevronDown, ChevronRight } from 'lucide-react';
+import ProjectSelector from '../components/ProjectSelector';
 
-const SAGE = '#5A8A6A';
-const NAVY = '#1C2B3A';
-
-interface NavItem {
-  to: string;
-  label: string;
-  roles: string[];
+interface Props {
+  user?: any;
+  onLogout?: () => void;
 }
 
-interface NavGroup {
-  group: string;
-  items: NavItem[];
-  roles: string[];
-}
+const ACCENT = '#5A8A6A';
+const NAV_BG = '#1C2B3A';
 
-const TOP_NAV: NavItem[] = [
-  { to: '/ngo',           label: 'Dashboard',       roles: ['program-manager', 'data-analyst', 'field-coordinator'] },
-  { to: '/ngo/projects',  label: 'Projects',         roles: ['program-manager', 'data-analyst', 'field-coordinator'] },
-  { to: '/ngo/indicators',label: 'Indicators',       roles: ['program-manager', 'data-analyst'] },
-  { to: '/ngo/budget',    label: 'Budget Tracker',   roles: ['program-manager'] },
-  { to: '/ngo/ethics',    label: 'Ethics Tracker',   roles: ['program-manager'] },
-  { to: '/ngo/reports/generate', label: 'Report Generator', roles: ['program-manager', 'data-analyst'] },
-  { to: '/ngo/reports',   label: 'Reports',          roles: ['program-manager', 'data-analyst'] },
-  { to: '/ngo/monitoring',label: 'Monitoring',       roles: ['program-manager', 'field-coordinator'] },
-  { to: '/ngo/clean',     label: 'Data Cleaning',    roles: ['data-analyst'] },
-  { to: '/ngo/versioning',label: 'Data Versioning',  roles: ['data-analyst'] },
-  { to: '/ngo/prisma',    label: 'PRISMA Diagram',   roles: ['data-analyst'] },
-  { to: '/ngo/dictionary',label: 'Data Dictionary',  roles: ['data-analyst'] },
-  { to: '/ngo/cohort',    label: 'Cohort Builder',   roles: ['data-analyst'] },
-  { to: '/ngo/forms',     label: 'Field Forms',      roles: ['field-coordinator'] },
-  { to: '/ngo/studies',   label: 'Study Dashboard',  roles: ['program-manager', 'field-coordinator'] },
+const NAV_ITEMS = [
+  { label: 'Dashboard',       path: '/ngo',           exact: true },
+  { label: 'Projects',        path: '/ngo/projects' },
+  { label: 'Field Forms',     path: '/ngo/forms' },
+  { label: 'Data Cleaning',   path: '/ngo/clean' },
+  { label: 'Data Versioning', path: '/ngo/versioning' },
+  { label: 'Data Dictionary', path: '/ngo/dictionary' },
+  { label: 'Cohort Builder',  path: '/ngo/cohort' },
+  { label: 'Budget Tracker',  path: '/ngo/budget' },
+  { label: 'Ethics Tracker',  path: '/ngo/ethics' },
 ];
 
-const ANALYSIS_GROUP: NavGroup = {
-  group: 'Analysis Suite',
-  roles: ['data-analyst'],
-  items: [
-    { to: '/ngo/analysis/survival',     label: 'Survival Analysis',    roles: ['data-analyst'] },
-    { to: '/ngo/analysis/psm',          label: 'Propensity Matching',  roles: ['data-analyst'] },
-    { to: '/ngo/analysis/subgroup',     label: 'Subgroup Analysis',    roles: ['data-analyst'] },
-    { to: '/ngo/analysis/sensitivity',  label: 'Sensitivity Analysis', roles: ['data-analyst'] },
-    { to: '/ngo/analysis/meta',         label: 'Meta-Analysis',        roles: ['data-analyst'] },
-    { to: '/ngo/analysis/forest-plot',  label: 'Forest Plot',          roles: ['data-analyst'] },
-    { to: '/ngo/analysis/its',          label: 'Interrupted Time Series', roles: ['data-analyst'] },
-    { to: '/ngo/analysis/did',          label: 'Difference-in-Differences', roles: ['data-analyst'] },
-    { to: '/ngo/analysis/mixed',        label: 'Mixed Effects',        roles: ['data-analyst'] },
-    { to: '/ngo/analysis/spatial',      label: 'Spatial Analysis',     roles: ['data-analyst'] },
-    { to: '/ngo/analysis/network-meta', label: 'Network Meta-Analysis',roles: ['data-analyst'] },
-  ],
-};
+const ANALYSIS_ITEMS = [
+  { label: 'Survival Analysis',    path: '/ngo/analysis/survival' },
+  { label: 'PSM',                  path: '/ngo/analysis/psm' },
+  { label: 'Subgroup Analysis',    path: '/ngo/analysis/subgroup' },
+  { label: 'Sensitivity Analysis', path: '/ngo/analysis/sensitivity' },
+  { label: 'Forest Plot',          path: '/ngo/analysis/meta' },
+  { label: 'Mixed Effects',        path: '/ngo/analysis/mixed' },
+  { label: 'Diff-in-Diff',         path: '/ngo/analysis/did' },
+  { label: 'Interrupted TS',       path: '/ngo/analysis/its' },
+  { label: 'Spatial Analysis',     path: '/ngo/analysis/spatial' },
+  { label: 'Network Meta',         path: '/ngo/analysis/network-meta' },
+];
 
-const linkStyle = (isActive: boolean): React.CSSProperties => ({
-  display: 'block',
-  padding: '0.45rem 1rem',
-  color: isActive ? SAGE : 'rgba(255,255,255,0.82)',
-  textDecoration: 'none',
-  fontSize: '0.855rem',
-  background: isActive ? 'rgba(90,138,106,0.18)' : 'transparent',
-  borderRight: isActive ? `3px solid ${SAGE}` : '3px solid transparent',
-  transition: 'background 0.15s',
-  borderRadius: '4px 0 0 4px',
-});
+const BOTTOM_ITEMS = [
+  { label: 'PRISMA',          path: '/ngo/prisma' },
+  { label: 'Reports',         path: '/ngo/reports' },
+  { label: 'Study Dashboard', path: '/ngo/studies' },
+];
 
-function SidebarContent({ onClose, showAll }: { onClose?: () => void; showAll: boolean }) {
-  const { state } = useNGOPlatform();
-  const role = state.userRole;
-  const [analysisOpen, setAnalysisOpen] = useState(false);
+const NGOLayout: React.FC<Props> = ({ user, onLogout }) => {
+  const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [analysisOpen, setAnalysisOpen] = useState(
+    () => location.pathname.startsWith('/ngo/analysis')
+  );
 
-  const visibleTop = showAll ? TOP_NAV : TOP_NAV.filter(i => i.roles.includes(role));
-  const showAnalysis = showAll || ANALYSIS_GROUP.roles.includes(role);
+  const displayName =
+    user?.name ??
+    (() => { try { return JSON.parse(localStorage.getItem('rf_user') || '{}').name; } catch { return null; } })() ??
+    'User';
 
-  return (
-    <>
-      <div style={{ padding: '0.75rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', padding: '0 0.25rem' }}>
-          <Building2 size={18} color={SAGE} />
-          <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'white' }}>NGO Platform</span>
-          {onClose && (
-            <button onClick={onClose} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#aaa', cursor: 'pointer' }}>
-              <X size={16} />
-            </button>
-          )}
+  const handleLogout = () => {
+    if (onLogout) onLogout();
+    else {
+      localStorage.removeItem('rf_user');
+      localStorage.removeItem('rf_token');
+      window.location.reload();
+    }
+  };
+
+  const isActive = (path: string, exact = false) =>
+    exact ? location.pathname === path
+          : location.pathname === path || location.pathname.startsWith(path + '/');
+
+  const analysisActive = location.pathname.startsWith('/ngo/analysis');
+
+  const navLinkStyle = (path: string, exact = false) => ({
+    display: 'block' as const,
+    padding: '0.55rem 1.25rem',
+    textDecoration: 'none' as const,
+    background: isActive(path, exact) ? `${ACCENT}18` : 'transparent',
+    borderLeft: `3px solid ${isActive(path, exact) ? ACCENT : 'transparent'}`,
+    color: isActive(path, exact) ? ACCENT : '#b0bec5',
+    fontSize: '0.875rem',
+  });
+
+  const sidebarContent = (
+    <div style={{ width: 260, background: NAV_BG, display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
+      {/* Brand header */}
+      <div style={{ padding: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
+          <Building2 size={22} color={ACCENT} />
+          <span style={{ color: 'white', fontWeight: 700, fontSize: '1.05rem' }}>NGO Platform</span>
         </div>
-        <ProgramSelector />
+        <Link to="/" style={{ color: '#7a9ab3', fontSize: '0.75rem', textDecoration: 'none' }}>
+          ← ResearchFlow
+        </Link>
       </div>
 
-      <nav style={{ flex: 1, overflowY: 'auto', padding: '0.5rem 0' }}>
-        {visibleTop.map(item => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === '/ngo'}
-            onClick={onClose}
-            style={({ isActive }) => linkStyle(isActive)}
-          >
+      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: '1rem' }}>
+        <p style={{ color: '#506070', fontSize: '0.67rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '1rem 1.25rem 0.4rem', margin: 0 }}>
+          Navigation
+        </p>
+
+        {NAV_ITEMS.map(item => (
+          <Link key={item.path} to={item.path} onClick={() => setSidebarOpen(false)}
+            style={navLinkStyle(item.path, item.exact)}>
             {item.label}
-          </NavLink>
+          </Link>
         ))}
 
-        {showAnalysis && (
-          <div>
-            <button
-              onClick={() => setAnalysisOpen(o => !o)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                width: '100%',
-                gap: '0.4rem',
-                padding: '0.45rem 1rem',
-                background: 'none',
-                border: 'none',
-                color: '#9DB4C9',
-                fontWeight: 700,
-                fontSize: '0.7rem',
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                cursor: 'pointer',
-                marginTop: '0.25rem',
-              }}
-            >
-              {analysisOpen ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
-              {ANALYSIS_GROUP.group}
-            </button>
-            {analysisOpen && ANALYSIS_GROUP.items.map(item => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                onClick={onClose}
-                style={({ isActive }) => ({
-                  ...linkStyle(isActive),
-                  paddingLeft: '1.75rem',
-                  fontSize: '0.82rem',
-                })}
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </div>
-        )}
-      </nav>
-    </>
-  );
-}
+        {/* Analysis Suite — expandable */}
+        <button
+          onClick={() => setAnalysisOpen(o => !o)}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            width: '100%', padding: '0.55rem 1.25rem',
+            background: analysisActive ? `${ACCENT}18` : 'transparent',
+            border: 'none',
+            borderLeft: `3px solid ${analysisActive ? ACCENT : 'transparent'}`,
+            color: analysisActive ? ACCENT : '#b0bec5',
+            cursor: 'pointer', fontSize: '0.875rem', textAlign: 'left',
+          }}
+        >
+          Analysis Suite
+          {analysisOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+        </button>
 
-export default function NGOLayout({ user, onLogout }: { user?: any; onLogout?: () => void }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showAll, setShowAll] = useState(false);
+        {analysisOpen && ANALYSIS_ITEMS.map(item => (
+          <Link key={item.path} to={item.path} onClick={() => setSidebarOpen(false)} style={{
+            display: 'block', padding: '0.45rem 1.25rem 0.45rem 2.25rem', textDecoration: 'none',
+            background: isActive(item.path) ? `${ACCENT}18` : 'transparent',
+            borderLeft: `3px solid ${isActive(item.path) ? ACCENT : 'transparent'}`,
+            color: isActive(item.path) ? ACCENT : '#8da0b0',
+            fontSize: '0.82rem',
+          }}>
+            {item.label}
+          </Link>
+        ))}
+
+        {BOTTOM_ITEMS.map(item => (
+          <Link key={item.path} to={item.path} onClick={() => setSidebarOpen(false)}
+            style={navLinkStyle(item.path)}>
+            {item.label}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#F4F7FA' }}>
-      {/* ── Desktop Sidebar ── */}
-      <aside
-        className="sidebar-desktop"
-        style={{
-          width: 260,
-          background: NAVY,
-          display: 'flex',
-          flexDirection: 'column',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          height: '100vh',
-          zIndex: 100,
-          overflowY: 'auto',
-        }}
-      >
-        <SidebarContent showAll={showAll} />
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      <div className="layout-sidebar">{sidebarContent}</div>
 
-        {/* Show All toggle */}
-        <div style={{ padding: '0.5rem 1rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          <label style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
-            <input
-              type="checkbox"
-              checked={showAll}
-              onChange={e => setShowAll(e.target.checked)}
-              style={{ accentColor: SAGE }}
-            />
-            Show All
-          </label>
-        </div>
-
-        <RoleSwitcher />
-      </aside>
-
-      {/* ── Mobile Overlay ── */}
       {sidebarOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex' }}>
-          <div style={{ width: 260, background: NAVY, display: 'flex', flexDirection: 'column', height: '100vh', overflowY: 'auto' }}>
-            <SidebarContent showAll={showAll} onClose={() => setSidebarOpen(false)} />
-            <div style={{ padding: '0.5rem 1rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-              <label style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
-                <input type="checkbox" checked={showAll} onChange={e => setShowAll(e.target.checked)} style={{ accentColor: SAGE }} />
-                Show All
-              </label>
-            </div>
-            <RoleSwitcher />
+        <>
+          <div
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 299 }}
+            onClick={() => setSidebarOpen(false)}
+          />
+          <div style={{ position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 300 }}>
+            {sidebarContent}
           </div>
-          <div style={{ flex: 1, background: 'rgba(0,0,0,0.5)' }} onClick={() => setSidebarOpen(false)} />
-        </div>
+        </>
       )}
 
-      {/* ── Main Area ── */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }} className="main-with-sidebar">
-        {/* Header */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
         <header style={{
-          background: 'white',
-          borderBottom: '1px solid #E5E9EF',
-          padding: '0.65rem 1.25rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1rem',
-          position: 'sticky',
-          top: 0,
-          zIndex: 50,
+          background: 'white', borderBottom: '1px solid #e5e7eb',
+          padding: '0 1.25rem', height: 56, flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          <button
-            className="hamburger-btn"
-            onClick={() => setSidebarOpen(true)}
-            style={{ display: 'none', background: 'none', border: '1px solid #ddd', borderRadius: 6, padding: '0.3rem 0.5rem', cursor: 'pointer' }}
-          >
-            <Menu size={18} />
-          </button>
-          <Link to="/" style={{ fontWeight: 700, color: '#C0533A', textDecoration: 'none', fontSize: '1rem', whiteSpace: 'nowrap' }}>
-            ResearchFlow
-          </Link>
-          <div style={{ flex: 1 }} />
-          {user?.name && (
-            <span style={{ fontSize: '0.84rem', color: '#666', whiteSpace: 'nowrap' }}>{user.name}</span>
-          )}
-          {onLogout && (
-            <button
-              onClick={onLogout}
-              style={{ background: 'none', border: '1px solid #ddd', borderRadius: 6, padding: '0.3rem 0.7rem', cursor: 'pointer', fontSize: '0.8rem', color: '#555', whiteSpace: 'nowrap' }}
-            >
-              Sign Out
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button className="layout-hamburger" onClick={() => setSidebarOpen(true)}>
+              <Menu size={20} color={NAV_BG} />
             </button>
-          )}
+            <Link to="/" style={{ color: '#C0533A', fontWeight: 700, textDecoration: 'none' }}>
+              ResearchFlow
+            </Link>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <ProjectSelector />
+            <span style={{ color: '#777', fontSize: '0.83rem' }}>{displayName}</span>
+            <button onClick={handleLogout} style={{
+              background: 'transparent', border: '1px solid #ddd',
+              color: '#555', padding: '0.3rem 0.75rem', borderRadius: 6,
+              cursor: 'pointer', fontSize: '0.8rem',
+            }}>Sign Out</button>
+          </div>
         </header>
 
-        <main style={{ flex: 1, padding: '1.25rem', overflow: 'auto' }}>
+        <main style={{ flex: 1, overflowY: 'auto', background: '#F4F7FA' }}>
           <Outlet />
         </main>
       </div>
-
-      <style>{`
-        @media (max-width: 768px) {
-          .sidebar-desktop { display: none !important; }
-          .hamburger-btn { display: flex !important; }
-          .main-with-sidebar { margin-left: 0 !important; }
-        }
-        @media (min-width: 769px) {
-          .main-with-sidebar { margin-left: 260px !important; }
-        }
-      `}</style>
     </div>
   );
-}
+};
+
+export default NGOLayout;

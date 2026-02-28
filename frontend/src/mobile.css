@@ -2,8 +2,44 @@
    RESEARCHFLOW MOBILE RESPONSIVE STYLES
    ============================================ */
 
-/* Base mobile breakpoint */
+/* ─── Product layout shells ──────────────────────────── */
+.layout-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+.layout-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem;
+  align-items: center;
+}
+
+/* Product landing 3-column grid */
+.product-cards-grid {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+/* ─── Mobile breakpoint ──────────────────────────────── */
 @media (max-width: 768px) {
+  /* Layout shells — collapse sidebar to hamburger */
+  .layout-sidebar {
+    display: none !important;
+  }
+
+  .layout-hamburger {
+    display: flex !important;
+  }
+
+  /* Product landing — stack cards vertically */
+  .product-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+
 
   /* PAGE */
   .page {
@@ -16,24 +52,9 @@
     padding: 0.75rem 1rem !important;
   }
 
-  .navbar-links {
+  /* Hide desktop inline links on mobile */
+  .navbar > div:first-child > .navbar-links {
     display: none !important;
-  }
-
-  .navbar-links.open {
-    display: flex !important;
-    flex-direction: column !important;
-    width: 100% !important;
-    padding: 0.75rem 0 !important;
-    gap: 0.25rem !important;
-    border-top: 1px solid rgba(255,255,255,0.1) !important;
-    margin-top: 0.5rem !important;
-  }
-
-  .navbar-links.open a {
-    padding: 0.6rem 0.75rem !important;
-    border-radius: 6px !important;
-    font-size: 0.9rem !important;
   }
 
   .hamburger {

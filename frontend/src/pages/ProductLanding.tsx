@@ -1,185 +1,140 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GraduationCap, Building2, BookOpen, CheckCircle } from 'lucide-react';
+import { GraduationCap, Building2, BookOpen } from 'lucide-react';
+import { useProject } from '../context/ProjectContext';
 
 const PRODUCTS = [
   {
-    icon: GraduationCap,
+    Icon: GraduationCap,
     title: 'Student Wizard',
     subtitle: 'Guided research analysis for students & trainees',
     features: ['Study Setup', 'Guided Analysis', 'Auto Reports', 'Syntax Export'],
-    buttonLabel: 'Start Learning',
+    button: 'Start Learning',
     path: '/student',
-    accentColor: '#2E86C1',
-    iconBg: '#EBF5FB',
+    accent: '#2E86C1',
   },
   {
-    icon: Building2,
+    Icon: Building2,
     title: 'NGO Platform',
     subtitle: 'Field research operations & advanced analytics',
     features: ['Project Management', 'Field Forms', 'Budget & Ethics', 'Advanced Analysis'],
-    buttonLabel: 'Open Platform',
+    button: 'Open Platform',
     path: '/ngo',
-    accentColor: '#5A8A6A',
-    iconBg: '#EAF4EE',
+    accent: '#5A8A6A',
   },
   {
-    icon: BookOpen,
+    Icon: BookOpen,
     title: 'Journal Component',
     subtitle: 'Analysis verification & reproducibility',
     features: ['Dataset Verification', 'Risk of Bias', 'Audit Trail', 'Verification Reports'],
-    buttonLabel: 'Start Verifying',
+    button: 'Start Verifying',
     path: '/journal',
-    accentColor: '#7D3C98',
-    iconBg: '#F5EEF8',
+    accent: '#7D3C98',
   },
 ];
 
-export default function ProductLanding() {
+const ProductLanding: React.FC = () => {
   const navigate = useNavigate();
+  const { projects } = useProject();
+  const recentProjects = projects.slice(0, 3);
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#F4F7FA',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      padding: '3rem 1.5rem',
-    }}>
-      {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-        <h1 style={{
-          fontSize: 'clamp(1.8rem, 4vw, 2.8rem)',
-          fontWeight: 800,
-          color: '#1C2B3A',
-          margin: 0,
-          letterSpacing: '-0.5px',
-        }}>
+    <div style={{ minHeight: '100vh', background: '#F4F7FA' }}>
+      {/* Hero header */}
+      <div style={{ background: '#1C2B3A', padding: '3rem 2rem 2.5rem', textAlign: 'center' }}>
+        <h1 style={{ color: 'white', fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem' }}>
           ResearchFlow
         </h1>
-        <p style={{
-          fontSize: '1.1rem',
-          color: '#5A6B7A',
-          marginTop: '0.5rem',
-          fontWeight: 400,
-        }}>
+        <p style={{ color: '#8ca0b3', fontSize: '1rem', margin: 0 }}>
           Global Health Research Platform
         </p>
-        <div style={{
-          width: 60,
-          height: 4,
-          background: '#C0533A',
-          borderRadius: 2,
-          margin: '1rem auto 0',
-        }} />
       </div>
 
-      {/* Product Cards */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-        gap: '1.5rem',
-        width: '100%',
-        maxWidth: 1100,
-      }}>
-        {PRODUCTS.map((product) => {
-          const Icon = product.icon;
-          return (
-            <div
-              key={product.path}
-              style={{
-                background: 'white',
-                borderRadius: 12,
+      {/* Product cards */}
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '3rem 1.5rem 2rem' }}>
+        <div className="product-cards-grid" style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '1.5rem',
+        }}>
+          {PRODUCTS.map(p => {
+            const { Icon } = p;
+            return (
+              <div key={p.title} style={{
+                background: 'white', borderRadius: 12,
                 boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-                borderLeft: `4px solid ${product.accentColor}`,
-                padding: '2rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1rem',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-              }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px)';
-                (e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)';
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
-                (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)';
-              }}
-            >
-              {/* Icon */}
-              <div style={{
-                width: 56,
-                height: 56,
-                borderRadius: 12,
-                background: product.iconBg,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                borderLeft: `4px solid ${p.accent}`,
+                display: 'flex', flexDirection: 'column',
+                overflow: 'hidden',
               }}>
-                <Icon size={28} color={product.accentColor} />
+                <div style={{ padding: '1.75rem 1.5rem 1rem' }}>
+                  <div style={{
+                    width: 48, height: 48, borderRadius: 10,
+                    background: `${p.accent}15`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    marginBottom: '1rem',
+                  }}>
+                    <Icon size={26} color={p.accent} />
+                  </div>
+                  <h2 style={{ color: '#1C2B3A', fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.4rem' }}>
+                    {p.title}
+                  </h2>
+                  <p style={{ color: '#666', fontSize: '0.88rem', marginBottom: '1.25rem', lineHeight: 1.55 }}>
+                    {p.subtitle}
+                  </p>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1.5rem' }}>
+                    {p.features.map(f => (
+                      <li key={f} style={{
+                        fontSize: '0.85rem', color: '#555', padding: '0.3rem 0',
+                        display: 'flex', alignItems: 'center', gap: '0.5rem',
+                      }}>
+                        <span style={{ color: p.accent, fontWeight: 700 }}>✓</span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div style={{ padding: '0 1.5rem 1.5rem', marginTop: 'auto' }}>
+                  <button onClick={() => navigate(p.path)} style={{
+                    width: '100%', padding: '0.7rem', borderRadius: 8,
+                    background: p.accent, color: 'white', border: 'none',
+                    fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer',
+                  }}>
+                    {p.button}
+                  </button>
+                </div>
               </div>
+            );
+          })}
+        </div>
 
-              {/* Title & Subtitle */}
-              <div>
-                <h2 style={{
-                  fontSize: '1.3rem',
-                  fontWeight: 700,
-                  color: '#1C2B3A',
-                  margin: '0 0 0.25rem',
+        {/* Recent Projects */}
+        {recentProjects.length > 0 && (
+          <div style={{ marginTop: '2.5rem' }}>
+            <h3 style={{ color: '#1C2B3A', fontSize: '1rem', fontWeight: 700, marginBottom: '1rem' }}>
+              Recent Projects
+            </h3>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              {recentProjects.map(p => (
+                <div key={p.id} style={{
+                  background: 'white', borderRadius: 8, padding: '0.75rem 1.25rem',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
+                  border: '1px solid #e8edf0',
                 }}>
-                  {product.title}
-                </h2>
-                <p style={{
-                  fontSize: '0.9rem',
-                  color: '#5A6B7A',
-                  margin: 0,
-                  lineHeight: 1.4,
-                }}>
-                  {product.subtitle}
-                </p>
-              </div>
-
-              {/* Features */}
-              <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                {product.features.map(f => (
-                  <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: '#444' }}>
-                    <CheckCircle size={14} color={product.accentColor} />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-
-              {/* Button */}
-              <button
-                onClick={() => navigate(product.path)}
-                style={{
-                  marginTop: 'auto',
-                  padding: '0.75rem 1.25rem',
-                  background: product.accentColor,
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 8,
-                  fontWeight: 600,
-                  fontSize: '0.95rem',
-                  cursor: 'pointer',
-                  transition: 'opacity 0.15s',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
-                onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-              >
-                {product.buttonLabel}
-              </button>
+                  <p style={{ fontWeight: 600, color: '#1C2B3A', fontSize: '0.9rem', margin: '0 0 0.15rem' }}>
+                    {p.name}
+                  </p>
+                  {p.description && (
+                    <p style={{ color: '#888', fontSize: '0.78rem', margin: 0 }}>{p.description}</p>
+                  )}
+                </div>
+              ))}
             </div>
-          );
-        })}
+          </div>
+        )}
       </div>
-
-      {/* Footer note */}
-      <p style={{ marginTop: '3rem', color: '#999', fontSize: '0.8rem' }}>
-        ResearchFlow v2.0 &mdash; Global Health Research Platform
-      </p>
     </div>
   );
-}
+};
+
+export default ProductLanding;

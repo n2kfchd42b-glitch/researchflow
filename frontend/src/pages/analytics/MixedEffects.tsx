@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { useProject } from "../../context/ProjectContext";
 import { MixedEffectsResult } from "./types";
 
