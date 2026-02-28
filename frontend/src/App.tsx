@@ -1,7 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Component, ErrorInfo, ReactNode } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ProjectProvider } from './context/ProjectContext';
 import './mobile.css';
+
+class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  state = { error: null };
+  static getDerivedStateFromError(error: Error) { return { error }; }
+  componentDidCatch(error: Error, info: ErrorInfo) { console.error('App error:', error, info); }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ minHeight: '100vh', background: '#1C2B3A', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+          <div style={{ color: '#fff', maxWidth: 600, textAlign: 'center' }}>
+            <h2 style={{ color: '#C0533A', marginBottom: '1rem' }}>Something went wrong</h2>
+            <pre style={{ background: '#0d1b2a', padding: '1rem', borderRadius: 8, textAlign: 'left', fontSize: 13, overflowX: 'auto', color: '#f87171' }}>
+              {(this.state.error as Error).message}
+            </pre>
+            <button onClick={() => { localStorage.clear(); window.location.reload(); }}
+              style={{ marginTop: '1.5rem', padding: '0.6rem 1.5rem', background: '#C0533A', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
+              Clear session &amp; reload
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 import Login from './pages/Login';
@@ -84,11 +109,16 @@ export default function App() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const savedUser  = localStorage.getItem('rf_user');
-    const savedToken = localStorage.getItem('rf_token');
-    if (savedUser && savedToken) {
-      setUser(JSON.parse(savedUser));
-      setToken(savedToken);
+    try {
+      const savedUser  = localStorage.getItem('rf_user');
+      const savedToken = localStorage.getItem('rf_token');
+      if (savedUser && savedToken) {
+        setUser(JSON.parse(savedUser));
+        setToken(savedToken);
+      }
+    } catch {
+      localStorage.removeItem('rf_user');
+      localStorage.removeItem('rf_token');
     }
     setReady(true);
   }, []);
@@ -110,10 +140,11 @@ export default function App() {
   if (!ready) return null;
 
   if (!user) {
-    return <Login onLogin={handleLogin} />;
+    return <ErrorBoundary><Login onLogin={handleLogin} /></ErrorBoundary>;
   }
 
   return (
+    <ErrorBoundary>
     <BrowserRouter>
       <ProjectProvider>
         <NGOPlatformProvider>
@@ -195,5 +226,6 @@ export default function App() {
         </NGOPlatformProvider>
       </ProjectProvider>
     </BrowserRouter>
+    </ErrorBoundary>
   );
 }
