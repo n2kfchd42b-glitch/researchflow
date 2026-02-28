@@ -6,13 +6,21 @@ interface DataUploadSummaryProps {
 }
 
 const DataUploadSummary: React.FC<DataUploadSummaryProps> = ({ dataset }) => {
-  const { state, calculateQualityScore, setDataQualityScore } = useNGOPlatform();
+  const { calculateQualityScore, setDataQualityScore } = useNGOPlatform();
   const columns = dataset.columns || [];
-  const qualityScore = calculateQualityScore(dataset.id, columns);
 
+  // useMemo prevents recomputing on every render; dataset.id as the only dep
+  const qualityScore = React.useMemo(
+    () => calculateQualityScore(dataset.id, columns),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [dataset.id]
+  );
+
+  // Persist to context once per dataset (not on every render)
   React.useEffect(() => {
     setDataQualityScore(dataset.id, qualityScore);
-  }, [dataset.id, qualityScore, setDataQualityScore]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataset.id]);
 
   return (
     <div style={{ padding: 16 }}>
