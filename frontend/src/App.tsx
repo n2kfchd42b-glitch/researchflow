@@ -1,19 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import { ProjectProvider } from './context/ProjectContext';
+import React, { useState, useEffect, useRef } from 'react';
 import './mobile.css';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-// Layouts
+class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  state = { error: null };
+  static getDerivedStateFromError(error: Error) { return { error }; }
+  componentDidCatch(error: Error, info: ErrorInfo) { console.error('App error:', error, info); }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ minHeight: '100vh', background: '#1C2B3A', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+          <div style={{ color: '#fff', maxWidth: 600, textAlign: 'center' }}>
+            <h2 style={{ color: '#C0533A', marginBottom: '1rem' }}>Something went wrong</h2>
+            <pre style={{ background: '#0d1b2a', padding: '1rem', borderRadius: 8, textAlign: 'left', fontSize: 13, overflowX: 'auto', color: '#f87171' }}>
+              {(this.state.error as Error).message}
+            </pre>
+            <button onClick={() => { localStorage.clear(); window.location.reload(); }}
+              style={{ marginTop: '1.5rem', padding: '0.6rem 1.5rem', background: '#C0533A', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
+              Clear session &amp; reload
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+import Login from './pages/Login';
+
+// ─── Product Landing ──────────────────────────────────────────────────────────
+import ProductLanding from './pages/ProductLanding';
+
+// ─── Layouts ──────────────────────────────────────────────────────────────────
 import StudentLayout from './layouts/StudentLayout';
 import NGOLayout from './layouts/NGOLayout';
 import JournalLayout from './layouts/JournalLayout';
 
-// Pages
-import ProductLanding from './pages/ProductLanding';
-import Landing from './pages/Landing';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import StudentWizard from './pages/StudentWizard';
+// ─── Student Wizard Pages (5-step flow) ───────────────────────────────────────
+import StudySetupPage from './products/student/pages/StudySetupPage';
+import DataUploadPage from './products/student/pages/DataUploadPage';
+import GuidedAnalysisPage from './products/student/pages/GuidedAnalysisPage';
+import ResultsReviewPage from './products/student/pages/ResultsReviewPage';
+import ReportGenerationPage from './products/student/pages/ReportGenerationPage';
+
+// ─── NGO Platform Pages ───────────────────────────────────────────────────────
+import NGODashboardPage from './products/ngo/pages/NGODashboardPage';
+import ProjectWorkspacePage from './products/ngo/pages/ProjectWorkspacePage';
+import FieldFormBuilderPage from './products/ngo/pages/FieldFormBuilderPage';
+import DataManagementPage from './products/ngo/pages/DataManagementPage';
+import BudgetTrackerPage from './products/ngo/pages/BudgetTrackerPage';
+import EthicsTrackerPage from './products/ngo/pages/EthicsTrackerPage';
+import AnalysisSuitePage from './products/ngo/pages/AnalysisSuitePage';
+import StudyMonitoringPage from './products/ngo/pages/StudyMonitoringPage';
+
+// ─── Existing page components (all preserved) ─────────────────────────────────
 import NGOPipeline from './pages/NGOPipeline';
 import MethodologyMemory from './pages/MethodologyMemory';
 import Collaboration from './pages/Collaboration';
@@ -32,18 +73,8 @@ import Table1Generator from './pages/Table1Generator';
 import DescriptiveStats from './pages/DescriptiveStats';
 import SurvivalAnalysis from './pages/SurvivalAnalysis';
 import SampleSize from './pages/SampleSize';
-import AuditTrail from './pages/AuditTrail';
-import DataCleaningStudio from './pages/DataCleaningStudio';
-import GuidedAnalysis from './pages/GuidedAnalysis';
-import JournalAssistant from './pages/JournalAssistant';
-import InstrumentRecognition from './pages/InstrumentRecognition';
-import PropensityMatching from './pages/PropensityMatching';
-import DescriptiveStats from './pages/DescriptiveStats';
-import VisualisationStudio from './pages/VisualisationStudio';
-import Collaboration from './pages/Collaboration';
-import ForestPlot from './pages/ForestPlot';
-import SampleDatasets from './pages/SampleDatasets';
-import SyntaxExporter from './pages/SyntaxExporter';
+import CodebookGenerator from './pages/CodebookGenerator';
+import LiteratureReview from './pages/LiteratureReview';
 import PRISMADiagram from './pages/PRISMADiagram';
 import SubgroupAnalysis from './pages/SubgroupAnalysis';
 import SensitivityAnalysis from './pages/SensitivityAnalysis';
@@ -58,17 +89,186 @@ import InstrumentRecognition from './pages/InstrumentRecognition';
 import DataCleaningStudio from './pages/DataCleaningStudio';
 import DataVersioning from './pages/DataVersioning';
 import BudgetTracker from './pages/BudgetTracker';
-import Table1Generator from './pages/Table1Generator';
-import AIAssistant from './pages/AIAssistant';
 import ProgressTracker from './pages/ProgressTracker';
-import LiteratureReview from './pages/LiteratureReview';
-import CodebookGenerator from './pages/CodebookGenerator';
-import DataVersioning from './pages/DataVersioning';
-import InterruptedTimeSeries from './pages/analytics/InterruptedTimeSeries';
-import DifferenceInDifferences from './pages/analytics/DifferenceInDifferences';
-import MixedEffects from './pages/analytics/MixedEffects';
-import SpatialAnalysis from './pages/analytics/SpatialAnalysis';
-import NetworkMetaAnalysis from './pages/analytics/NetworkMetaAnalysis';
+import Dashboard from './pages/Dashboard';
+
+const NAV_LINKS = [
+  { to: "/student",           label: "Student" },
+  { to: "/ngo",               label: "NGO" },
+  { to: "/journal",           label: "Journal" },
+  { to: "/methodology",       label: "Methodology" },
+  { to: "/cohort",            label: "Cohort" },
+  { to: "/survival",          label: "Survival" },
+  { to: "/samplesize",        label: "Sample Size" },
+  { to: "/audit",             label: "Audit" },
+  { to: "/clean",             label: "Clean Data" },
+  { to: "/guided",            label: "Guided" },
+  { to: "/journal-assistant", label: "J. Assistant" },
+  { to: "/instrument",        label: "Instruments" },
+  { to: "/psm",               label: "PSM" },
+  { to: "/descriptive",       label: "Descriptive" },
+  { to: "/visualise",         label: "Visualise" },
+  { to: "/collaborate",       label: "Collaborate" },
+  { to: "/forest-plot",       label: "Forest Plot" },
+  { to: "/samples",           label: "Samples" },
+  { to: "/ai-assistant",      label: "AI Assistant" },
+  { to: "/progress",          label: "Progress" },
+  { to: "/literature",        label: "Literature" },
+  { to: "/codebook",          label: "Codebook" },
+  { to: "/versioning",        label: "Versioning" },
+  { to: "/syntax",            label: "Syntax" },
+  { to: "/prisma",            label: "PRISMA" },
+  { to: "/studies",           label: "Studies" },
+  { to: "/rob",               label: "Risk of Bias" },
+  { to: "/dictionary",        label: "Dictionary" },
+  { to: "/subgroup",          label: "Subgroup" },
+  { to: "/sensitivity",       label: "Sensitivity" },
+  { to: "/budget",            label: "Budget" },
+  { to: "/table1",            label: "Table 1" },
+];
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8001';
+
+const ROLE_ICONS: Record<string, string> = { student: '🎓', ngo: '🌍', journal: '📄' };
+
+// ── Profile modal ─────────────────────────────────────────────────────────────
+
+function ProfileModal({
+  user,
+  onClose,
+  onSave,
+}: {
+  user: any;
+  onClose: () => void;
+  onSave: (updated: any) => void;
+}) {
+  const [name,        setName]        = useState(user.name        || '');
+  const [institution, setInstitution] = useState(user.institution || '');
+  const [country,     setCountry]     = useState(user.country     || '');
+  const [saving,      setSaving]      = useState(false);
+  const [error,       setError]       = useState('');
+  const [success,     setSuccess]     = useState(false);
+
+  async function handleSave() {
+    setSaving(true); setError(''); setSuccess(false);
+    try {
+      const res = await fetch(`${API_URL}/auth/profile`, {
+        method:      'PUT',
+        credentials: 'include',
+        headers:     { 'Content-Type': 'application/json' },
+        body:        JSON.stringify({ name, institution, country }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.detail || 'Save failed');
+      }
+      const updated = await res.json();
+      onSave(updated);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 2000);
+    } catch (err: any) {
+      setError(err.message || 'Save failed');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const inp: React.CSSProperties = {
+    width: '100%', padding: '0.65rem 0.85rem', borderRadius: 7,
+    border: '1.5px solid #ddd', fontSize: '0.9rem',
+  };
+  const lbl: React.CSSProperties = {
+    fontSize: '0.78rem', fontWeight: 700, color: '#888', display: 'block', marginBottom: 5,
+  };
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      background: 'rgba(0,0,0,0.55)', zIndex: 2000,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem',
+    }} onClick={onClose}>
+      <div style={{
+        background: 'white', borderRadius: 14, padding: '2rem', width: 420, maxWidth: '95vw',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+      }} onClick={e => e.stopPropagation()}>
+
+        {/* Avatar + header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{
+            width: 52, height: 52, borderRadius: '50%',
+            background: '#C0533A', color: 'white',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '1.4rem', fontWeight: 700, flexShrink: 0,
+          }}>
+            {user.name ? user.name[0].toUpperCase() : '?'}
+          </div>
+          <div>
+            <h2 style={{ margin: 0, fontSize: '1.1rem' }}>Your Profile</h2>
+            <p style={{ margin: 0, fontSize: '0.82rem', color: '#888' }}>{user.email}</p>
+          </div>
+          <button onClick={onClose} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.4rem', color: '#aaa', lineHeight: 1 }}>×</button>
+        </div>
+
+        {/* Read-only role badge */}
+        <div style={{ marginBottom: '1.25rem' }}>
+          <label style={lbl}>ROLE</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '1.2rem' }}>{ROLE_ICONS[user.role] || '👤'}</span>
+            <span style={{
+              padding: '0.3rem 0.85rem', borderRadius: 20,
+              background: '#f5f0ff', color: '#7c3aed',
+              fontWeight: 700, fontSize: '0.85rem', textTransform: 'capitalize',
+            }}>{user.role}</span>
+            <span style={{ fontSize: '0.75rem', color: '#bbb' }}>(cannot change)</span>
+          </div>
+        </div>
+
+        {error && (
+          <div style={{ background: '#fff5f5', border: '1px solid #fcc', borderRadius: 7, padding: '0.6rem 0.85rem', marginBottom: '1rem', fontSize: '0.82rem', color: '#c00' }}>
+            ⚠ {error}
+          </div>
+        )}
+        {success && (
+          <div style={{ background: '#f0fff4', border: '1px solid #b2dfdb', borderRadius: 7, padding: '0.6rem 0.85rem', marginBottom: '1rem', fontSize: '0.82rem', color: '#2e7d32', fontWeight: 600 }}>
+            ✓ Profile saved!
+          </div>
+        )}
+
+        {[
+          { label: 'FULL NAME',    value: name,        set: setName,        placeholder: 'Your full name'    },
+          { label: 'INSTITUTION',  value: institution,  set: setInstitution, placeholder: 'University / NGO'  },
+          { label: 'COUNTRY',      value: country,      set: setCountry,     placeholder: 'e.g. Kenya'        },
+        ].map(field => (
+          <div key={field.label} style={{ marginBottom: '0.85rem' }}>
+            <label style={lbl}>{field.label}</label>
+            <input value={field.value} onChange={e => field.set(e.target.value)}
+              placeholder={field.placeholder} style={inp} />
+          </div>
+        ))}
+
+        <div style={{ display: 'flex', gap: '0.6rem', marginTop: '1.25rem' }}>
+          <button onClick={handleSave} disabled={saving || !name.trim()} style={{
+            flex: 1, padding: '0.75rem', borderRadius: 8,
+            background: '#C0533A', color: 'white', border: 'none',
+            fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer',
+            opacity: (!name.trim() || saving) ? 0.6 : 1,
+          }}>
+            {saving ? 'Saving…' : 'Save Changes'}
+          </button>
+          <button onClick={onClose} style={{
+            padding: '0.75rem 1rem', borderRadius: 8,
+            background: '#eee', color: '#555', border: 'none',
+            fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem',
+          }}>
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── NavBar ────────────────────────────────────────────────────────────────────
 
 function NavBar({
   user,
@@ -284,21 +484,22 @@ export default function App() {
   }
 
   return (
-    <ProjectProvider>
-      <BrowserRouter>
+    <ErrorBoundary>
+    <BrowserRouter>
+      <ProjectProvider>
         <Routes>
-          {/* Landing / Product Selector */}
+          {/* ── Product Landing ── */}
           <Route path="/" element={<ProductLanding />} />
-          <Route path="/login" element={<Login onLogin={handleLogin} />} />
 
-          {/* Student Wizard — sidebar layout */}
+          {/* ── Student Wizard ── */}
           <Route path="/student" element={<StudentLayout user={user} onLogout={handleLogout} />}>
-            <Route index element={<StudentWizard />} />
-            <Route path="setup"       element={<StudentWizard />} />
-            <Route path="upload"      element={<DataCleaningStudio />} />
-            <Route path="analysis"    element={<GuidedAnalysis />} />
-            <Route path="results"     element={<Dashboard user={user} />} />
-            <Route path="report"      element={<SyntaxExporter />} />
+            <Route index element={<StudySetupPage />} />
+            <Route path="setup"       element={<StudySetupPage />} />
+            <Route path="upload"      element={<DataUploadPage />} />
+            <Route path="analysis"    element={<GuidedAnalysisPage />} />
+            <Route path="results"     element={<ResultsReviewPage />} />
+            <Route path="report"      element={<ReportGenerationPage />} />
+            {/* Existing tools accessible within Student Wizard */}
             <Route path="table1"      element={<Table1Generator />} />
             <Route path="descriptive" element={<DescriptiveStats />} />
             <Route path="survival"    element={<SurvivalAnalysis />} />
@@ -313,47 +514,52 @@ export default function App() {
             <Route path="samples"     element={<SampleDatasets />} />
           </Route>
 
-          {/* NGO Platform — sidebar layout */}
+          {/* ── NGO Platform ── */}
           <Route path="/ngo" element={<NGOLayout user={user} onLogout={handleLogout} />}>
-            <Route index element={<NGOPipeline />} />
-            <Route path="projects"  element={<StudyDashboard />} />
-            <Route path="forms"     element={<InstrumentRecognition />} />
-            <Route path="clean"     element={<DataCleaningStudio />} />
-            <Route path="versioning" element={<DataVersioning />} />
-            <Route path="budget"    element={<BudgetTracker />} />
-            <Route path="ethics"    element={<ProgressTracker />} />
-            <Route path="analysis/survival"     element={<SurvivalAnalysis />} />
-            <Route path="analysis/psm"          element={<PropensityMatching />} />
-            <Route path="analysis/subgroup"     element={<SubgroupAnalysis />} />
-            <Route path="analysis/sensitivity"  element={<SensitivityAnalysis />} />
-            <Route path="analysis/meta"         element={<ForestPlot />} />
-            <Route path="analysis/its"          element={<InterruptedTimeSeries />} />
-            <Route path="analysis/did"          element={<DifferenceInDifferences />} />
-            <Route path="analysis/mixed"        element={<MixedEffects />} />
-            <Route path="analysis/spatial"      element={<SpatialAnalysis />} />
+            <Route index                       element={<NGODashboardPage />} />
+            <Route path="project/:id"          element={<ProjectWorkspacePage />} />
+            <Route path="projects"             element={<StudyDashboard />} />
+            <Route path="forms"                element={<FieldFormBuilderPage />} />
+            <Route path="clean"                element={<DataManagementPage />} />
+            <Route path="versioning"           element={<DataVersioning />} />
+            <Route path="budget"               element={<BudgetTrackerPage />} />
+            <Route path="ethics"               element={<EthicsTrackerPage />} />
+            <Route path="monitoring"           element={<StudyMonitoringPage />} />
+            <Route path="analysis"             element={<AnalysisSuitePage />} />
+            <Route path="analysis/survival"    element={<SurvivalAnalysis />} />
+            <Route path="analysis/psm"         element={<PropensityMatching />} />
+            <Route path="analysis/subgroup"    element={<SubgroupAnalysis />} />
+            <Route path="analysis/sensitivity" element={<SensitivityAnalysis />} />
+            <Route path="analysis/meta"        element={<ForestPlot />} />
+            <Route path="analysis/forest-plot" element={<ForestPlot />} />
+            <Route path="analysis/its"         element={<InterruptedTimeSeries />} />
+            <Route path="analysis/did"         element={<DifferenceInDifferences />} />
+            <Route path="analysis/mixed"       element={<MixedEffects />} />
+            <Route path="analysis/spatial"     element={<SpatialAnalysis />} />
             <Route path="analysis/network-meta" element={<NetworkMetaAnalysis />} />
-            <Route path="prisma"    element={<PRISMADiagram />} />
-            <Route path="reports"   element={<SyntaxExporter />} />
-            <Route path="studies"   element={<StudyDashboard />} />
-            <Route path="dictionary" element={<DataDictionary />} />
-            <Route path="cohort"    element={<CohortBuilder />} />
+            <Route path="prisma"               element={<PRISMADiagram />} />
+            <Route path="reports"              element={<SyntaxExporter />} />
+            <Route path="studies"              element={<StudyDashboard />} />
+            <Route path="dictionary"           element={<DataDictionary />} />
+            <Route path="cohort"               element={<CohortBuilder />} />
+            <Route path="table1"               element={<Table1Generator />} />
+            <Route path="descriptive"          element={<DescriptiveStats />} />
           </Route>
 
-          {/* Journal Component — sidebar layout */}
+          {/* ── Journal Component ── */}
           <Route path="/journal" element={<JournalLayout user={user} onLogout={handleLogout} />}>
-            <Route index        element={<JournalVerification />} />
-            <Route path="submissions" element={<JournalAssistant />} />
-            <Route path="verify"      element={<JournalVerification />} />
-            <Route path="rob"         element={<RiskOfBias />} />
-            <Route path="audit"       element={<AuditTrail user={user} />} />
-            <Route path="reports"     element={<JournalAssistant />} />
+            <Route index               element={<JournalVerification />} />
+            <Route path="submissions"  element={<JournalAssistant />} />
+            <Route path="verify"       element={<JournalVerification />} />
+            <Route path="rob"          element={<RiskOfBias />} />
+            <Route path="audit"        element={<AuditTrail user={user} />} />
+            <Route path="reports"      element={<JournalAssistant />} />
           </Route>
 
-          {/* Shared / utility routes */}
-          <Route path="/landing"      element={<Landing user={user} />} />
-          <Route path="/ai-assistant" element={<AIAssistant />} />
-          <Route path="/collaborate"  element={<Collaboration user={user} />} />
-          <Route path="/methodology"  element={<MethodologyMemory user={user} />} />
+          {/* ── Shared utility routes ── */}
+          <Route path="/ai-assistant"  element={<AIAssistant />} />
+          <Route path="/collaborate"   element={<Collaboration user={user} />} />
+          <Route path="/methodology"   element={<MethodologyMemory user={user} />} />
         </Routes>
       </ProjectProvider>
     </BrowserRouter>
