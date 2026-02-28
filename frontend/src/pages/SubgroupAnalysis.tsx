@@ -311,7 +311,7 @@ export default function SubgroupAnalysis() {
                       <YAxis type="category" dataKey="name" width={75} tick={{ fontSize: 12 }} />
                       <Tooltip formatter={(val: any, name: string | number | undefined) => [
                         name === 'effect' ? `${measure}: ${val}` : val, name
-                      ]} />
+                      ]) as any} />
                       <ReferenceLine x={nullVal} stroke="#888" strokeDasharray="4 3" />
                       <Bar dataKey="effect" radius={4} barSize={20}>
                         {chartData.map((entry, index) => (

@@ -9,8 +9,13 @@ const MixedEffects: React.FC = () => {
   const [fixedEffects, setFixedEffects] = useState<string>("");
   const [randomEffectColumn, setRandomEffectColumn] = useState("");
   const [result, setResult] = useState<MixedEffectsResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
 
   const handleRun = async () => {
+    setError(null);
+    setWarning(null);
+    setResult(null);
     if (!projectId || !datasetVersionId) return;
     const res = await fetch("/analysis/mixed", {
       method: "POST",
@@ -23,7 +28,13 @@ const MixedEffects: React.FC = () => {
         random_effect_column: randomEffectColumn,
       }),
     });
-    setResult(await res.json());
+    const data = await res.json();
+    if (data.error) {
+      setError(data.error + (data.details ? ": " + data.details : ""));
+    } else {
+      setResult(data);
+      if (data.warning) setWarning(data.warning);
+    }
   };
 
   if (!projectId) {
@@ -42,7 +53,9 @@ const MixedEffects: React.FC = () => {
       </div>
       <div className="card" style={{ marginLeft: 400 }}>
         <h3>Results</h3>
-        {result && (
+        {error && <div className="alert-critical">{error}</div>}
+        {warning && <div className="alert">{warning}</div>}
+        {result && !error && (
           <>
             <div>
               <b>Fixed Effects:</b> {JSON.stringify(result.fixed_effects)}<br />
