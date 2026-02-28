@@ -93,7 +93,7 @@ export function DataTable<T extends Record<string, unknown>>({
   const toggleAll = () => {
     setSelected(prev => {
       if (allSelected) { const s = new Set(prev); allIds.forEach(id => s.delete(id)); return s; }
-      return new Set([...prev, ...allIds]);
+      return new Set(Array.from(prev).concat(allIds));
     });
   };
   const toggleRow = (id: string) => {

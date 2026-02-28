@@ -309,7 +309,7 @@ export default function SubgroupAnalysis() {
                       <XAxis type="number" domain={measure === 'OR' ? ['auto','auto'] : ['auto','auto']}
                         tickFormatter={v => measure === 'OR' ? v.toFixed(1) : v.toFixed(2)} />
                       <YAxis type="category" dataKey="name" width={75} tick={{ fontSize: 12 }} />
-                      <Tooltip formatter={(val: any, name: string) => [
+                      <Tooltip formatter={(val: any, name: any) => [
                         name === 'effect' ? `${measure}: ${val}` : val, name
                       ]} />
                       <ReferenceLine x={nullVal} stroke="#888" strokeDasharray="4 3" />

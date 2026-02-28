@@ -119,7 +119,7 @@ export default function SampleDatasets() {
     setLoading(null);
   }
 
-  function useDataset(dataset: typeof DATASETS[0], feature: string) {
+  function applyDataset(dataset: typeof DATASETS[0], feature: string) {
     const loadedData = loaded[dataset.id];
     if (!loadedData) return;
     sessionStorage.setItem('preloaded_dataset', JSON.stringify(loadedData));
@@ -210,7 +210,7 @@ export default function SampleDatasets() {
                 ) : (
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', flex: 1 }}>
                     {dataset.features.slice(0, 3).map((feature, i) => (
-                      <button key={feature} onClick={() => useDataset(dataset, feature)}
+                      <button key={feature} onClick={() => applyDataset(dataset, feature)}
                         className="btn" style={{
                           fontSize: '0.78rem', padding: '0.4rem 0.8rem',
                           background: i === 0 ? dataset.color : '#eee',

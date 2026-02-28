@@ -86,7 +86,7 @@ interface DataPipelineStage {
   completedAt: string | null;
 }
 
-interface NGOState {
+export interface NGOState {
   programs: Program[];
   activeProgramId: string | null;
   indicators: Indicator[];
@@ -112,7 +112,7 @@ const defaultState: NGOState = {
 
 const STORAGE_KEY = 'rf_ngo_platform';
 
-const NGOPlatformContext = createContext<any>(null);
+const NGOPlatformContext = createContext<{ state: NGOState } & Record<string, any>>(null as any);
 
 export const NGOPlatformProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, setState] = useState<NGOState>(() => {

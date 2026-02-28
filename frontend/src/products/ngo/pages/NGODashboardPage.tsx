@@ -14,7 +14,7 @@ const NGODashboardPage: React.FC = () => {
 
   // When a program is active, show its project IDs; otherwise show all program names
   const activeProgram = state.activeProgramId
-    ? state.programs.find(p => p.id === state.activeProgramId)
+    ? state.programs.find((p: any) => p.id === state.activeProgramId)
     : null;
 
   const programList = state.activeProgramId
