@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNGOPlatform } from '../context/NGOPlatformContext';
+import { ReportExporter } from '../../../packages/ui';
 
 const templates = [
   {
@@ -144,10 +145,21 @@ const ReportGeneratorPage: React.FC = () => {
           <div style={{ fontWeight: 600, fontSize: 15, color: '#1C2B3A', margin: '12px 0 4px' }}>Appendix</div>
           <div style={{ color: '#888', fontSize: 13 }}>Data dictionary, cleaning log summary</div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <button style={{ background: '#2E86C1', color: '#fff', borderRadius: 8, padding: '8px 20px', fontSize: 15 }} onClick={() => window.print()}>Download PDF</button>
-          <button style={{ background: '#5A8A6A', color: '#fff', borderRadius: 8, padding: '8px 20px', fontSize: 15 }} onClick={() => { navigator.clipboard.writeText(document.body.innerHTML); }}>Copy as HTML</button>
-          <button style={{ background: '#C0533A', color: '#fff', borderRadius: 8, padding: '8px 20px', fontSize: 15 }} onClick={() => { generateReport(report); setPreview(true); }}>Save Report</button>
+        {/* Export sidebar — uses shared ReportExporter driven by formats[] prop */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 200 }}>
+          <ReportExporter
+            context="ngo"
+            formats={['pdf', 'docx', 'csv']}
+            payload={{ ...report, context: 'ngo' }}
+            templateId={report.type || 'donor'}
+            label="Export Report"
+          />
+          <button
+            style={{ background: '#C0533A', color: '#fff', borderRadius: 8, padding: '8px 20px', fontSize: 15 }}
+            onClick={() => { generateReport(report); setPreview(true); }}
+          >
+            Save Report
+          </button>
         </div>
       </div>
     );

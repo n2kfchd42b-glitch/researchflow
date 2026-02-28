@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { FileUploader } from '../../../packages/ui';
+import { uploadDataset } from '../../../packages/api';
 
 interface FieldDataImporterProps {
   onUpload: (file: File, detected: any) => void;
@@ -33,32 +35,39 @@ const detectFieldDataFormat = (columns: string[], sheets?: string[]) => {
 
 const FieldDataImporter: React.FC<FieldDataImporterProps> = ({ onUpload }) => {
   const [detections, setDetections] = useState<any[]>([]);
-  const [file, setFile] = useState<File | null>(null);
+  const [dismissed, setDismissed] = useState<Set<number>>(new Set());
 
-  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    setFile(f);
-    // Mock: parse columns
-    const columns = ['_uuid', 'latitude', 'gender', 'select_multiple_symptoms']; // Replace with real parsing
-    const sheets = ['Sheet1']; // Replace with real parsing
+  const handleUpload = async (file: File) => {
+    // Use consolidated uploadDataset from packages/api
+    await uploadDataset(file, 'ngo');
+    // Mock: parse columns from file name hints (real impl would read response)
+    const columns = ['_uuid', 'latitude', 'gender', 'select_multiple_symptoms'];
+    const sheets = ['Sheet1'];
     const detected = detectFieldDataFormat(columns, sheets);
     setDetections(detected);
-    onUpload(f, detected);
+    onUpload(file, detected);
   };
 
   return (
     <div style={{ marginBottom: 16 }}>
-      <input type="file" accept=".csv,.xlsx" onChange={handleFile} />
+      {/* Shared FileUploader replaces raw <input type="file"> */}
+      <FileUploader
+        context="ngo"
+        acceptedTypes={['.csv', '.xlsx']}
+        maxSizeMB={50}
+        onUpload={handleUpload}
+        label="Import field data"
+        hint="Supports KoboToolbox, ODK, and standard CSV/Excel exports"
+      />
       {detections.length > 0 && (
         <div style={{ marginTop: 12, background: '#F8F9F9', borderRadius: 8, padding: 12 }}>
           <div style={{ fontWeight: 600, fontSize: 15, color: '#1C2B3A', marginBottom: 8 }}>Import Intelligence</div>
-          {detections.map((d, idx) => (
+          {detections.filter((_, idx) => !dismissed.has(idx)).map((d, idx) => (
             <div key={idx} style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
               <span style={{ marginRight: 8 }}>{d.type === 'kobo' ? '🟢' : d.type === 'odk' ? '🟡' : d.type === 'excel' ? '📄' : d.type === 'gps' ? '📍' : '🔀'}</span>
               <span style={{ color: '#2E86C1', fontWeight: 500 }}>{d.message}</span>
               <button style={{ marginLeft: 12, background: '#5A8A6A', color: '#fff', borderRadius: 4, border: 'none', padding: '2px 8px', fontSize: 13 }}>{d.action}</button>
-              <button style={{ marginLeft: 8, background: '#e0e0e0', color: '#1C2B3A', borderRadius: 4, border: 'none', padding: '2px 8px', fontSize: 13 }}>Dismiss</button>
+              <button style={{ marginLeft: 8, background: '#e0e0e0', color: '#1C2B3A', borderRadius: 4, border: 'none', padding: '2px 8px', fontSize: 13 }} onClick={() => setDismissed(prev => new Set([...prev, idx]))}>Dismiss</button>
             </div>
           ))}
         </div>

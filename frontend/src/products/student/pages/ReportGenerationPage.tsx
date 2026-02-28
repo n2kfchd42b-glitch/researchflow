@@ -3,6 +3,7 @@ import { Download, Copy, CheckCircle, FileText, RefreshCw } from 'lucide-react';
 import { useStudentWizard } from '../context/StudentWizardContext';
 import LearningTip from '../components/LearningTip';
 import StepSuccessMessage from '../components/StepSuccessMessage';
+import { ReportExporter } from '../../../packages/ui';
 import '../student.css';
 
 // ─── Citation style helpers ───────────────────────────────────────────────────
@@ -390,28 +391,23 @@ export default function ReportGenerationPage() {
         {/* Right — Export panel */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', position: 'sticky', top: 80 }}>
           {/* PDF Download */}
+          {/* Shared ReportExporter — formats[] drives available options (APA default) */}
           <div style={{ background: 'white', borderRadius: 10, border: '1px solid #E5E9EF', padding: '1.25rem' }}>
-            <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', fontWeight: 700, color: '#1C2B3A' }}>Export Report</h4>
-            <button
-              onClick={handleDownloadPDF}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                background: '#C0533A',
-                color: 'white',
-                border: 'none',
-                borderRadius: 8,
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                fontSize: '0.9rem',
+            <ReportExporter
+              context="student"
+              formats={['pdf', 'docx', 'csv']}
+              payload={{
+                context: 'student',
+                studyType: cfg.studyType,
+                primaryOutcome: cfg.primaryOutcome,
+                exposureVariable: cfg.exposureVariable,
+                citationStyle: citation,
+                methods,
+                results,
               }}
-            >
-              <Download size={16} /> Download PDF Report
-            </button>
+              templateId="apa-report"
+              label="Export Report"
+            />
           </div>
 
           {/* Syntax Export */}

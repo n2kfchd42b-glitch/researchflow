@@ -15,6 +15,7 @@ import ComparisonPanel from '../components/ComparisonPanel';
 import MatchIndicator from '../components/MatchIndicator';
 import RoBTrafficLight from '../components/RoBTrafficLight';
 import AuditTimeline from '../components/AuditTimeline';
+import { VerificationPanel } from '../components/VerificationPanel';
 
 const JOURNAL_PRIMARY = '#7D3C98';
 
@@ -846,6 +847,9 @@ function ReportTab({ submission }: { submission: any }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      {/* Shared VerificationPanel — links outputs to original dataset + audit trail */}
+      <VerificationPanel submissionId={submission.id} />
+
       {/* Generate button */}
       <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
         {report && (

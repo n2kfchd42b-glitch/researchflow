@@ -1,11 +1,13 @@
-import React, { useState, useRef, useCallback } from 'react';
-import { Upload, FileText, AlertCircle, AlertTriangle, Info, CheckCircle } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { FileText } from 'lucide-react';
 import { useStudentWizard, ColumnInfo, DatasetInfo, ColumnIntelligence, ColumnWarning } from '../context/StudentWizardContext';
 import { useNavigate } from 'react-router-dom';
 import DataIntelligencePanel from '../components/DataIntelligencePanel';
 import LearningTip from '../components/LearningTip';
 import WizardEmptyState from '../components/WizardEmptyState';
 import StepSuccessMessage from '../components/StepSuccessMessage';
+import { FileUploader, ValidationWarning } from '../../../packages/ui';
+import { uploadDataset } from '../../../packages/api';
 import '../student.css';
 
 const ROLE_OPTIONS = [
@@ -129,12 +131,7 @@ function qualityScore(columns: ColumnInfo[]): number {
 export default function DataUploadPage() {
   const { state, setDataset, completeStep, setColumnIntelligence } = useStudentWizard();
   const navigate = useNavigate();
-  const fileRef = useRef<HTMLInputElement>(null);
 
-  const [dragging, setDragging] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [error, setError] = useState('');
   const [columns, setColumns] = useState<ColumnInfo[]>(state.dataset?.columns ?? []);
   const [fileInfo, setFileInfo] = useState<{ name: string; rows: number; cols: number; size: string } | null>(
     state.dataset ? { name: state.dataset.fileName, rows: state.dataset.rowCount, cols: state.dataset.columnCount, size: '' } : null
@@ -145,28 +142,9 @@ export default function DataUploadPage() {
 
   const handleFile = useCallback(async (file: File) => {
     if (!file) return;
-    setError('');
-    setUploading(true);
-    setUploadProgress(0);
-
-    const progressInterval = setInterval(() => {
-      setUploadProgress(prev => Math.min(prev + 10, 85));
-    }, 120);
-
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/upload', { method: 'POST', body: formData });
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({ detail: 'Upload failed' }));
-        throw new Error(data.detail || 'Upload failed');
-      }
-
-      const data = await res.json();
+      // Use consolidated uploadDataset from packages/api
+      const data = await uploadDataset(file, 'student');
 
       const colTypes = data.column_types || {};
       const missingPct = data.missing_percentage || {};
@@ -225,20 +203,10 @@ export default function DataUploadPage() {
       setDataset(datasetInfo);
 
     } catch (e: any) {
-      clearInterval(progressInterval);
-      setError(e.message || 'Upload failed');
-      setUploadProgress(0);
-    } finally {
-      setUploading(false);
+      // Error state is managed by the shared FileUploader
+      throw e;
     }
   }, [state.studyConfig, setDataset, setColumnIntelligence]);
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
-  };
 
   const updateRole = (colName: string, role: ColumnInfo['role']) => {
     setColumns(prev => {
@@ -297,29 +265,9 @@ export default function DataUploadPage() {
       <div className="two-col-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 240px', gap: '1.5rem' }}>
         {/* Left */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {/* Section A: Upload Zone */}
-          {!fileInfo ? (
-            <>
-              <WizardEmptyState
-                icon={Upload as any}
-                title="Upload your dataset to begin"
-                description="Drag and drop your CSV or Excel file here, or click to browse your files."
-                actionLabel="Choose File"
-                onAction={() => fileRef.current?.click()}
-              />
-              <div
-                className={`upload-zone${dragging ? ' dragging' : ''}`}
-                onClick={() => fileRef.current?.click()}
-                onDragOver={e => { e.preventDefault(); setDragging(true); }}
-                onDragLeave={() => setDragging(false)}
-                onDrop={handleDrop}
-                style={{ display: 'none' }}
-              >
-                <input ref={fileRef} type="file" accept=".csv,.xlsx,.xls" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }} />
-              </div>
-              <input ref={fileRef} type="file" accept=".csv,.xlsx,.xls" style={{ display: 'none' }} onChange={e => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }} />
-            </>
-          ) : (
+          {/* Section A: Upload Zone — shared FileUploader */}
+          {fileInfo ? (
+            /* Already-uploaded file card (loaded from persisted state) */
             <div style={{ background: 'white', borderRadius: 10, padding: '1rem 1.25rem', border: '1px solid #E5E9EF', display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <FileText size={28} color="#2E86C1" />
               <div style={{ flex: 1 }}>
@@ -327,28 +275,21 @@ export default function DataUploadPage() {
                 <div style={{ fontSize: '0.82rem', color: '#888' }}>{fileInfo.rows} rows · {fileInfo.cols} columns {fileInfo.size && `· ${fileInfo.size}`}</div>
               </div>
               <button
-                onClick={() => { setFileInfo(null); setColumns([]); setPreview(null); setError(''); setColIntelligence([]); }}
+                onClick={() => { setFileInfo(null); setColumns([]); setPreview(null); setColIntelligence([]); }}
                 style={{ background: 'none', border: '1px solid #ddd', borderRadius: 6, padding: '0.3rem 0.7rem', cursor: 'pointer', fontSize: '0.8rem', color: '#666' }}
               >
                 Replace
               </button>
             </div>
-          )}
-
-          {/* Progress bar */}
-          {uploading && (
-            <div>
-              <div style={{ marginBottom: '0.4rem', fontSize: '0.85rem', color: '#555' }}>Uploading… {uploadProgress}%</div>
-              <div className="progress-bar-track">
-                <div className="progress-bar-fill" style={{ width: `${uploadProgress}%` }} />
-              </div>
-            </div>
-          )}
-
-          {error && (
-            <div style={{ background: '#FDEDEC', border: '1px solid #FADBD8', borderRadius: 8, padding: '0.75rem 1rem', display: 'flex', gap: '0.5rem', alignItems: 'flex-start', color: '#A93226', fontSize: '0.875rem' }}>
-              <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 1 }} /> {error}
-            </div>
+          ) : (
+            <FileUploader
+              context="student"
+              acceptedTypes={['.csv', '.xlsx', '.xls']}
+              maxSizeMB={50}
+              onUpload={handleFile}
+              label="Upload your dataset to begin"
+              hint="Drag & drop or click to browse your CSV or Excel file"
+            />
           )}
 
           {/* Data Intelligence Panel */}
@@ -488,47 +429,64 @@ export default function DataUploadPage() {
                 </table>
               </div>
 
-              {/* Enhanced Validation warnings */}
+              {/* Validation warnings — shared ValidationWarning component */}
               <div style={{ padding: '0.75rem 1rem', borderTop: '1px solid #F0F4FA', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 {!hasOutcome && (
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', color: '#A93226', fontSize: '0.82rem', background: '#FDEDEC', padding: '0.4rem 0.75rem', borderRadius: 6 }}>
-                    <AlertCircle size={14} /> <strong>Error:</strong> No outcome variable assigned — required to continue
-                  </div>
+                  <ValidationWarning
+                    field="Outcome"
+                    message="No outcome variable assigned — required to continue"
+                    severity="error"
+                  />
                 )}
                 {!hasExposure && (
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', color: '#A93226', fontSize: '0.82rem', background: '#FDEDEC', padding: '0.4rem 0.75rem', borderRadius: 6 }}>
-                    <AlertCircle size={14} /> <strong>Error:</strong> No exposure variable assigned — required to continue
-                  </div>
+                  <ValidationWarning
+                    field="Exposure"
+                    message="No exposure variable assigned — required to continue"
+                    severity="error"
+                  />
                 )}
                 {!hasCovariates && hasOutcome && hasExposure && (
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', color: '#D68910', fontSize: '0.82rem', background: '#FEF9E7', padding: '0.4rem 0.75rem', borderRadius: 6 }}>
-                    <AlertTriangle size={14} /> No covariates selected — your analysis won't be adjusted for confounders
-                  </div>
+                  <ValidationWarning
+                    message="No covariates selected — your analysis won't be adjusted for confounders"
+                    suggestion="Consider assigning covariate roles to potential confounders"
+                    severity="warning"
+                  />
                 )}
                 {fileInfo && fileInfo.rows < 30 && (
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', color: '#D68910', fontSize: '0.82rem', background: '#FEF9E7', padding: '0.4rem 0.75rem', borderRadius: 6 }}>
-                    <AlertTriangle size={14} /> Dataset has only {fileInfo.rows} rows — results may not be reliable
-                  </div>
+                  <ValidationWarning
+                    field="Sample size"
+                    message={`Dataset has only ${fileInfo.rows} rows — results may not be reliable`}
+                    suggestion="Consider collecting more data before running analyses"
+                    severity="warning"
+                  />
                 )}
                 {highMissingCols.length > 0 && (
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', color: '#D68910', fontSize: '0.82rem', background: '#FEF9E7', padding: '0.4rem 0.75rem', borderRadius: 6 }}>
-                    <AlertTriangle size={14} /> High missing data (&gt;20%) in: {highMissingCols.join(', ')}
-                  </div>
+                  <ValidationWarning
+                    field="Missing data"
+                    message={`High missing data (>20%) in: ${highMissingCols.join(', ')}`}
+                    suggestion="Consider imputation or excluding variables with excessive missingness"
+                    severity="warning"
+                  />
                 )}
                 {binaryOutcome && (
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', color: '#2E86C1', fontSize: '0.82rem', background: '#EBF5FB', padding: '0.4rem 0.75rem', borderRadius: 6 }}>
-                    <Info size={14} /> Outcome variable '{binaryOutcome.name}' is binary — logistic regression will be recommended
-                  </div>
+                  <ValidationWarning
+                    field={binaryOutcome.name}
+                    message="Binary outcome detected — logistic regression will be recommended"
+                    severity="info"
+                  />
                 )}
                 {timeCol && (
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', color: '#7D3C98', fontSize: '0.82rem', background: '#F5EEF8', padding: '0.4rem 0.75rem', borderRadius: 6 }}>
-                    <Info size={14} /> Time variable '{timeCol.name}' detected — survival analysis will be available
-                  </div>
+                  <ValidationWarning
+                    field={timeCol.name}
+                    message="Time variable detected — survival analysis will be available"
+                    severity="info"
+                  />
                 )}
                 {hasOutcome && hasExposure && (
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', color: '#27AE60', fontSize: '0.82rem', background: '#E9F7EF', padding: '0.4rem 0.75rem', borderRadius: 6 }}>
-                    <CheckCircle size={14} /> Variable roles assigned. Ready to continue.
-                  </div>
+                  <ValidationWarning
+                    message="Variable roles assigned. Ready to continue."
+                    severity="info"
+                  />
                 )}
               </div>
             </div>
