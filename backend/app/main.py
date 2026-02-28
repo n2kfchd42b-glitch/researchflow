@@ -1,22 +1,8 @@
-import time
-import logging
 import os
-
-from dotenv import load_dotenv
-
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("researchflow")
-
-from fastapi import FastAPI, APIRouter, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router
-from app.api.projects import router as projects_router
-from app.api.references import router as references_router
-from app.api.studies import router as studies_router
-from app.api.assessments import router as assessments_router
-from app.routers.analysis_router import router as analysis_router
+from app.core.database import create_tables, run_migrations
 
 app = FastAPI(
     title="ResearchFlow API",
@@ -24,22 +10,18 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# ─── CORS ─────────────────────────────────────────────────────────────────────
-# CORS_ORIGINS env var lets you override allowed origins in production.
-# Set it to your Render frontend URL, e.g.:
-#   CORS_ORIGINS=https://researchflow-frontend.onrender.com
-# Multiple origins are comma-separated. Falls back to localhost for dev.
-
+# Credentials-safe CORS — must list explicit origins (not "*") when
+# allow_credentials=True so browsers send cookies cross-origin.
 _raw_origins = os.getenv(
-    "CORS_ORIGINS",
-    "http://localhost:3000,http://localhost:3001"
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000"
 )
 ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
+    allow_credentials=True,     # required for httpOnly cookie to be sent
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -75,13 +57,19 @@ api_v1.include_router(analysis_router, tags=["Advanced Analytics"])
 app.include_router(api_v1)
 
 
+
+@app.on_event("startup")
+def on_startup():
+    create_tables()   # CREATE TABLE IF NOT EXISTS — safe to re-run
+    run_migrations()  # ALTER TABLE ADD COLUMN — safe to re-run
+
+
 @app.get("/")
 def root():
     return {
         "platform": "ResearchFlow",
         "version": "2.0.0",
         "status": "running",
-        "products": ["student", "ngo", "journal"],
         "modules": ["ingestion", "analytics", "reporting", "verification"],
     }
 

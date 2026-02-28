@@ -1,34 +1,47 @@
+"""
+auth.py — JWT + DB-persisted user accounts (Feature #45)
+
+Token lifecycle
+───────────────
+• POST /auth/register → creates user in SQLite → sets httpOnly cookie
+• POST /auth/login    → verifies password     → sets httpOnly cookie
+• GET  /auth/me       → reads cookie          → returns user profile
+• PUT  /auth/profile  → reads cookie          → updates name/institution/country
+• POST /auth/logout   → deletes cookie
+"""
+
 from datetime import datetime, timedelta
 from typing import Optional
+import hashlib, os, uuid
 from jose import JWTError, jwt
-import hashlib
-import os
 
-SECRET_KEY = "researchflow-secret-key-change-in-production"
-ALGORITHM  = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
+SECRET_KEY                  = os.getenv("SECRET_KEY", "researchflow-secret-key-change-in-production")
+ALGORITHM                   = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24          # 24 hours
 
-users_db: dict = {}
+# ── Crypto helpers ────────────────────────────────────────────────────────────
 
 def hash_password(password: str) -> str:
     salt = os.urandom(32)
-    key  = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100000)
-    return salt.hex() + ':' + key.hex()
+    key  = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 100_000)
+    return salt.hex() + ":" + key.hex()
+
 
 def verify_password(plain: str, hashed: str) -> bool:
     try:
-        salt_hex, key_hex = hashed.split(':')
+        salt_hex, key_hex = hashed.split(":")
         salt = bytes.fromhex(salt_hex)
-        key  = hashlib.pbkdf2_hmac('sha256', plain.encode(), salt, 100000)
+        key  = hashlib.pbkdf2_hmac("sha256", plain.encode(), salt, 100_000)
         return key.hex() == key_hex
     except Exception:
         return False
 
+
 def create_token(data: dict) -> str:
     to_encode = data.copy()
-    expire    = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
+    to_encode["exp"] = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
 
 def decode_token(token: str) -> Optional[dict]:
     try:
@@ -36,28 +49,94 @@ def decode_token(token: str) -> Optional[dict]:
     except JWTError:
         return None
 
-def register_user(name: str, email: str, password: str, role: str) -> dict:
-    if email in users_db:
-        raise ValueError("Email already registered")
-    user = {
-        "id":            email,
-        "name":          name,
-        "email":         email,
-        "role":          role,
-        "password_hash": hash_password(password),
-        "created_at":    datetime.utcnow().isoformat()
-    }
-    users_db[email] = user
-    return {k: v for k, v in user.items() if k != "password_hash"}
 
-def login_user(email: str, password: str) -> dict:
-    user = users_db.get(email)
-    if not user:
-        raise ValueError("Invalid email or password")
-    if not verify_password(password, user["password_hash"]):
-        raise ValueError("Invalid email or password")
-    token = create_token({"sub": email, "role": user["role"]})
+# ── DB helpers ────────────────────────────────────────────────────────────────
+
+def _user_dict(user) -> dict:
+    """Serialise a User ORM row, never exposing password_hash."""
     return {
-        "token": token,
-        "user":  {k: v for k, v in user.items() if k != "password_hash"}
+        "id":          user.id,
+        "name":        user.name,
+        "email":       user.email,
+        "role":        user.role,
+        "institution": user.institution or user.organisation or "",
+        "country":     user.country or "",
+        "created_at":  user.created_at.isoformat() if user.created_at else "",
     }
+
+
+# ── Auth operations ───────────────────────────────────────────────────────────
+
+def register_user(
+    db,
+    name:        str,
+    email:       str,
+    password:    str,
+    role:        str,
+    institution: str = "",
+    country:     str = "",
+) -> dict:
+    from app.models.database import User
+
+    if len(password) < 8:
+        raise ValueError("Password must be at least 8 characters")
+
+    existing = db.query(User).filter(User.email == email).first()
+    if existing:
+        raise ValueError("Email already registered")
+
+    user = User(
+        id            = str(uuid.uuid4()),
+        name          = name,
+        email         = email,
+        role          = role,
+        organisation  = institution,   # keep legacy column in sync
+        institution   = institution,
+        country       = country,
+        password_hash = hash_password(password),
+        created_at    = datetime.utcnow(),
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return _user_dict(user)
+
+
+def login_user(db, email: str, password: str) -> dict:
+    from app.models.database import User
+
+    user = db.query(User).filter(User.email == email).first()
+    if not user or not user.password_hash:
+        raise ValueError("Invalid email or password")
+    if not verify_password(password, user.password_hash):
+        raise ValueError("Invalid email or password")
+
+    token = create_token({"sub": email, "role": user.role})
+    return {"token": token, "user": _user_dict(user)}
+
+
+def get_user_by_email(db, email: str) -> Optional[dict]:
+    from app.models.database import User
+
+    user = db.query(User).filter(User.email == email).first()
+    return _user_dict(user) if user else None
+
+
+def update_user_profile(db, email: str, data: dict) -> dict:
+    from app.models.database import User
+
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise ValueError("User not found")
+
+    allowed = {"name", "institution", "country"}
+    for key, value in data.items():
+        if key not in allowed:
+            continue
+        setattr(user, key, value)
+        if key == "institution":
+            user.organisation = value   # keep legacy column in sync
+
+    db.commit()
+    db.refresh(user)
+    return _user_dict(user)
