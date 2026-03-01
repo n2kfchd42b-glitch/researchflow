@@ -21,6 +21,7 @@ class User(Base):
     password_hash = Column(String)           # PBKDF2-HMAC-SHA256 salt:key hex
     created_at    = Column(DateTime, default=datetime.utcnow)
     studies       = relationship("Study", back_populates="owner")
+    projects      = relationship("Project", back_populates="owner")
 
 class Project(Base):
     __tablename__ = "projects"
