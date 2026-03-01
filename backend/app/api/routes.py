@@ -703,7 +703,12 @@ async def upload(file: UploadFile = File(...)):
             "created_at": datetime.utcnow().isoformat()
         }
         df.to_csv(f'/tmp/{dataset_id}.csv', index=False)
-        log_event("UPLOAD", {"dataset_id": dataset_id, "filename": file.filename})
+        log_event(
+            "system",
+            "UPLOAD",
+            {"dataset_id": dataset_id, "filename": file.filename},
+            dataset_id=dataset_id,
+        )
         return {
             "dataset_id": dataset_id,
             "filename": file.filename,
@@ -723,7 +728,7 @@ def create_study(payload: StudyPayload):
     study['id'] = study_id
     study['created_at'] = datetime.utcnow().isoformat()
     studies[study_id] = study
-    log_event("CREATE_STUDY", {"study_id": study_id, **study})
+    log_event("system", "CREATE_STUDY", {"study_id": study_id, **study}, study_id=study_id)
     return study
 
 @router.post("/study/{study_id}/analyse")
@@ -733,7 +738,13 @@ def analyse(study_id: str, payload: AnalysePayload):
     rigor = RigorScoreEngine().score(df, payload.outcome_column, payload.predictor_columns)
     result = {"statistics": stats, "rigor": rigor}
     studies[study_id]['analysis'] = result
-    log_event("ANALYSE", {"study_id": study_id, "dataset_id": payload.dataset_id})
+    log_event(
+        "system",
+        "ANALYSE",
+        {"study_id": study_id, "dataset_id": payload.dataset_id},
+        study_id=study_id,
+        dataset_id=payload.dataset_id,
+    )
     return result
 
 @router.post("/study/{study_id}/report")
@@ -742,7 +753,7 @@ def report(study_id: str):
     if not study or 'analysis' not in study:
         raise HTTPException(status_code=404, detail="Study or analysis not found")
     pdf_bytes = ReportGenerator().generate(study)
-    log_event("DOWNLOAD_REPORT", {"study_id": study_id})
+    log_event("system", "DOWNLOAD_REPORT", {"study_id": study_id}, study_id=study_id)
     return StreamingResponse(io.BytesIO(pdf_bytes), media_type="application/pdf", headers={"Content-Disposition": f"attachment; filename=report_{study_id}.pdf"})
 
 @router.post("/templates")
@@ -853,7 +864,7 @@ def create_study(payload: StudyPayload):
     study['id'] = study_id
     study['created_at'] = datetime.utcnow().isoformat()
     studies[study_id] = study
-    log_event("CREATE_STUDY", {"study_id": study_id, **study})
+    log_event("system", "CREATE_STUDY", {"study_id": study_id, **study}, study_id=study_id)
     return study
 
 @router.post("/study/{study_id}/analyse")
@@ -863,7 +874,13 @@ def analyse(study_id: str, payload: AnalysePayload):
     rigor = RigorScoreEngine().score(df, payload.outcome_column, payload.predictor_columns)
     result = {"statistics": stats, "rigor": rigor}
     studies[study_id]['analysis'] = result
-    log_event("ANALYSE", {"study_id": study_id, "dataset_id": payload.dataset_id})
+    log_event(
+        "system",
+        "ANALYSE",
+        {"study_id": study_id, "dataset_id": payload.dataset_id},
+        study_id=study_id,
+        dataset_id=payload.dataset_id,
+    )
     return result
 
 @router.post("/study/{study_id}/report")
@@ -872,7 +889,7 @@ def report(study_id: str):
     if not study or 'analysis' not in study:
         raise HTTPException(status_code=404, detail="Study or analysis not found")
     pdf_bytes = ReportGenerator().generate(study)
-    log_event("DOWNLOAD_REPORT", {"study_id": study_id})
+    log_event("system", "DOWNLOAD_REPORT", {"study_id": study_id}, study_id=study_id)
     return StreamingResponse(
         io.BytesIO(pdf_bytes),
         media_type="application/pdf",
