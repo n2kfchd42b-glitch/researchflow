@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, Component } from 'react';
 import type { ReactNode, ErrorInfo } from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import './mobile.css';
+import { API_URL } from './config';
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 import Login from './pages/Login';
@@ -145,8 +146,6 @@ const NAV_LINKS = [
   { to: "/budget",            label: "Budget" },
   { to: "/table1",            label: "Table 1" },
 ];
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8001';
 
 const ROLE_ICONS: Record<string, string> = { student: '🎓', ngo: '🌍', journal: '📄' };
 

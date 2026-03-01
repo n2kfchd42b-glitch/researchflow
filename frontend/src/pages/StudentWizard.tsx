@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
 import { DescriptiveStats, BivariateCharts, ResultsCharts } from '../components/AnalysisCharts';
+import { API_URL } from '../config';
 
 const STEPS = ['Upload Data','Study Design','Your Population','Run Analysis','Results'];
 
@@ -35,7 +36,6 @@ export default function StudentWizard() {
     try {
       const form = new FormData();
       form.append('file', file);
-      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8002';
       const res = await fetch(`${API_URL}/protocol/extract`, {
         method: 'POST',
         body: form,

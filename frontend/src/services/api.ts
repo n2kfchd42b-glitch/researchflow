@@ -1,4 +1,4 @@
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8001';
+import { API_URL } from '../config';
 
 console.log('ResearchFlow API URL:', API_URL);
 
