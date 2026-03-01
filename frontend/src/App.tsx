@@ -74,6 +74,9 @@ import AuditTrail from './pages/AuditTrail';
 import StudyDashboard from './pages/StudyDashboard';
 import DataVersioning from './pages/DataVersioning';
 import { ProjectProvider } from './context/ProjectContext';
+import { StudentWizardProvider } from './products/student/context/StudentWizardContext';
+import { NGOPlatformProvider } from './products/ngo/context/NGOPlatformContext';
+import { JournalProvider } from './products/journal/context/JournalContext';
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null };
@@ -139,7 +142,7 @@ export default function App() {
           <Route path="/" element={<ProductLanding />} />
 
           {/* ── Student Wizard ── */}
-          <Route path="/student" element={<StudentLayout user={user} onLogout={handleLogout} />}>
+          <Route path="/student" element={<StudentWizardProvider><StudentLayout user={user} onLogout={handleLogout} /></StudentWizardProvider>}>
             <Route index element={<StudySetupPage />} />
             <Route path="setup"       element={<StudySetupPage />} />
             <Route path="upload"      element={<DataUploadPage />} />
@@ -162,7 +165,7 @@ export default function App() {
           </Route>
 
           {/* ── NGO Platform ── */}
-          <Route path="/ngo" element={<NGOLayout user={user} onLogout={handleLogout} />}>
+          <Route path="/ngo" element={<NGOPlatformProvider><NGOLayout user={user} onLogout={handleLogout} /></NGOPlatformProvider>}>
             <Route index                       element={<NGODashboardPage />} />
             <Route path="project/:id"          element={<ProjectWorkspacePage />} />
             <Route path="projects"             element={<StudyDashboard />} />
@@ -194,7 +197,7 @@ export default function App() {
           </Route>
 
           {/* ── Journal Component ── */}
-          <Route path="/journal" element={<JournalLayout user={user} onLogout={handleLogout} />}>
+          <Route path="/journal" element={<JournalProvider><JournalLayout user={user} onLogout={handleLogout} /></JournalProvider>}>
             <Route index               element={<JournalVerification />} />
             <Route path="submissions"  element={<JournalAssistant />} />
             <Route path="verify"       element={<JournalVerification />} />
