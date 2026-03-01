@@ -1,6 +1,7 @@
 import time
 import logging
 import os
+import json
 
 from dotenv import load_dotenv
 
@@ -27,16 +28,40 @@ app = FastAPI(
 
 # Credentials-safe CORS — must list explicit origins (not "*") when
 # allow_credentials=True so browsers send cookies cross-origin.
+def _parse_allowed_origins(raw: str) -> list[str]:
+    if not raw:
+        return []
+
+    value = raw.strip()
+
+    # Support JSON array format, e.g. ["https://app.onrender.com", "http://localhost:3000"]
+    if value.startswith("["):
+        try:
+            parsed = json.loads(value)
+            if isinstance(parsed, list):
+                return [str(origin).strip().rstrip("/") for origin in parsed if str(origin).strip()]
+        except Exception:
+            pass
+
+    # Support comma-separated format, with optional quotes around each origin.
+    origins = []
+    for item in value.split(","):
+        cleaned = item.strip().strip('"').strip("'").rstrip("/")
+        if cleaned:
+            origins.append(cleaned)
+    return origins
+
+
 _raw_origins = os.getenv("CORS_ORIGINS") or os.getenv(
     "ALLOWED_ORIGINS",
     "https://researchflow-frontend-ttdz.onrender.com,http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000"
 )
-ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+ALLOWED_ORIGINS = _parse_allowed_origins(_raw_origins)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_origin_regex=r"^https://.*-3000\.app\.github\.dev$",
+    allow_origin_regex=r"^https://.*-3000\.app\.github\.dev$|^https://researchflow-frontend(-[a-z0-9]+)?\.onrender\.com$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
