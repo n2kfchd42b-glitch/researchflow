@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8004';
+import { API_URL } from '../config';
 
 export default function PropensityMatching() {
   const [uploadResult, setUploadResult] = useState<any>(null);

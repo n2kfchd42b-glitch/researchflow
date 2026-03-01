@@ -9,8 +9,7 @@
 //  4. exportAudit      → POST /export-audit       (single reproducibility/audit package)
 
 import type { ProductContext } from '../ui/theme';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8001';
+import { API_URL } from '../../config';
 
 // ─── 1. Dataset Upload ────────────────────────────────────────────────────────
 

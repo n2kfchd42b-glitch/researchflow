@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Download, FileText, Loader, CheckCircle, AlertCircle } from 'lucide-react';
 import { ProductContext, getTheme } from './theme';
+import { API_URL } from '../../config';
 
 export type ExportFormat = 'pdf' | 'docx' | 'csv' | 'json' | 'xlsx';
 
@@ -38,7 +39,6 @@ async function defaultExport(
   payload: Record<string, unknown>,
   templateId: string,
 ) {
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8001';
   const res = await fetch(`${API_URL}/generate-report`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

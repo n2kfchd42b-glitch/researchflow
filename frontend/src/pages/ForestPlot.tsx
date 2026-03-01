@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8004';
+import { API_URL } from '../config';
 
 const EFFECT_TYPES = [
   { id: 'OR',  label: 'Odds Ratio (OR)',         hint: 'Logistic regression, case-control' },

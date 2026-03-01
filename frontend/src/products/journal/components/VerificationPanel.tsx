@@ -2,6 +2,7 @@ import React from 'react';
 import { Link2, ExternalLink, Lock } from 'lucide-react';
 import { ReportExporter, ExportFormat, ActivityFeed, ActivityEvent } from '../../../packages/ui';
 import { useJournal } from '../context/JournalContext';
+import { API_URL } from '../../../config';
 
 interface VerificationPanelProps {
   submissionId: string;
@@ -49,7 +50,6 @@ export function VerificationPanel({ submissionId }: VerificationPanelProps) {
     if (!submission.verificationReport) {
       generateVerificationReport(submissionId);
     }
-    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8001';
     const res = await fetch(`${API_URL}/generate-report`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

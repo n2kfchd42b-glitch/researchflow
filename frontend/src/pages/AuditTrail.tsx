@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8002';
+import { API_URL } from '../config';
 
 const ACTION_COLORS: Record<string, string> = {
   UPLOAD:          '#1C2B3A',

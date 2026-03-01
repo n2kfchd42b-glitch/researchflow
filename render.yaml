@@ -19,7 +19,11 @@ services:
   - type: web
     name: researchflow-frontend
     runtime: static
-    buildCommand: cd frontend && npm ci && npm run build
+    buildCommand: >-
+      cd frontend &&
+      npm ci &&
+      printf 'window._env_ = {"REACT_APP_API_URL": "%s"};\n' "${REACT_APP_API_URL}" > public/env-config.js &&
+      npm run build
     staticPublishPath: ./frontend/build
     plan: free
     routes:

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8001';
+import { API_URL } from '../config';
 
 export default function Login({ onLogin }: { onLogin: (user: any) => void }) {
   const [mode,        setMode]        = useState<'login' | 'register'>('login');

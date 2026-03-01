@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8004';
+import { API_URL } from '../config';
 
 const ROLE_COLORS: Record<string, string> = {
   pi:       '#C0533A',

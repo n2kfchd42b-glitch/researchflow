@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8002';
+import { API_URL } from '../config';
 
 export default function DataCleaningStudio() {
   const [uploadResult, setUploadResult]   = useState<any>(null);
