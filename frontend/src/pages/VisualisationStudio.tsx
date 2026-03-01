@@ -63,13 +63,11 @@ function buildChartData(df: any[], xCol: string, yCol: string, chartType: string
 export default function VisualisationStudio() {
   const [uploadResult, setUploadResult] = useState<any>(null);
   const [rawData, setRawData]           = useState<any[]>([]);
-  const [loading, setLoading]           = useState(false);
   const [error, setError]               = useState('');
 
   const [chartType, setChartType]       = useState('bar');
   const [xCol, setXCol]                 = useState('');
   const [yCol, setYCol]                 = useState('');
-  const [colorCol, setColorCol]         = useState('');
 
   const [title, setTitle]               = useState('My Chart');
   const [xLabel, setXLabel]             = useState('');
@@ -83,14 +81,13 @@ export default function VisualisationStudio() {
   const [barRadius, setBarRadius]       = useState(4);
   const [opacity, setOpacity]           = useState(0.85);
   const [showValues, setShowValues]     = useState(false);
-  const [colorPalette, setColorPalette] = useState(0);
+  const [colorPalette]                  = useState(0);
 
   const chartRef = useRef<HTMLDivElement>(null);
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setLoading(true);
     setError('');
     try {
       const data = await api.upload(file);
@@ -110,7 +107,6 @@ export default function VisualisationStudio() {
     } catch (err: any) {
       setError('Upload failed: ' + err.message);
     }
-    setLoading(false);
   }
 
   function exportPNG() {

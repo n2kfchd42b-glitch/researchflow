@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { AlertTriangle, CheckCircle, Info, Activity, Users, Database, TrendingUp, MapPin, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Info, Users, Database, MapPin, RefreshCw } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar, ReferenceLine, Legend
+  Legend
 } from 'recharts';
 import { useNGO, SiteInfo } from '../context/NGOPlatformContext';
 import StatusBadge from '../components/StatusBadge';

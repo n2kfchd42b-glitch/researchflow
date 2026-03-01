@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle, AlertTriangle, XCircle, ChevronDown, ChevronUp, BarChart2, BookOpen, FileSearch } from 'lucide-react';
+import { CheckCircle, AlertTriangle, XCircle, ChevronDown, ChevronUp, BookOpen, FileSearch } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useStudentWizard, AnalysisResult, AnalysisInterpretation } from '../context/StudentWizardContext';
 import InterpretationCard from '../components/InterpretationCard';

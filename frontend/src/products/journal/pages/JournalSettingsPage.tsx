@@ -167,16 +167,12 @@ export default function JournalSettingsPage() {
     window.location.reload();
   };
 
-  const storageSize = useMemo(() => {
+  const storageSize = React.useMemo(() => {
     try {
       const item = localStorage.getItem('rf_journal_component');
       return item ? (new Blob([item]).size / 1024).toFixed(1) : '0';
     } catch { return '0'; }
-  }, [state]);
-
-  function useMemo<T>(factory: () => T, deps: any[]): T {
-    return React.useMemo(factory, deps);
-  }
+  }, []);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: 760 }}>

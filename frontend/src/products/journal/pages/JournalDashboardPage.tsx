@@ -6,9 +6,9 @@ import {
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend
+  PieChart, Pie, Cell
 } from 'recharts';
-import { useJournal, Submission, Author } from '../context/JournalContext';
+import { useJournal, Author } from '../context/JournalContext';
 import VerificationStatusBadge from '../components/VerificationStatusBadge';
 
 const JOURNAL_PRIMARY = '#7D3C98';

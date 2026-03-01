@@ -114,13 +114,6 @@ function emptyAssessment(tool: 'rob2' | 'robinsi' | 'nos'): Assessment {
   };
 }
 
-function getOverallColor(assessments: Assessment[]) {
-  if (assessments.some(a => a.overall === 'High'))            return '#f44336';
-  if (assessments.some(a => a.overall === 'Some Concerns'))   return '#ff9800';
-  if (assessments.every(a => a.overall === 'Low'))            return '#4caf50';
-  return '#9e9e9e';
-}
-
 export default function RiskOfBias() {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [active, setActive]           = useState<Assessment | null>(null);

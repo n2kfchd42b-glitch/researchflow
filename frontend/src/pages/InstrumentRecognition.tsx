@@ -28,7 +28,6 @@ const CATEGORY_ICONS: Record<string, string> = {
 
 export default function InstrumentRecognition() {
   const [uploadResult, setUploadResult] = useState<any>(null);
-  const [datasetId, setDatasetId]       = useState('');
   const [recognition, setRecognition]   = useState<any>(null);
   const [loading, setLoading]           = useState(false);
   const [error, setError]               = useState('');
@@ -42,7 +41,6 @@ export default function InstrumentRecognition() {
     try {
       const data = await api.upload(file);
       setUploadResult(data);
-      setDatasetId(data.dataset_id);
       await runRecognition(data.dataset_id);
     } catch (err: any) {
       setError('Upload failed: ' + err.message);

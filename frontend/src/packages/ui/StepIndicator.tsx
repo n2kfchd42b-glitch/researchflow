@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Check } from 'lucide-react';
-import { ProductContext, getTheme } from './theme';
 
 export interface Step {
   number: number;

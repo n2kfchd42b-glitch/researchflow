@@ -173,7 +173,8 @@ export default function SensitivityAnalysis() {
   }
 
   const robust      = scenarios.length > 0 && scenarios.every(s => s.sig === scenarios[0].sig);
-  const consistentDir = scenarios.length > 0 && scenarios.every(s => s.or > 1) || scenarios.every(s => s.or < 1);
+  const consistentDir =
+    scenarios.length > 0 && (scenarios.every(s => s.or > 1) || scenarios.every(s => s.or < 1));
 
   const chartData = scenarios.map(s => ({
     name:    s.label.split('(')[0].trim().substring(0, 25),

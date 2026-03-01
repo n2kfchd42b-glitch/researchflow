@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, FileText, CheckCircle, AlertTriangle, Shield, Clock,
-  Download, ChevronDown, ChevronUp, Plus, Save, Trash2, X,
+  Download, ChevronDown, ChevronUp, Plus, Save, X,
   Database, BarChart2, AlertCircle, RefreshCw
 } from 'lucide-react';
 import {
@@ -36,13 +36,6 @@ const ANALYSIS_TYPE_LABELS: Record<ReportedAnalysis['type'], string> = {
   'descriptive': 'Descriptive Statistics',
   'forest-plot': 'Forest Plot',
   'other': 'Other',
-};
-
-const MATCH_COLORS: Record<VerificationResult['match'], string> = {
-  'exact': '#10B981',
-  'minor-discrepancy': '#F59E0B',
-  'major-discrepancy': '#EF4444',
-  'cannot-reproduce': '#9CA3AF',
 };
 
 const VERDICT_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
@@ -711,7 +704,6 @@ function RoBTab({ submission }: { submission: any }) {
         </h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {domains.map(domain => {
-            const domainDef = ROB2_DOMAINS.find(d => d.id === domain.id);
             return (
               <details key={domain.id} style={{ border: '1px solid #E5E7EB', borderRadius: 8, overflow: 'hidden' }}>
                 <summary style={{ padding: '0.7rem 1rem', cursor: 'pointer', background: '#F9FAFB', display: 'flex', alignItems: 'center', gap: '0.75rem', listStyle: 'none', fontWeight: 600, fontSize: '0.875rem', color: '#1C2B3A' }}>
@@ -824,7 +816,7 @@ function RoBTab({ submission }: { submission: any }) {
 // ─── Report Tab ───────────────────────────────────────────────────────────────
 
 function ReportTab({ submission }: { submission: any }) {
-  const { generateVerificationReport, exportAuditLog } = useJournal();
+  const { generateVerificationReport } = useJournal();
   const report = submission.verificationReport;
 
   const exportReport = () => {

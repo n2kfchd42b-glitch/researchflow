@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Type, Hash, ChevronDown, CheckSquare, Calendar, MapPin, Camera,
@@ -28,7 +28,7 @@ function generateId(): string {
 
 export default function FieldFormBuilderPage() {
   const navigate = useNavigate();
-  const { addForm, activeProject } = useNGO();
+  const { addForm } = useNGO();
 
   const [formName, setFormName] = useState('New Data Collection Form');
   const [formDesc, setFormDesc] = useState('');
@@ -36,8 +36,6 @@ export default function FieldFormBuilderPage() {
   const [expandedFieldId, setExpandedFieldId] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
 
   function addField(type: FormField['type']) {
     const defaultLabel = FIELD_TYPES.find(ft => ft.type === type)?.label || 'New Field';

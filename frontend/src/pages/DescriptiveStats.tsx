@@ -4,7 +4,6 @@ import { API_URL } from '../config';
 
 export default function DescriptiveStats() {
   const [uploadResult, setUploadResult] = useState<any>(null);
-  const [datasetId, setDatasetId]       = useState('');
   const [stats, setStats]               = useState<any>(null);
   const [loading, setLoading]           = useState(false);
   const [error, setError]               = useState('');
@@ -19,7 +18,6 @@ export default function DescriptiveStats() {
     try {
       const data = await api.upload(file);
       setUploadResult(data);
-      setDatasetId(data.dataset_id);
       await loadStats(data.dataset_id);
     } catch (err: any) {
       setError('Upload failed: ' + err.message);

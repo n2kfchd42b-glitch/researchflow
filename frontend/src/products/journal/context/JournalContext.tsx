@@ -277,23 +277,6 @@ export function JournalProvider({ children }: { children: ReactNode }) {
 
   const activeSubmission = state.submissions.find(s => s.id === state.activeSubmissionId) ?? null;
 
-  const addAuditEntryInternal = useCallback((submissionId: string, entry: Omit<AuditEntry, 'id' | 'timestamp'>, setState: React.Dispatch<React.SetStateAction<JournalState>>) => {
-    const auditEntry: AuditEntry = {
-      id: generateId(),
-      timestamp: new Date().toISOString(),
-      ...entry,
-    };
-    setState(prev => ({
-      ...prev,
-      submissions: prev.submissions.map(s =>
-        s.id === submissionId
-          ? { ...s, auditLog: [auditEntry, ...s.auditLog] }
-          : s
-      ),
-    }));
-    return auditEntry;
-  }, []);
-
   const createSubmission = useCallback((partial: Partial<Submission>): string => {
     const id = generateId();
     const now = new Date().toISOString();

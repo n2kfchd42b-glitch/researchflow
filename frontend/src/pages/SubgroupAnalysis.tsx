@@ -28,7 +28,6 @@ function zToP(z: number): number {
 }
 
 function logOddsRatio(a: number, b: number, c: number, d: number) {
-  const safeDivide = (n: number, d2: number) => d2 === 0 ? n + 0.5 : n;
   const aa = a || 0.5, bb = b || 0.5, cc = c || 0.5, dd = d || 0.5;
   const lor = Math.log((aa * dd) / (bb * cc));
   const se  = Math.sqrt(1/aa + 1/bb + 1/cc + 1/dd);

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Database, Upload, AlertCircle, Copy, TrendingDown, Tag, RefreshCw, GitBranch, BookOpen, ChevronDown } from 'lucide-react';
-import { useNGO, DatasetRef } from '../context/NGOPlatformContext';
+import { Database, Upload, AlertCircle, Copy, TrendingDown, Tag, RefreshCw, GitBranch, BookOpen } from 'lucide-react';
+import { useNGO } from '../context/NGOPlatformContext';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import StatusBadge from '../components/StatusBadge';
 
@@ -38,7 +38,7 @@ const VERSION_HISTORY = [
 ];
 
 export default function DataManagementPage() {
-  const { activeProject, addDataset, addActivity } = useNGO();
+  const { activeProject } = useNGO();
   const [selectedDatasetId, setSelectedDatasetId] = useState<string>(activeProject?.datasets[0]?.id || '');
   const [activeTab, setActiveTab] = useState<CleaningTab>('Missing Data');
 

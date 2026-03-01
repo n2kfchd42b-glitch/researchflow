@@ -31,7 +31,7 @@ export default function NGODashboardPage() {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState<CreateProjectForm>(EMPTY_FORM);
-  const [editProject, setEditProject] = useState<NGOProject | null>(null);
+  const [, setEditProject] = useState<NGOProject | null>(null);
 
   const { projects, recentActivity } = state;
 

@@ -38,7 +38,8 @@ export default function Collaboration({ user }: { user: any }) {
   const [newWS, setNewWS]             = useState({ name: '', description: '' });
   const [invite, setInvite]           = useState({ email: '', name: '', role: 'analyst' });
 
-  useEffect(() => { loadWorkspaces(); }, []);
+  useEffect(() => { loadWorkspaces(); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function loadWorkspaces() {
     setLoading(true);

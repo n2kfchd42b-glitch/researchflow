@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, User, AlertCircle } from 'lucide-react';
+import { Calendar, User } from 'lucide-react';
 import { Submission } from '../context/JournalContext';
 import VerificationStatusBadge from './VerificationStatusBadge';
 import VerificationProgress from './VerificationProgress';

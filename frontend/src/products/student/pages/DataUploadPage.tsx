@@ -4,7 +4,6 @@ import { useStudentWizard, ColumnInfo, DatasetInfo, ColumnIntelligence, ColumnWa
 import { useNavigate } from 'react-router-dom';
 import DataIntelligencePanel from '../components/DataIntelligencePanel';
 import LearningTip from '../components/LearningTip';
-import WizardEmptyState from '../components/WizardEmptyState';
 import StepSuccessMessage from '../components/StepSuccessMessage';
 import { FileUploader, ValidationWarning } from '../../../packages/ui';
 import { uploadDataset } from '../../../packages/api';

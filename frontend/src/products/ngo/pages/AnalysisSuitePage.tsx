@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  BarChart3, TrendingUp, GitMerge, Layers, Filter, AlertCircle, Clock,
-  Database, FileText, MapPin, Network, LineChart as LineChartIcon, History, ChevronRight
+  BarChart3, TrendingUp, GitMerge, Layers, Filter, AlertCircle,
+  FileText, MapPin, LineChart as LineChartIcon, History, ChevronRight
 } from 'lucide-react';
 import { useNGO } from '../context/NGOPlatformContext';
 

@@ -24,7 +24,7 @@ export default function ForestPlot() {
   const [result, setResult]           = useState<any>(null);
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState('');
-  const [useLog, setUseLog]           = useState(true);
+  const [useLog]                      = useState(true);
   const [model, setModel]             = useState<'fixed'|'random'>('random');
   const plotRef                        = useRef<HTMLDivElement>(null);
 
@@ -131,7 +131,6 @@ export default function ForestPlot() {
     function xScale(val: number) {
       const logMin = Math.log(xMin);
       const logMax = Math.log(xMax);
-      const logVal = isRatio ? Math.log(Math.max(val, 0.001)) : ((val - xMin) / (xMax - xMin)) * (logMax - logMin) + logMin;
       const frac   = isRatio
         ? (Math.log(val) - logMin) / (logMax - logMin)
         : (val - xMin) / (xMax - xMin);

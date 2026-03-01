@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Upload, FileText, X, AlertCircle, RefreshCw, CheckCircle } from 'lucide-react';
+import { Upload, FileText, AlertCircle, RefreshCw, CheckCircle } from 'lucide-react';
 import { ProductContext, getTheme } from './theme';
 
 export interface UploadedFile {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link2, ExternalLink, Lock } from 'lucide-react';
+import { Link2, Lock } from 'lucide-react';
 import { ReportExporter, ExportFormat, ActivityFeed, ActivityEvent } from '../../../packages/ui';
 import { useJournal } from '../context/JournalContext';
 import { API_URL } from '../../../config';
@@ -35,7 +35,6 @@ export function VerificationPanel({ submissionId }: VerificationPanelProps) {
         : '📋',
   }));
 
-  const datasetHash = submission.dataset?.sha256Hash;
   const payload: Record<string, unknown> = {
     context: 'journal',
     submissionId,

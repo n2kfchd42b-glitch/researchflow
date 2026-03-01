@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { DollarSign, Plus, Trash2, Edit2, Check, X, Download, AlertTriangle, TrendingUp } from 'lucide-react';
+import { Plus, Trash2, Edit2, Check, X, Download, AlertTriangle, TrendingUp } from 'lucide-react';
 import { useNGO, BudgetItem } from '../context/NGOPlatformContext';
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend,
-  BarChart, Bar, XAxis, YAxis, LineChart, Line, CartesianGrid
+  BarChart, Bar, XAxis, YAxis, CartesianGrid
 } from 'recharts';
 
 const CATEGORY_COLORS: Record<string, string> = {

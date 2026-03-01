@@ -8,10 +8,6 @@ import {
 import { useNGO, BudgetItem, EthicsSubmission, TeamMember, SiteInfo, DatasetRef } from '../context/NGOPlatformContext';
 import StatusBadge from '../components/StatusBadge';
 import BudgetChart from '../components/BudgetChart';
-import EnrollmentChart from '../components/EnrollmentChart';
-import {
-  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, Legend
-} from 'recharts';
 
 type Tab = 'overview' | 'data' | 'forms' | 'analysis' | 'budget' | 'ethics' | 'team' | 'reports';
 
@@ -61,7 +57,6 @@ export default function ProjectWorkspacePage() {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [editingName, setEditingName] = useState(false);
   const [editName, setEditName] = useState('');
-  const [showEditModal, setShowEditModal] = useState(false);
 
   const project = state.projects.find(p => p.id === id);
   const projectBudgetItems = state.budgetItems.filter(b => b.projectId === id);

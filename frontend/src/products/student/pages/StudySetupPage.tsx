@@ -293,6 +293,7 @@ export default function StudySetupPage() {
   useEffect(() => {
     // Show success if coming from a step completion
     if (state.maxCompletedStep >= 5) setShowSuccess(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const selectedType = STUDY_TYPES.find(t => t.value === cfg.studyType);

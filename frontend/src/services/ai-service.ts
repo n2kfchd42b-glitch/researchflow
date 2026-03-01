@@ -24,7 +24,6 @@ import {
   datasetIntelligenceHash,
   analysisRecommendationHash,
   interpretationHash,
-  consistencyCheckerHash,
   reproducibilitySummaryHash,
   indicatorDetectionHash,
 

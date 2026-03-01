@@ -1,7 +1,7 @@
 import requests
 import json
 
-BASE = "http://localhost:8000"
+BASE = "http://localhost:8001"
 
 print("=== ResearchFlow Full API Test ===\n")
 

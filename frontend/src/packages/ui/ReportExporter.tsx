@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Download, FileText, Loader, CheckCircle, AlertCircle } from 'lucide-react';
-import { ProductContext, getTheme } from './theme';
+import { Download, Loader, CheckCircle, AlertCircle } from 'lucide-react';
+import { ProductContext } from './theme';
 import { API_URL } from '../../config';
 
 export type ExportFormat = 'pdf' | 'docx' | 'csv' | 'json' | 'xlsx';
@@ -63,7 +63,6 @@ export function ReportExporter({
   label = 'Export Report',
   disabled = false,
 }: ReportExporterProps) {
-  const theme = getTheme(context);
   const [state, setState] = useState<ExportState>('idle');
   const [activeFormat, setActiveFormat] = useState<ExportFormat | null>(null);
   const [errorMsg, setErrorMsg] = useState('');

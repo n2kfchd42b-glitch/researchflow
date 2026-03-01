@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useProject } from '../context/ProjectContext';
 
 const STORAGE_KEY = 'researchflow_literature';
@@ -215,7 +215,6 @@ function guessMapping(headers: string[]): Record<string, string> {
 }
 
 function BulkImportModal({ onImport, onClose }: { onImport: (refs: Reference[]) => void; onClose: () => void }) {
-  const [csvText, setCsvText] = useState('');
   const [mapping, setMapping] = useState<Record<string, string>>({});
   const [headers, setHeaders] = useState<string[]>([]);
   const [rows, setRows]       = useState<string[][]>([]);
@@ -227,7 +226,6 @@ function BulkImportModal({ onImport, onClose }: { onImport: (refs: Reference[]) 
     const reader = new FileReader();
     reader.onload = ev => {
       const text = ev.target?.result as string;
-      setCsvText(text);
       const parsed = parseCSV(text);
       if (parsed.length < 2) { setError('CSV must have a header row and at least one data row.'); return; }
       const hdrs = parsed[0];
@@ -387,23 +385,6 @@ const LiteratureReview: React.FC = () => {
     setCopied(true); setTimeout(() => setCopied(false), 2000);
   }
 
-  function exportExtractionCSV() {
-    const headers = ['Author(s)', 'Year', 'Title', 'Journal', 'Design', 'N', 'Effect Type', 'Effect Value', 'CI Lower', 'CI Upper', '95% CI', 'RoB Rating', 'Adjustment Variables', 'GRADE', 'DOI'];
-    const rows = refs.map(r => [
-      r.authors.split(',')[0] + (r.authors.split(',').length > 1 ? ' et al.' : ''),
-      r.year, r.title, r.journal, r.design,
-      r.sample_size > 0 ? r.sample_size : '',
-      r.effect_type, r.effect_value, r.ci_lower, r.ci_upper,
-      r.ci_lower && r.ci_upper ? `${r.ci_lower}–${r.ci_upper}` : '',
-      r.rob_rating, r.adjustment_vars, r.grade, r.doi,
-    ]);
-    const csv  = [headers, ...rows].map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url; a.download = 'evidence_extraction.csv'; a.click();
-  }
-
   if (!projectId) {
     return (
       <div className="card" style={{ margin: '2rem auto', maxWidth: 500, textAlign: 'center' }}>
@@ -424,9 +405,6 @@ const LiteratureReview: React.FC = () => {
   });
 
   const themeGroups   = THEMES.reduce((acc, t) => { acc[t] = refs.filter(r => r.theme === t); return acc; }, {} as Record<string, Reference[]>);
-  const gradeDist     = GRADE_LEVELS.map(g => ({ grade: g, count: refs.filter(r => r.grade === g).length }));
-  const extractedRefs = refs.filter(r => r.effect_type || r.rob_rating);
-
   const lbl: React.CSSProperties = { fontWeight: 700, fontSize: '0.78rem', color: '#9AABB8', display: 'block', marginBottom: 4, letterSpacing: '0.04em' };
   const inp: React.CSSProperties = { width: '100%', padding: '0.5rem 0.7rem', borderRadius: 6, border: '1px solid #2C3E52', background: '#0d1b2a', color: '#fff', fontSize: '0.88rem' };
 

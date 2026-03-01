@@ -43,7 +43,6 @@ const VERSION_NAMES = [
 
 export default function DataVersioning() {
   const [versions, setVersions]       = useState<Version[]>([]);
-  const [loading, setLoading]         = useState(false);
   const [activeVersion, setActiveVersion] = useState<string | null>(null);
   const [compareMode, setCompareMode] = useState(false);
   const [compareA, setCompareA]       = useState<string | null>(null);
@@ -59,7 +58,6 @@ export default function DataVersioning() {
   function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setLoading(true);
     const reader = new FileReader();
     reader.onload = (ev) => {
       const text = ev.target?.result as string;
@@ -69,7 +67,6 @@ export default function DataVersioning() {
       setCurrentRows(rows);
       setShowSave(true);
       setNewVersionName(versions.length === 0 ? 'Raw Data' : VERSION_NAMES[Math.min(versions.length, VERSION_NAMES.length - 1)]);
-      setLoading(false);
     };
     reader.readAsText(file);
   }

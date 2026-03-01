@@ -1,5 +1,5 @@
 import React from 'react';
-import { DollarSign, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
+import { DollarSign, AlertTriangle } from 'lucide-react';
 
 export interface BudgetLine {
   category: string;

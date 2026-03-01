@@ -31,6 +31,7 @@ export default function MethodologyMemory({ user }: { user: any }) {
   useEffect(() => {
     loadTemplates();
     loadCommunity();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function loadTemplates() {

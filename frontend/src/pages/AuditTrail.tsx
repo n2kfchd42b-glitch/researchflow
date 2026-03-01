@@ -26,6 +26,7 @@ export default function AuditTrail({ user }: { user: any }) {
 
   useEffect(() => {
     loadLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function loadLogs() {
