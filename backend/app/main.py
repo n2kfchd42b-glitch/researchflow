@@ -11,6 +11,7 @@ logger = logging.getLogger("researchflow")
 
 from fastapi import FastAPI, APIRouter, Request
 from fastapi.middleware.cors import CORSMiddleware
+from app.core.database import create_tables, run_migrations
 from app.api.routes import router
 from app.api.projects import router as projects_router
 from app.api.references import router as references_router
@@ -39,6 +40,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def on_startup():
+    run_migrations()
+    create_tables()
 
 
 @app.middleware("http")

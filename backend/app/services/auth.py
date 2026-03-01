@@ -17,6 +17,7 @@ import hmac
 import base64
 import json
 import os
+import uuid
 
 # ── Minimal pure-Python HS256 JWT (no external crypto dependency) ────────────
 
