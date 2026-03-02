@@ -45,14 +45,15 @@ const PRODUCTS = [
   },
   {
     title: 'Journal Component',
-    subtitle: 'Analysis verification and reproducibility checking for reviewers.',
+    subtitle: 'Coming Soon — Currently being rebuilt with improved components.',
     description:
-      'Designed for journal editors and peer reviewers. Verify datasets, assess risk of bias, trace analysis decisions, and generate structured audit reports.',
+      'Designed for journal editors and peer reviewers. Verify datasets, assess risk of bias, trace analysis decisions, and generate structured audit reports. This platform is temporarily disabled while we improve it.',
     features: ['Dataset Verification', 'Risk of Bias', 'Audit Trail', 'Verification Reports'],
     path: '/journal',
     bg: IMAGES.research,
     accent: '#7D3C98',
-    cta: 'Start Verifying',
+    cta: 'Coming Soon',
+    comingSoon: true,
   },
 ];
 
@@ -347,14 +348,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                       </li>
                     ))}
                   </ul>
-                  <button onClick={() => go(p.path)} style={{
+                  <button onClick={() => { if (!(p as any).comingSoon) go(p.path); }} style={{
                     width: '100%', padding: '0.7rem',
-                    background: p.accent, color: '#fff', border: 'none',
-                    borderRadius: 8, fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer',
+                    background: (p as any).comingSoon ? '#94a3b8' : p.accent, color: '#fff', border: 'none',
+                    borderRadius: 8, fontWeight: 600, fontSize: '0.9rem',
+                    cursor: (p as any).comingSoon ? 'default' : 'pointer',
+                    opacity: (p as any).comingSoon ? 0.7 : 1,
                     transition: 'opacity 0.15s',
                   }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.88'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '1'; }}>
+                  onMouseEnter={e => { if (!(p as any).comingSoon) (e.currentTarget as HTMLButtonElement).style.opacity = '0.88'; }}
+                  onMouseLeave={e => { if (!(p as any).comingSoon) (e.currentTarget as HTMLButtonElement).style.opacity = '1'; }}>
                     {p.cta} →
                   </button>
                 </div>

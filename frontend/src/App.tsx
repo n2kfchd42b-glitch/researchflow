@@ -15,7 +15,7 @@ import LandingPage from './pages/LandingPage';
 // ─── Layouts ──────────────────────────────────────────────────────────────────
 import StudentLayout from './layouts/StudentLayout';
 import NGOLayout from './layouts/NGOLayout';
-import JournalLayout from './layouts/JournalLayout';
+// import JournalLayout from './layouts/JournalLayout'; // blanked out
 
 // ─── Student Wizard Pages (5-step flow) ───────────────────────────────────────
 import StudySetupPage from './products/student/pages/StudySetupPage';
@@ -67,10 +67,11 @@ import NetworkMetaAnalysis from './pages/analytics/NetworkMetaAnalysis';
 import SyntaxExporter from './pages/SyntaxExporter';
 import DataDictionary from './pages/DataDictionary';
 import CohortBuilder from './pages/CohortBuilder';
-import JournalVerification from './pages/JournalVerification';
-import JournalAssistant from './pages/JournalAssistant';
-import RiskOfBias from './pages/RiskOfBias';
-import AuditTrail from './pages/AuditTrail';
+// Journal pages blanked out
+// import JournalVerification from './pages/JournalVerification';
+// import JournalAssistant from './pages/JournalAssistant';
+// import RiskOfBias from './pages/RiskOfBias';
+// import AuditTrail from './pages/AuditTrail';
 
 // ─── NGO-specific pages ───────────────────────────────────────────────────────
 import StudyDashboard from './pages/StudyDashboard';
@@ -79,7 +80,7 @@ import { ProjectProvider } from './context/ProjectContext';
 import { WorkflowProvider } from './context/WorkflowContext';
 import { StudentWizardProvider } from './products/student/context/StudentWizardContext';
 import { NGOPlatformProvider } from './products/ngo/context/NGOPlatformContext';
-import { JournalProvider } from './products/journal/context/JournalContext';
+// import { JournalProvider } from './products/journal/context/JournalContext'; // blanked out
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null };
@@ -179,15 +180,23 @@ export default function App() {
             <Route path="descriptive"          element={<DescriptiveStats />} />
           </Route>
 
-          {/* ── Journal Component ── */}
-          <Route path="/journal" element={<JournalProvider><JournalLayout user={user} onLogout={handleLogout} /></JournalProvider>}>
-            <Route index               element={<JournalVerification />} />
-            <Route path="submissions"  element={<JournalAssistant />} />
-            <Route path="verify"       element={<JournalVerification />} />
-            <Route path="rob"          element={<RiskOfBias />} />
-            <Route path="audit"        element={<AuditTrail user={user} />} />
-            <Route path="reports"      element={<JournalAssistant />} />
-          </Route>
+          {/* ── Journal Component (blanked out — coming soon) ── */}
+          <Route path="/journal" element={
+            <div style={{ minHeight: '100vh', background: '#1C2B3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ textAlign: 'center', maxWidth: 480, padding: '2rem' }}>
+                <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(125,60,152,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                  <span style={{ fontSize: 28 }}>📖</span>
+                </div>
+                <h1 style={{ color: '#fff', fontSize: '1.75rem', fontWeight: 700, margin: '0 0 0.75rem' }}>Journal Verification</h1>
+                <p style={{ color: '#94a3b8', fontSize: '1rem', lineHeight: 1.6, margin: '0 0 2rem' }}>
+                  The Journal Verification platform is currently being rebuilt with improved components. Check back soon.
+                </p>
+                <a href="/" style={{ display: 'inline-block', padding: '0.65rem 1.75rem', background: '#7D3C98', color: '#fff', borderRadius: 8, textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>
+                  ← Back to ResearchFlow
+                </a>
+              </div>
+            </div>
+          } />
 
           {/* ── Shared utility routes ── */}
           <Route path="/ai-assistant"  element={<AIAssistant />} />
