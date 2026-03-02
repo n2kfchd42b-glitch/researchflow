@@ -25,31 +25,31 @@ export type FeatureKey =
  */
 const STUDENT_ROUTES: Record<FeatureKey, string> = {
   descriptive_stats:    '/student/descriptive',
-  chi_square:           '/student/descriptive',
-  logistic_regression:  '/student/descriptive',
-  linear_regression:    '/student/descriptive',
+  chi_square:           '',                      // not yet built
+  logistic_regression:  '',                      // not yet built
+  linear_regression:    '',                      // not yet built
   survival_analysis:    '/student/survival',
-  mann_whitney:         '/student/descriptive',
-  t_test:               '/student/descriptive',
-  correlation:          '/student/descriptive',
+  mann_whitney:         '',                      // not yet built
+  t_test:               '',                      // not yet built
+  correlation:          '',                      // not yet built
   meta_analysis:        '/student/forest-plot',
-  kruskal_wallis:       '/student/descriptive',
-  anova:                '/student/descriptive',
+  kruskal_wallis:       '',                      // not yet built
+  anova:                '',                      // not yet built
   cox_regression:       '/student/survival',
 };
 
 const NGO_ROUTES: Record<FeatureKey, string> = {
   descriptive_stats:    '/ngo/descriptive',
-  chi_square:           '/ngo/descriptive',
-  logistic_regression:  '/ngo/descriptive',
-  linear_regression:    '/ngo/descriptive',
+  chi_square:           '',                      // not yet built
+  logistic_regression:  '',                      // not yet built
+  linear_regression:    '',                      // not yet built
   survival_analysis:    '/ngo/analysis/survival',
-  mann_whitney:         '/ngo/descriptive',
-  t_test:               '/ngo/descriptive',
-  correlation:          '/ngo/descriptive',
+  mann_whitney:         '',                      // not yet built
+  t_test:               '',                      // not yet built
+  correlation:          '',                      // not yet built
   meta_analysis:        '/ngo/analysis/forest-plot',
-  kruskal_wallis:       '/ngo/descriptive',
-  anova:                '/ngo/descriptive',
+  kruskal_wallis:       '',                      // not yet built
+  anova:                '',                      // not yet built
   cox_regression:       '/ngo/analysis/survival',
 };
 
