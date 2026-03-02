@@ -145,6 +145,7 @@ export default function App() {
             <Route path="sensitivity" element={<SensitivityAnalysis />} />
             <Route path="forest-plot" element={<ForestPlot />} />
             <Route path="visualise"   element={<VisualisationStudio />} />
+            <Route path="versioning"  element={<DataVersioning />} />
             <Route path="samples"     element={<SampleDatasets />} />
           </Route>
 

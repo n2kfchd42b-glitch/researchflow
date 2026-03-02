@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer, Cell } from 'recharts';
+import { useStudentWizard } from '../products/student/context/StudentWizardContext';
 
 function parseCSV(text: string) {
   const lines   = text.trim().split('\n');
@@ -131,6 +132,24 @@ export default function SubgroupAnalysis() {
   const [error, setError]         = useState('');
   const [activeTab, setActiveTab] = useState('plot');
   const [copied, setCopied]       = useState(false);
+
+  // Auto-load from shared wizard context
+  let wizardCtx: ReturnType<typeof useStudentWizard> | null = null;
+  try { wizardCtx = useStudentWizard(); } catch { /* not inside provider */ }
+
+  useEffect(() => {
+    if (rows.length === 0 && wizardCtx) {
+      const { headers: h, data } = wizardCtx.getActiveData();
+      if (h.length > 0 && data.length > 0) {
+        setHeaders(h);
+        setRows(data);
+        setFilename('Shared dataset');
+        setOutcome(h[h.length - 1]);
+        setExposure(h[0]);
+        if (h.length > 1) setSubgroup(h[1]);
+      }
+    }
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]; if (!file) return;

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWorkflow } from '../context/WorkflowContext';
 import { api } from '../services/api';
+import { useStudentWizard } from '../products/student/context/StudentWizardContext';
 
 type VariableInfo = {
   name:         string;
@@ -102,6 +103,21 @@ export default function CodebookGenerator() {
   const [filterType, setFilterType] = useState('All');
   const [activeVar, setActiveVar] = useState<string | null>(null);
   const [copied, setCopied]       = useState(false);
+
+  // Auto-load from shared wizard context
+  let wizardCtx: ReturnType<typeof useStudentWizard> | null = null;
+  try { wizardCtx = useStudentWizard(); } catch { /* not inside provider */ }
+
+  useEffect(() => {
+    if (codebook.length === 0 && wizardCtx) {
+      const { headers, data } = wizardCtx.getActiveData();
+      if (headers.length > 0 && data.length > 0) {
+        setNRows(data.length);
+        setCodebook(buildCodebook(headers, data));
+        setFilename('Shared dataset');
+      }
+    }
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];

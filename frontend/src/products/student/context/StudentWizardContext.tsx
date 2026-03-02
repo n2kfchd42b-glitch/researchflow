@@ -90,6 +90,29 @@ export interface AssumptionCheck {
   detail: string;
 }
 
+// ─── Data Store Types ─────────────────────────────────────────────────────────
+
+export interface DataVersion {
+  id: string;
+  name: string;
+  description: string;
+  rows: number;
+  cols: number;
+  createdAt: string;
+  changes: string[];
+  headers: string[];
+  data: Record<string, string>[];
+}
+
+export interface CleaningAction {
+  id: string;
+  type: 'remove-duplicates' | 'drop-missing' | 'impute-mean' | 'impute-median' | 'impute-mode' | 'drop-column' | 'rename-column' | 'recode-values' | 'filter-rows';
+  column?: string;
+  params?: Record<string, any>;
+  appliedAt: string;
+  description: string;
+}
+
 export interface AnalysisPipeline {
   outcomeType: 'binary' | 'continuous' | 'time-to-event' | 'count' | 'ordinal' | '';
   suggestedPrimary: string;
@@ -139,6 +162,14 @@ export interface WizardState {
   interpretations: AnalysisInterpretation[];
   learningMode: boolean;
   validationErrors: ValidationError[];
+  // ─── Shared data store ───────────────────────────────────
+  rawHeaders: string[];
+  rawData: Record<string, string>[];
+  cleanedHeaders: string[];
+  cleanedData: Record<string, string>[];
+  dataVersions: DataVersion[];
+  cleaningActions: CleaningAction[];
+  activeVersionId: string | null;
 }
 
 interface StudentWizardContextType {
@@ -160,6 +191,13 @@ interface StudentWizardContextType {
   generateResearchQuestion: () => string;
   detectReportingGuideline: (studyType: string) => string;
   suggestStatisticalTests: (studyType: string, outcomeType: string) => string[];
+  // ─── Shared data store methods ───────────────────────────
+  setRawData: (headers: string[], data: Record<string, string>[]) => void;
+  setCleanedData: (headers: string[], data: Record<string, string>[]) => void;
+  addDataVersion: (name: string, description: string, changes: string[]) => void;
+  restoreVersion: (versionId: string) => void;
+  addCleaningAction: (action: Omit<CleaningAction, 'id' | 'appliedAt'>) => void;
+  getActiveData: () => { headers: string[]; data: Record<string, string>[] };
 }
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
@@ -206,9 +244,17 @@ const DEFAULT_STATE: WizardState = {
   interpretations: [],
   learningMode: true,
   validationErrors: [],
+  rawHeaders: [],
+  rawData: [],
+  cleanedHeaders: [],
+  cleanedData: [],
+  dataVersions: [],
+  cleaningActions: [],
+  activeVersionId: null,
 };
 
 const STORAGE_KEY = 'rf_student_wizard';
+const DATA_STORAGE_KEY = 'rf_student_rawdata';
 
 const STEP_PATHS: Record<number, string> = {
   1: '/student/setup',
@@ -276,6 +322,20 @@ export function StudentWizardProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<WizardState>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
+      const savedData = localStorage.getItem(DATA_STORAGE_KEY);
+      let rawHeaders: string[] = [];
+      let rawData: Record<string, string>[] = [];
+      let cleanedHeaders: string[] = [];
+      let cleanedData: Record<string, string>[] = [];
+      let dataVersions: DataVersion[] = [];
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        rawHeaders = parsedData.rawHeaders ?? [];
+        rawData = parsedData.rawData ?? [];
+        cleanedHeaders = parsedData.cleanedHeaders ?? [];
+        cleanedData = parsedData.cleanedData ?? [];
+        dataVersions = parsedData.dataVersions ?? [];
+      }
       if (saved) {
         const parsed = JSON.parse(saved) as WizardState;
         return {
@@ -287,17 +347,40 @@ export function StudentWizardProvider({ children }: { children: ReactNode }) {
           interpretations: parsed.interpretations ?? [],
           learningMode: parsed.learningMode ?? true,
           validationErrors: parsed.validationErrors ?? [],
+          cleaningActions: parsed.cleaningActions ?? [],
+          activeVersionId: parsed.activeVersionId ?? null,
+          rawHeaders,
+          rawData,
+          cleanedHeaders,
+          cleanedData,
+          dataVersions,
         };
       }
     } catch {}
     return DEFAULT_STATE;
   });
 
+  // Save metadata (without raw data) to localStorage
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      const { rawHeaders: _rh, rawData: _rd, cleanedHeaders: _ch, cleanedData: _cd, dataVersions: _dv, ...metadata } = state;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(metadata));
     } catch {}
   }, [state]);
+
+  // Save raw data separately (larger payload)
+  useEffect(() => {
+    try {
+      localStorage.setItem(DATA_STORAGE_KEY, JSON.stringify({
+        rawHeaders: state.rawHeaders,
+        rawData: state.rawData,
+        cleanedHeaders: state.cleanedHeaders,
+        cleanedData: state.cleanedData,
+        dataVersions: state.dataVersions,
+      }));
+    } catch {}
+  }, [state.rawHeaders, state.rawData, state.cleanedHeaders, state.cleanedData, state.dataVersions]);
+
 
   const updateStudyConfig = useCallback((updates: Partial<StudyConfig>) => {
     setState(prev => ({
@@ -349,6 +432,7 @@ export function StudentWizardProvider({ children }: { children: ReactNode }) {
   const resetWizard = useCallback(() => {
     setState(DEFAULT_STATE);
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(DATA_STORAGE_KEY);
     navigate('/student/setup');
   }, [navigate]);
 
@@ -473,6 +557,79 @@ export function StudentWizardProvider({ children }: { children: ReactNode }) {
     return suggestStatisticalTestsHelper(studyType, outcomeType);
   }, []);
 
+  // ─── Shared Data Store Methods ────────────────────────────────────────────
+
+  const setRawData = useCallback((headers: string[], data: Record<string, string>[]) => {
+    setState(prev => ({
+      ...prev,
+      rawHeaders: headers,
+      rawData: data,
+      cleanedHeaders: headers,
+      cleanedData: data,
+    }));
+  }, []);
+
+  const setCleanedData = useCallback((headers: string[], data: Record<string, string>[]) => {
+    setState(prev => ({
+      ...prev,
+      cleanedHeaders: headers,
+      cleanedData: data,
+    }));
+  }, []);
+
+  const addDataVersion = useCallback((name: string, description: string, changes: string[]) => {
+    setState(prev => {
+      const version: DataVersion = {
+        id: Date.now().toString(),
+        name,
+        description,
+        rows: prev.cleanedData.length,
+        cols: prev.cleanedHeaders.length,
+        createdAt: new Date().toISOString(),
+        changes,
+        headers: [...prev.cleanedHeaders],
+        data: prev.cleanedData.map(r => ({ ...r })),
+      };
+      return {
+        ...prev,
+        dataVersions: [...prev.dataVersions, version],
+        activeVersionId: version.id,
+      };
+    });
+  }, []);
+
+  const restoreVersion = useCallback((versionId: string) => {
+    setState(prev => {
+      const version = prev.dataVersions.find(v => v.id === versionId);
+      if (!version) return prev;
+      return {
+        ...prev,
+        cleanedHeaders: [...version.headers],
+        cleanedData: version.data.map(r => ({ ...r })),
+        activeVersionId: versionId,
+      };
+    });
+  }, []);
+
+  const addCleaningAction = useCallback((action: Omit<CleaningAction, 'id' | 'appliedAt'>) => {
+    const fullAction: CleaningAction = {
+      ...action,
+      id: Date.now().toString(),
+      appliedAt: new Date().toISOString(),
+    };
+    setState(prev => ({
+      ...prev,
+      cleaningActions: [...prev.cleaningActions, fullAction],
+    }));
+  }, []);
+
+  const getActiveData = useCallback((): { headers: string[]; data: Record<string, string>[] } => {
+    if (state.cleanedData.length > 0) {
+      return { headers: state.cleanedHeaders, data: state.cleanedData };
+    }
+    return { headers: state.rawHeaders, data: state.rawData };
+  }, [state.cleanedHeaders, state.cleanedData, state.rawHeaders, state.rawData]);
+
   return (
     <StudentWizardContext.Provider value={{
       state,
@@ -493,6 +650,12 @@ export function StudentWizardProvider({ children }: { children: ReactNode }) {
       generateResearchQuestion,
       detectReportingGuideline,
       suggestStatisticalTests,
+      setRawData,
+      setCleanedData,
+      addDataVersion,
+      restoreVersion,
+      addCleaningAction,
+      getActiveData,
     }}>
       {children}
     </StudentWizardContext.Provider>

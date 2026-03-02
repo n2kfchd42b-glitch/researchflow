@@ -1,10 +1,12 @@
 import React, { useState, useCallback } from 'react';
-import { FileText } from 'lucide-react';
+import { FileText, Eye, Wrench } from 'lucide-react';
 import { useStudentWizard, ColumnInfo, DatasetInfo, ColumnIntelligence, ColumnWarning } from '../context/StudentWizardContext';
 import { useNavigate } from 'react-router-dom';
 import DataIntelligencePanel from '../components/DataIntelligencePanel';
 import LearningTip from '../components/LearningTip';
 import StepSuccessMessage from '../components/StepSuccessMessage';
+import DataPreviewModal from '../components/DataPreviewModal';
+import DataCleaningPanel from '../components/DataCleaningPanel';
 import { FileUploader, ValidationWarning } from '../../../packages/ui';
 import { uploadDataset } from '../../../packages/api';
 import { useWorkflow } from '../../../context/WorkflowContext';
@@ -129,7 +131,7 @@ function qualityScore(columns: ColumnInfo[]): number {
 }
 
 export default function DataUploadPage() {
-  const { state, setDataset, completeStep, setColumnIntelligence } = useStudentWizard();
+  const { state, setDataset, completeStep, setColumnIntelligence, setRawData } = useStudentWizard();
   const { setActiveDataset } = useWorkflow();
   const navigate = useNavigate();
 
@@ -140,6 +142,8 @@ export default function DataUploadPage() {
   const [preview, setPreview] = useState<{ headers: string[]; rows: any[][] } | null>(null);
   const [showSuccess, setShowSuccess] = useState(state.maxCompletedStep >= 1 && state.maxCompletedStep < 2);
   const [colIntelligence, setColIntelligence] = useState<ColumnIntelligence[]>(state.columnIntelligence ?? []);
+  const [showFullPreview, setShowFullPreview] = useState(false);
+  const [showCleaning, setShowCleaning] = useState(false);
 
   const handleFile = useCallback(async (file: File) => {
     if (!file) return;
@@ -187,10 +191,19 @@ export default function DataUploadPage() {
 
       if (file.name.endsWith('.csv')) {
         const text = await file.text();
-        const lines = text.split('\n').slice(0, 11);
-        const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-        const rows = lines.slice(1, 11).map(l => l.split(',').map(c => c.trim().replace(/^"|"$/g, '')));
-        setPreview({ headers, rows });
+        const lines = text.split('\n');
+        const allHeaders = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+        const allRows = lines.slice(1).filter(l => l.trim()).map(l => {
+          const vals = l.split(',');
+          const obj: Record<string, string> = {};
+          allHeaders.forEach((h, i) => { obj[h] = (vals[i] || '').trim().replace(/^"|"$/g, ''); });
+          return obj;
+        });
+        // Store full raw data in shared context
+        setRawData(allHeaders, allRows);
+        // Preview first 10 rows
+        const previewRows = lines.slice(1, 11).map(l => l.split(',').map(c => c.trim().replace(/^"|"$/g, '')));
+        setPreview({ headers: allHeaders, rows: previewRows });
       }
 
       const datasetInfo: DatasetInfo = {
@@ -283,6 +296,20 @@ export default function DataUploadPage() {
                 <div style={{ fontSize: '0.82rem', color: '#888' }}>{fileInfo.rows} rows · {fileInfo.cols} columns {fileInfo.size && `· ${fileInfo.size}`}</div>
               </div>
               <button
+                onClick={() => setShowFullPreview(true)}
+                style={{ background: 'none', border: '1px solid #2E86C1', borderRadius: 6, padding: '0.3rem 0.7rem', cursor: 'pointer', fontSize: '0.8rem', color: '#2E86C1', display: 'flex', alignItems: 'center', gap: 4 }}
+                title="View full dataset"
+              >
+                <Eye size={14} /> View
+              </button>
+              <button
+                onClick={() => setShowCleaning(!showCleaning)}
+                style={{ background: showCleaning ? '#2E86C1' : 'none', border: '1px solid #2E86C1', borderRadius: 6, padding: '0.3rem 0.7rem', cursor: 'pointer', fontSize: '0.8rem', color: showCleaning ? '#fff' : '#2E86C1', display: 'flex', alignItems: 'center', gap: 4 }}
+                title="Clean &amp; transform data"
+              >
+                <Wrench size={14} /> Clean
+              </button>
+              <button
                 onClick={() => { setFileInfo(null); setColumns([]); setPreview(null); setColIntelligence([]); }}
                 style={{ background: 'none', border: '1px solid #ddd', borderRadius: 6, padding: '0.3rem 0.7rem', cursor: 'pointer', fontSize: '0.8rem', color: '#666' }}
               >
@@ -347,6 +374,11 @@ export default function DataUploadPage() {
                 </table>
               </div>
             </div>
+          )}
+
+          {/* Data Cleaning Panel */}
+          {showCleaning && fileInfo && (
+            <DataCleaningPanel />
           )}
 
           {/* Section C: Variable Role Assignment */}
@@ -532,6 +564,15 @@ export default function DataUploadPage() {
           </div>
         )}
       </div>
+
+      {/* Full Data Preview Modal */}
+      <DataPreviewModal
+        open={showFullPreview}
+        onClose={() => setShowFullPreview(false)}
+        headers={state.rawHeaders || preview?.headers || []}
+        data={state.rawData || preview?.rows || []}
+        title={fileInfo?.name || 'Dataset Preview'}
+      />
 
       {/* Bottom bar */}
       <div className="action-bar">

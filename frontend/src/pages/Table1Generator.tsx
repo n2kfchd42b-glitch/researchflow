@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWorkflow } from '../context/WorkflowContext';
 import { api } from '../services/api';
+import { useStudentWizard } from '../products/student/context/StudentWizardContext';
 
 function parseCSV(text: string) {
   const lines   = text.trim().split('\n');
@@ -112,6 +113,21 @@ export default function Table1Generator() {
   const [copied, setCopied]     = useState(false);
   const [showMissing, setShowMissing] = useState(false);
   const [continuous, setContinuous] = useState<'mean'|'median'>('mean');
+
+  // Auto-load from shared wizard context
+  let wizardCtx: ReturnType<typeof useStudentWizard> | null = null;
+  try { wizardCtx = useStudentWizard(); } catch { /* not inside provider */ }
+
+  useEffect(() => {
+    if (rows.length === 0 && wizardCtx) {
+      const { headers: h, data } = wizardCtx.getActiveData();
+      if (h.length > 0 && data.length > 0) {
+        setHeaders(h);
+        setRows(data);
+        setFilename('Shared dataset');
+      }
+    }
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]; if (!file) return;

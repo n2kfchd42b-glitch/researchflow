@@ -29,6 +29,7 @@ const TOOLS = [
   { label: 'Sensitivity Analysis',path: '/student/sensitivity' },
   { label: 'Forest Plot',         path: '/student/forest-plot' },
   { label: 'Visualisation Studio',path: '/student/visualise' },
+  { label: 'Data Versioning',     path: '/student/versioning' },
   { label: 'Sample Datasets',     path: '/student/samples' },
 ];
 

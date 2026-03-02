@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { api } from '../services/api';
+import { useStudentWizard } from '../products/student/context/StudentWizardContext';
 import {
   BarChart, Bar, LineChart, Line, ScatterChart, Scatter,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
@@ -63,7 +64,28 @@ function buildChartData(df: any[], xCol: string, yCol: string, chartType: string
 export default function VisualisationStudio() {
   const [uploadResult, setUploadResult] = useState<any>(null);
   const [rawData, setRawData]           = useState<any[]>([]);
+  const [sharedCols, setSharedCols]     = useState<string[]>([]);
   const [error, setError]               = useState('');
+
+  // Auto-load data from shared wizard context if available
+  let wizardCtx: ReturnType<typeof useStudentWizard> | null = null;
+  try { wizardCtx = useStudentWizard(); } catch { /* not inside provider */ }
+
+  useEffect(() => {
+    if (wizardCtx && !uploadResult) {
+      const { headers, data } = wizardCtx.getActiveData();
+      if (headers.length > 0 && data.length > 0) {
+        setRawData(data);
+        setSharedCols(headers);
+        // fake uploadResult so the chart panel appears
+        const colTypes: Record<string, string> = {};
+        headers.forEach(h => { colTypes[h] = 'string'; });
+        setUploadResult({ column_types: colTypes });
+        if (headers.length > 0) setXCol(headers[0]);
+        if (headers.length > 1) setYCol(headers[1]);
+      }
+    }
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const [chartType, setChartType]       = useState('bar');
   const [xCol, setXCol]                 = useState('');
@@ -113,7 +135,7 @@ export default function VisualisationStudio() {
     alert("To save your chart: right-click on the chart and select Save Image As.");
   }
 
-  const columns  = uploadResult ? Object.keys(uploadResult.column_types) : [];
+  const columns  = sharedCols.length > 0 ? sharedCols : (uploadResult ? Object.keys(uploadResult.column_types) : []);
   const chartData = buildChartData(rawData, xCol, yCol, chartType);
   const palette   = COLORS.slice(colorPalette, colorPalette + 6).concat(COLORS.slice(0, colorPalette));
 
@@ -238,6 +260,12 @@ export default function VisualisationStudio() {
       </p>
 
       {error && <div className="alert alert-critical">{error}</div>}
+
+      {sharedCols.length > 0 && (
+        <div style={{ background: '#EBF5FB', border: '1px solid #AED6F1', borderRadius: 8, padding: '0.6rem 1rem', marginBottom: '1rem', fontSize: '0.85rem', color: '#2471A3' }}>
+          Using dataset from your upload step ({rawData.length} rows · {sharedCols.length} columns). You can also upload a different CSV below.
+        </div>
+      )}
 
       {!uploadResult ? (
         <div className="card" style={{ maxWidth: 500 }}>

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer, Legend } from 'recharts';
+import { useStudentWizard } from '../products/student/context/StudentWizardContext';
 
 // ── STATS HELPERS ─────────────────────────────────────
 function normalCDF(z: number): number {
@@ -86,6 +87,23 @@ export default function SensitivityAnalysis() {
   const [baseOR, setBaseOR]     = useState(0);
   const [baseP, setBaseP]       = useState(0);
   const [baseN, setBaseN]       = useState(0);
+
+  // Auto-load from shared wizard context
+  let wizardCtx: ReturnType<typeof useStudentWizard> | null = null;
+  try { wizardCtx = useStudentWizard(); } catch { /* not inside provider */ }
+
+  useEffect(() => {
+    if (rows.length === 0 && wizardCtx) {
+      const { headers: h, data } = wizardCtx.getActiveData();
+      if (h.length > 0 && data.length > 0) {
+        setHeaders(h);
+        setRows(data);
+        setFilename('Shared dataset');
+        setOutcome(h[h.length - 1]);
+        setExposure(h[0]);
+      }
+    }
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]; if (!file) return;
