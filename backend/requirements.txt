@@ -13,3 +13,5 @@ python-jose[cryptography]
 pydantic
 scipy
 sqlalchemy
+python-docx
+anthropic

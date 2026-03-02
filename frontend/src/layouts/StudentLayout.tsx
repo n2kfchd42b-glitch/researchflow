@@ -18,7 +18,6 @@ const STEPS = [
 ];
 
 const TOOLS = [
-  { label: 'Table 1',             path: '/student/table1' },
   { label: 'Descriptive Stats',   path: '/student/descriptive' },
   { label: 'Survival Analysis',   path: '/student/survival' },
   { label: 'Sample Size',         path: '/student/samplesize' },
