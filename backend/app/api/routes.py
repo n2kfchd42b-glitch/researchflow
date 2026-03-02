@@ -195,7 +195,7 @@ def register(req: RegisterRequest, response: Response, db: Session = Depends(get
                                institution=req.institution, country=req.country)
         token = create_token({"sub": user["email"], "role": user["role"]})
         response.set_cookie(key=_COOKIE, value=token,
-                            httponly=True, max_age=_COOKIE_AGE, samesite="lax")
+                            httponly=True, max_age=_COOKIE_AGE, samesite="none", secure=True)
         return {"user": user}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -205,7 +205,7 @@ def login(req: LoginRequest, response: Response, db: Session = Depends(get_db)):
     try:
         result = login_user(db, req.email, req.password)
         response.set_cookie(key=_COOKIE, value=result["token"],
-                            httponly=True, max_age=_COOKIE_AGE, samesite="lax")
+                            httponly=True, max_age=_COOKIE_AGE, samesite="none", secure=True)
         return {"user": result["user"]}
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
