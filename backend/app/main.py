@@ -19,6 +19,8 @@ from app.api.references import router as references_router
 from app.api.studies import router as studies_router
 from app.api.assessments import router as assessments_router
 from app.routers.analysis_router import router as analysis_router
+from app.routers.descriptive_stats import router as descriptive_stats_router
+from app.routers.analysis_recommender import router as analysis_recommender_router
 
 app = FastAPI(
     title="ResearchFlow API",
@@ -92,6 +94,8 @@ app.include_router(projects_router, prefix="/api")
 app.include_router(references_router, prefix="/api")
 app.include_router(studies_router, prefix="/api")
 app.include_router(assessments_router, prefix="/api")
+app.include_router(descriptive_stats_router, prefix="/api")
+app.include_router(analysis_recommender_router, prefix="/api")
 @app.get("/")
 def root():
     return {
