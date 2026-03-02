@@ -5,7 +5,7 @@ declare global {
 }
 
 const inferDevApiUrl = (): string => {
-  return 'http://localhost:8001';
+  return 'http://localhost:8000';
 };
 
 const isDev = process.env.NODE_ENV === 'development';

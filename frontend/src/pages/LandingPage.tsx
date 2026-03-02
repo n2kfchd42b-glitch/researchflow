@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// ─── Image placeholders ──────────────────────────────────────────────────────
-// Replace with real imports from src/assets/images/ when available:
-//   import heroImg from "../assets/images/team-hero.jpg";
-//   import globalImg from "../assets/images/global-map.jpg";
-//   import growthImg from "../assets/images/growth-arrow.jpg";
-//   import researchImg from "../assets/images/research-docs.jpg";
+// ─── Images ──────────────────────────────────────────────────────────────────
+import heroImg from '../assets/images/team-hero.jpg.PNG';
+import globalImg from '../assets/images/global-map.jpg.PNG';
+import growthImg from '../assets/images/growth-arrow.jpg.PNG';
+import researchImg from '../assets/images/research-docs.jpg.PNG';
+
 const IMAGES = {
-  hero:     'linear-gradient(135deg, #0d1b2a 0%, #1C2B3A 40%, #2E4057 100%)',
-  global:   'linear-gradient(135deg, #1a3a4a 0%, #2E86C1 100%)',
-  growth:   'linear-gradient(135deg, #1a3a2a 0%, #5A8A6A 100%)',
-  research: 'linear-gradient(135deg, #2a1a3a 0%, #7D3C98 100%)',
+  hero:     heroImg,
+  global:   globalImg,
+  growth:   growthImg,
+  research: researchImg,
 };
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -211,7 +211,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
       <section style={{
         minHeight: '92vh', display: 'flex', alignItems: 'center',
-        background: IMAGES.hero, position: 'relative', overflow: 'hidden',
+        backgroundImage: `linear-gradient(rgba(13,27,42,0.75), rgba(28,43,58,0.85)), url(${IMAGES.hero})`,
+        backgroundSize: 'cover', backgroundPosition: 'center',
+        position: 'relative', overflow: 'hidden',
       }}>
         {/* Decorative circles */}
         <div style={{
@@ -313,7 +315,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
 
                 {/* Card image area */}
                 <div style={{
-                  height: 160, background: p.bg,
+                  height: 160,
+                  backgroundImage: `linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.45)), url(${p.bg})`,
+                  backgroundSize: 'cover', backgroundPosition: 'center',
                   display: 'flex', alignItems: 'flex-end', padding: '1rem 1.5rem',
                 }}>
                   <span style={{

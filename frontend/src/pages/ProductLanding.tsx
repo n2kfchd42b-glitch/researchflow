@@ -33,6 +33,8 @@ const PRODUCTS = [
   },
 ];
 
+const imgBase = `${process.env.PUBLIC_URL}/images`;
+
 const ProductLanding: React.FC = () => {
   const navigate = useNavigate();
   const { projects } = useProject();
@@ -40,14 +42,31 @@ const ProductLanding: React.FC = () => {
 
   return (
     <div style={{ minHeight: '100vh', background: '#F4F7FA' }}>
-      {/* Hero header */}
-      <div style={{ background: '#1C2B3A', padding: '3rem 2rem 2.5rem', textAlign: 'center' }}>
-        <h1 style={{ color: 'white', fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem' }}>
-          ResearchFlow
-        </h1>
-        <p style={{ color: '#8ca0b3', fontSize: '1rem', margin: 0 }}>
-          Global Health Research Platform
-        </p>
+      {/* Hero section with team-hero image */}
+      <div style={{
+        background: '#1C2B3A',
+        padding: '3rem 2rem 2.5rem',
+        textAlign: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        <img
+          src={`${imgBase}/team-hero.jpg.PNG`}
+          alt="ResearchFlow team"
+          style={{
+            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+            objectFit: 'cover', opacity: 0.18,
+          }}
+          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+        />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <h1 style={{ color: 'white', fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem' }}>
+            ResearchFlow
+          </h1>
+          <p style={{ color: '#8ca0b3', fontSize: '1rem', margin: 0 }}>
+            Global Health Research Platform
+          </p>
+        </div>
       </div>
 
       {/* Product cards */}
@@ -106,6 +125,86 @@ const ProductLanding: React.FC = () => {
               </div>
             );
           })}
+        </div>
+
+        {/* Global Reach & Research section */}
+        <div style={{
+          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem',
+          marginTop: '2.5rem',
+        }}>
+          <div style={{
+            background: 'white', borderRadius: 12, overflow: 'hidden',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+          }}>
+            <img
+              src={`${imgBase}/global-map.jpg.PNG`}
+              alt="Global health research reach"
+              style={{ width: '100%', height: 180, objectFit: 'cover' }}
+              onError={(e) => {
+                const el = e.target as HTMLImageElement;
+                el.style.display = 'none';
+              }}
+            />
+            <div style={{ padding: '1.25rem 1.5rem' }}>
+              <h3 style={{ color: '#1C2B3A', fontSize: '1.05rem', fontWeight: 700, marginBottom: '0.4rem' }}>
+                Global Health Impact
+              </h3>
+              <p style={{ color: '#666', fontSize: '0.85rem', lineHeight: 1.55, margin: 0 }}>
+                Supporting research teams across Africa, Asia, and Latin America with
+                automated, reproducible analysis pipelines.
+              </p>
+            </div>
+          </div>
+
+          <div style={{
+            background: 'white', borderRadius: 12, overflow: 'hidden',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+          }}>
+            <img
+              src={`${imgBase}/research-docs.jpg.PNG`}
+              alt="Research documentation and reports"
+              style={{ width: '100%', height: 180, objectFit: 'cover' }}
+              onError={(e) => {
+                const el = e.target as HTMLImageElement;
+                el.style.display = 'none';
+              }}
+            />
+            <div style={{ padding: '1.25rem 1.5rem' }}>
+              <h3 style={{ color: '#1C2B3A', fontSize: '1.05rem', fontWeight: 700, marginBottom: '0.4rem' }}>
+                Publication-Ready Output
+              </h3>
+              <p style={{ color: '#666', fontSize: '0.85rem', lineHeight: 1.55, margin: 0 }}>
+                Generate CONSORT- and STROBE-compliant reports with full audit trails,
+                ready for journal submission.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Growth / Impact banner */}
+        <div style={{
+          marginTop: '2rem', borderRadius: 12, overflow: 'hidden',
+          background: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+          display: 'flex', alignItems: 'center',
+        }}>
+          <img
+            src={`${imgBase}/growth-arroe.jpg.PNG`}
+            alt="Platform growth and impact"
+            style={{ width: 220, height: 140, objectFit: 'cover', flexShrink: 0 }}
+            onError={(e) => {
+              const el = e.target as HTMLImageElement;
+              el.style.display = 'none';
+            }}
+          />
+          <div style={{ padding: '1.25rem 1.75rem' }}>
+            <h3 style={{ color: '#1C2B3A', fontSize: '1.05rem', fontWeight: 700, marginBottom: '0.4rem' }}>
+              Accelerate Your Research
+            </h3>
+            <p style={{ color: '#666', fontSize: '0.85rem', lineHeight: 1.55, margin: 0 }}>
+              From raw data to verified output in minutes — not weeks. Built for
+              students, NGOs, and journal reviewers across the global health ecosystem.
+            </p>
+          </div>
         </div>
 
         {/* Recent Projects */}
