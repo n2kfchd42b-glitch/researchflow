@@ -227,16 +227,14 @@ export default function DataUploadPage() {
       // Error state is managed by the shared FileUploader
       throw e;
     }
-  }, [state.studyConfig, setDataset, setColumnIntelligence, setActiveDataset]);
+  }, [state.studyConfig, setDataset, setColumnIntelligence, setActiveDataset, setRawData]);
 
   const updateRole = (colName: string, role: ColumnInfo['role']) => {
-    setColumns(prev => {
-      const updated = prev.map(c => c.name === colName ? { ...c, role } : c);
-      if (state.dataset) {
-        setDataset({ ...state.dataset, columns: updated });
-      }
-      return updated;
-    });
+    const updated = columns.map(c => c.name === colName ? { ...c, role } : c);
+    setColumns(updated);
+    if (state.dataset) {
+      setDataset({ ...state.dataset, columns: updated });
+    }
   };
 
   const acceptAllSuggestions = () => {
