@@ -145,7 +145,7 @@ function CategoricalPanel({
             >
               <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} />
               <YAxis type="category" dataKey="name" width={90} tick={{ fontSize: 10 }} />
-              <Tooltip formatter={(v: number) => [`${v}%`, 'Proportion']} />
+              <Tooltip formatter={(v: number | undefined) => [`${v ?? 0}%`, 'Proportion']} />
               <Bar dataKey="pct" radius={[0, 3, 3, 0]}>
                 {visibleFreqs.map((_, idx) => (
                   <Cell key={idx} fill="#2E86C1" fillOpacity={0.75} />
@@ -194,7 +194,7 @@ function ContinuousPanel({ stats }: { stats: ContinuousStats }) {
             >
               <XAxis dataKey="name" tick={{ fontSize: 9 }} interval="preserveStartEnd" />
               <YAxis tick={{ fontSize: 9 }} />
-              <Tooltip formatter={(v: number) => [v, 'Count']} labelFormatter={(l) => `≥ ${l}`} />
+              <Tooltip formatter={(v: number | undefined) => [v ?? 0, 'Count']} labelFormatter={(l) => `≥ ${l}`} />
               <Bar dataKey="count" fill="#27ae60" fillOpacity={0.75} radius={[2, 2, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
