@@ -28,12 +28,16 @@ export default function Table1Builder({ datasetId }: Props) {
 
   // Build variables list from loadedDataset columns
   const columns = loadedDataset?.columns ?? [];
-  const variables = selectedForTable1
-    .map((name) => {
+  type VarEntry = { name: string; type: 'categorical' | 'continuous' };
+  const variables: VarEntry[] = selectedForTable1
+    .map((name): VarEntry | null => {
       const col = columns.find((c) => c.name === name);
-      return col ? { name: col.name, type: col.type === 'date' ? 'categorical' : col.type } : null;
+      if (!col) return null;
+      const type: 'categorical' | 'continuous' =
+        col.type === 'continuous' ? 'continuous' : 'categorical';
+      return { name: col.name, type };
     })
-    .filter((v): v is { name: string; type: string } => v !== null);
+    .filter((v): v is VarEntry => v !== null);
 
   async function handleGenerate() {
     setLoading(true);
