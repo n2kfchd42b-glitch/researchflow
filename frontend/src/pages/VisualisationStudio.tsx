@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { api } from '../services/api';
-import { useStudentWizard } from '../products/student/context/StudentWizardContext';
+import { useStudentWizardSafe } from '../products/student/context/StudentWizardContext';
 import {
   BarChart, Bar, LineChart, Line, ScatterChart, Scatter,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
@@ -68,8 +68,7 @@ export default function VisualisationStudio() {
   const [error, setError]               = useState('');
 
   // Auto-load data from shared wizard context if available
-  let wizardCtx: ReturnType<typeof useStudentWizard> | null = null;
-  try { wizardCtx = useStudentWizard(); } catch { /* not inside provider */ }
+  const wizardCtx = useStudentWizardSafe();
 
   useEffect(() => {
     if (wizardCtx && !uploadResult) {

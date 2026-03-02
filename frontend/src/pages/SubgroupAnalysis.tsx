@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer, Cell } from 'recharts';
-import { useStudentWizard } from '../products/student/context/StudentWizardContext';
+import { useStudentWizardSafe } from '../products/student/context/StudentWizardContext';
 
 function parseCSV(text: string) {
   const lines   = text.trim().split('\n');
@@ -134,8 +134,7 @@ export default function SubgroupAnalysis() {
   const [copied, setCopied]       = useState(false);
 
   // Auto-load from shared wizard context
-  let wizardCtx: ReturnType<typeof useStudentWizard> | null = null;
-  try { wizardCtx = useStudentWizard(); } catch { /* not inside provider */ }
+  const wizardCtx = useStudentWizardSafe();
 
   useEffect(() => {
     if (rows.length === 0 && wizardCtx) {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useWorkflow } from '../context/WorkflowContext';
 import { api } from '../services/api';
-import { useStudentWizard } from '../products/student/context/StudentWizardContext';
+import { useStudentWizardSafe } from '../products/student/context/StudentWizardContext';
 
 function parseCSV(text: string) {
   const lines   = text.trim().split('\n');
@@ -115,8 +115,7 @@ export default function Table1Generator() {
   const [continuous, setContinuous] = useState<'mean'|'median'>('mean');
 
   // Auto-load from shared wizard context
-  let wizardCtx: ReturnType<typeof useStudentWizard> | null = null;
-  try { wizardCtx = useStudentWizard(); } catch { /* not inside provider */ }
+  const wizardCtx = useStudentWizardSafe();
 
   useEffect(() => {
     if (rows.length === 0 && wizardCtx) {

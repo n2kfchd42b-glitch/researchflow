@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useWorkflow } from '../context/WorkflowContext';
 import { api } from '../services/api';
-import { useStudentWizard } from '../products/student/context/StudentWizardContext';
+import { useStudentWizardSafe } from '../products/student/context/StudentWizardContext';
 
 type VariableInfo = {
   name:         string;
@@ -105,8 +105,7 @@ export default function CodebookGenerator() {
   const [copied, setCopied]       = useState(false);
 
   // Auto-load from shared wizard context
-  let wizardCtx: ReturnType<typeof useStudentWizard> | null = null;
-  try { wizardCtx = useStudentWizard(); } catch { /* not inside provider */ }
+  const wizardCtx = useStudentWizardSafe();
 
   useEffect(() => {
     if (codebook.length === 0 && wizardCtx) {

@@ -314,6 +314,11 @@ export function useStudentWizard() {
   return ctx;
 }
 
+/** Safe version — returns null when outside StudentWizardProvider instead of throwing */
+export function useStudentWizardSafe(): StudentWizardContextType | null {
+  return useContext(StudentWizardContext) ?? null;
+}
+
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function StudentWizardProvider({ children }: { children: ReactNode }) {

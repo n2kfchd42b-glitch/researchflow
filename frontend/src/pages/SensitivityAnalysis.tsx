@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer, Legend } from 'recharts';
-import { useStudentWizard } from '../products/student/context/StudentWizardContext';
+import { useStudentWizardSafe } from '../products/student/context/StudentWizardContext';
 
 // ── STATS HELPERS ─────────────────────────────────────
 function normalCDF(z: number): number {
@@ -89,8 +89,7 @@ export default function SensitivityAnalysis() {
   const [baseN, setBaseN]       = useState(0);
 
   // Auto-load from shared wizard context
-  let wizardCtx: ReturnType<typeof useStudentWizard> | null = null;
-  try { wizardCtx = useStudentWizard(); } catch { /* not inside provider */ }
+  const wizardCtx = useStudentWizardSafe();
 
   useEffect(() => {
     if (rows.length === 0 && wizardCtx) {
