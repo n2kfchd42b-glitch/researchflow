@@ -14,6 +14,12 @@ export const api = {
     return res.json();
   },
 
+  getDatasetPreview: async (datasetId: string) => {
+    const res = await fetch(`${API_URL}/dataset/${datasetId}/preview`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
   createStudy: async (payload: object) => {
     const res = await fetch(`${API_URL}/study`, {
       method: 'POST',

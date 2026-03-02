@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { api, survivalApi } from '../services/api';
+import { useWorkflow } from '../context/WorkflowContext';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, ReferenceLine
@@ -8,14 +9,21 @@ import {
 const COLORS = ['#C0533A', '#5A8A6A', '#1C2B3A', '#ff9800', '#9c27b0'];
 
 export default function SurvivalAnalysis() {
+  const { activeDataset, setActiveDataset } = useWorkflow();
   const [uploadResult, setUploadResult] = useState<any>(null);
-  const [datasetId, setDatasetId]       = useState('');
+  const [datasetId, setDatasetId]       = useState(activeDataset?.datasetId || '');
   const [durationCol, setDurationCol]   = useState('');
   const [eventCol, setEventCol]         = useState('');
   const [groupCol, setGroupCol]         = useState('');
   const [results, setResults]           = useState<any>(null);
   const [loading, setLoading]           = useState(false);
   const [error, setError]               = useState('');
+
+  useEffect(() => {
+    if (activeDataset?.datasetId) {
+      setDatasetId(activeDataset.datasetId);
+    }
+  }, [activeDataset?.datasetId]);
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -26,6 +34,13 @@ export default function SurvivalAnalysis() {
       const data = await api.upload(file);
       setUploadResult(data);
       setDatasetId(data.dataset_id);
+      setActiveDataset({
+        datasetId: data.dataset_id,
+        datasetName: file.name,
+        datasetVersionId: null,
+        source: 'shared',
+        columnTypes: data.column_types,
+      });
     } catch (err: any) {
       setError('Upload failed: ' + err.message);
     }
@@ -47,7 +62,11 @@ export default function SurvivalAnalysis() {
     setLoading(false);
   }
 
-  const columns = uploadResult ? Object.keys(uploadResult.column_types) : [];
+  const columns = uploadResult
+    ? Object.keys(uploadResult.column_types)
+    : activeDataset?.columnTypes
+      ? Object.keys(activeDataset.columnTypes)
+      : [];
 
   function buildChartData() {
     if (!results || !results.groups) return [];
@@ -78,6 +97,15 @@ export default function SurvivalAnalysis() {
         <div>
           <div className="card">
             <h2>Upload Dataset</h2>
+            {activeDataset?.datasetId && (
+              <button
+                className="btn"
+                style={{ marginBottom: '0.75rem', background: '#E8F0FE', color: '#1C2B3A' }}
+                onClick={() => setDatasetId(activeDataset.datasetId)}
+              >
+                Use active dataset{activeDataset.datasetName ? `: ${activeDataset.datasetName}` : ''}
+              </button>
+            )}
             <label className="upload-zone" style={{ display: 'block', cursor: 'pointer' }}>
               <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📂</div>
               <p style={{ fontWeight: 600, color: '#1C2B3A' }}>Upload time-to-event dataset</p>
@@ -117,7 +145,7 @@ export default function SurvivalAnalysis() {
             )}
           </div>
 
-          {uploadResult && (
+          {datasetId && columns.length > 0 && (
             <div className="card">
               <h2>Configure Analysis</h2>
               <div style={{ marginBottom: '1rem' }}>
@@ -161,6 +189,14 @@ export default function SurvivalAnalysis() {
                 style={{ opacity: (!durationCol || !eventCol) ? 0.5 : 1 }}>
                 {loading ? 'Running Analysis...' : 'Plot Survival Curves'}
               </button>
+            </div>
+          )}
+
+          {datasetId && columns.length === 0 && !uploadResult && (
+            <div className="card">
+              <p style={{ marginBottom: 0, fontSize: '0.85rem', color: '#666' }}>
+                Active dataset selected, but variable metadata is unavailable in this view. Upload the file once here to map columns.
+              </p>
             </div>
           )}
 

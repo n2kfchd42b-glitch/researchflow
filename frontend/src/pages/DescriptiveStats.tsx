@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { API_URL } from '../config';
+import { useWorkflow } from '../context/WorkflowContext';
 
 export default function DescriptiveStats() {
+  const { activeDataset, setActiveDataset } = useWorkflow();
   const [uploadResult, setUploadResult] = useState<any>(null);
   const [stats, setStats]               = useState<any>(null);
   const [loading, setLoading]           = useState(false);
@@ -18,6 +20,13 @@ export default function DescriptiveStats() {
     try {
       const data = await api.upload(file);
       setUploadResult(data);
+      setActiveDataset({
+        datasetId: data.dataset_id,
+        datasetName: file.name,
+        datasetVersionId: null,
+        source: 'shared',
+        columnTypes: data.column_types,
+      });
       await loadStats(data.dataset_id);
     } catch (err: any) {
       setError('Upload failed: ' + err.message);
@@ -35,6 +44,33 @@ export default function DescriptiveStats() {
       setError(err.message);
     }
   }
+
+  async function handleUseActiveDataset() {
+    if (!activeDataset?.datasetId) return;
+    setLoading(true);
+    setError('');
+    setUploadResult({ dataset_id: activeDataset.datasetId, fromContext: true });
+    await loadStats(activeDataset.datasetId);
+    setLoading(false);
+  }
+
+  useEffect(() => {
+    if (!activeDataset?.datasetId || stats || loading || uploadResult) return;
+    let cancelled = false;
+
+    const run = async () => {
+      setLoading(true);
+      setError('');
+      setUploadResult({ dataset_id: activeDataset.datasetId, fromContext: true });
+      await loadStats(activeDataset.datasetId);
+      if (!cancelled) setLoading(false);
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeDataset?.datasetId, loading, stats, uploadResult]);
 
   function copyTable() {
     if (!stats) return;
@@ -63,6 +99,16 @@ export default function DescriptiveStats() {
       {!uploadResult && (
         <div className="card" style={{ maxWidth: 500 }}>
           <h2>Upload Dataset</h2>
+          {activeDataset?.datasetId && (
+            <button
+              className="btn"
+              style={{ marginBottom: '0.75rem', background: '#E8F0FE', color: '#1C2B3A' }}
+              onClick={handleUseActiveDataset}
+              disabled={loading}
+            >
+              Use active dataset{activeDataset.datasetName ? `: ${activeDataset.datasetName}` : ''}
+            </button>
+          )}
           <label className="upload-zone" style={{ display: 'block', cursor: 'pointer' }}>
             <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📂</div>
             <p style={{ fontWeight: 600, color: '#1C2B3A' }}>Upload your dataset</p>

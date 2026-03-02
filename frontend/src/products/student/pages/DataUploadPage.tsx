@@ -7,6 +7,7 @@ import LearningTip from '../components/LearningTip';
 import StepSuccessMessage from '../components/StepSuccessMessage';
 import { FileUploader, ValidationWarning } from '../../../packages/ui';
 import { uploadDataset } from '../../../packages/api';
+import { useWorkflow } from '../../../context/WorkflowContext';
 import '../student.css';
 
 const ROLE_OPTIONS = [
@@ -129,6 +130,7 @@ function qualityScore(columns: ColumnInfo[]): number {
 
 export default function DataUploadPage() {
   const { state, setDataset, completeStep, setColumnIntelligence } = useStudentWizard();
+  const { setActiveDataset } = useWorkflow();
   const navigate = useNavigate();
 
   const [columns, setColumns] = useState<ColumnInfo[]>(state.dataset?.columns ?? []);
@@ -200,12 +202,19 @@ export default function DataUploadPage() {
         fileId: data.dataset_id,
       };
       setDataset(datasetInfo);
+      setActiveDataset({
+        datasetId: data.dataset_id,
+        datasetName: file.name,
+        source: 'student',
+        datasetVersionId: null,
+        columnTypes: data.column_types,
+      });
 
     } catch (e: any) {
       // Error state is managed by the shared FileUploader
       throw e;
     }
-  }, [state.studyConfig, setDataset, setColumnIntelligence]);
+  }, [state.studyConfig, setDataset, setColumnIntelligence, setActiveDataset]);
 
   const updateRole = (colName: string, role: ColumnInfo['role']) => {
     setColumns(prev => {

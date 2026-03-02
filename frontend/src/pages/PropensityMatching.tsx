@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { API_URL } from '../config';
+import { useWorkflow } from '../context/WorkflowContext';
 
 export default function PropensityMatching() {
+  const { activeDataset, setActiveDataset } = useWorkflow();
   const [uploadResult, setUploadResult] = useState<any>(null);
-  const [datasetId, setDatasetId]       = useState('');
+  const [datasetId, setDatasetId]       = useState(activeDataset?.datasetId || '');
   const [treatment, setTreatment]       = useState('');
   const [covariates, setCovariates]     = useState<string[]>([]);
   const [caliper, setCaliper]           = useState(0.2);
@@ -13,6 +15,12 @@ export default function PropensityMatching() {
   const [loading, setLoading]           = useState(false);
   const [error, setError]               = useState('');
   const [activeTab, setActiveTab]       = useState('summary');
+
+  useEffect(() => {
+    if (activeDataset?.datasetId) {
+      setDatasetId(activeDataset.datasetId);
+    }
+  }, [activeDataset?.datasetId]);
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -23,6 +31,13 @@ export default function PropensityMatching() {
       const data = await api.upload(file);
       setUploadResult(data);
       setDatasetId(data.dataset_id);
+      setActiveDataset({
+        datasetId: data.dataset_id,
+        datasetName: file.name,
+        datasetVersionId: null,
+        source: 'shared',
+        columnTypes: data.column_types,
+      });
     } catch (err: any) {
       setError('Upload failed: ' + err.message);
     }
@@ -64,7 +79,11 @@ export default function PropensityMatching() {
     setLoading(false);
   }
 
-  const columns = uploadResult ? Object.keys(uploadResult.column_types) : [];
+  const columns = uploadResult
+    ? Object.keys(uploadResult.column_types)
+    : activeDataset?.columnTypes
+      ? Object.keys(activeDataset.columnTypes)
+      : [];
 
   const smdChartData = result?.balance_before?.map((b: any, i: number) => ({
     name:   b.covariate.length > 12 ? b.covariate.slice(0, 12) + '…' : b.covariate,
@@ -83,9 +102,18 @@ export default function PropensityMatching() {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: '1.5rem' }}>
         <div>
-          {!uploadResult ? (
+          {!datasetId ? (
             <div className="card">
               <h2>Upload Dataset</h2>
+              {activeDataset?.datasetId && (
+                <button
+                  className="btn"
+                  style={{ marginBottom: '0.75rem', background: '#E8F0FE', color: '#1C2B3A' }}
+                  onClick={() => setDatasetId(activeDataset.datasetId)}
+                >
+                  Use active dataset{activeDataset.datasetName ? `: ${activeDataset.datasetName}` : ''}
+                </button>
+              )}
               <label className="upload-zone" style={{ display: 'block', cursor: 'pointer' }}>
                 <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📂</div>
                 <p style={{ fontWeight: 600, color: '#1C2B3A' }}>Upload your dataset</p>
@@ -96,6 +124,13 @@ export default function PropensityMatching() {
             </div>
           ) : (
             <div>
+              {columns.length === 0 && (
+                <div className="card" style={{ marginBottom: '1rem' }}>
+                  <p style={{ marginBottom: 0, fontSize: '0.85rem', color: '#666' }}>
+                    Active dataset selected, but variable metadata is unavailable in this view. Upload the file once here to map treatment/covariates.
+                  </p>
+                </div>
+              )}
               <div className="card">
                 <h2>Treatment Variable</h2>
                 <p style={{ fontSize: '0.85rem', color: '#888', marginBottom: '0.75rem' }}>
@@ -145,7 +180,7 @@ export default function PropensityMatching() {
               </div>
 
               <button className="btn btn-primary btn-full" onClick={runPSM}
-                disabled={!treatment || covariates.length === 0 || loading}>
+                disabled={!datasetId || !treatment || covariates.length === 0 || loading}>
                 {loading ? 'Matching...' : '🔗 Run Propensity Score Matching'}
               </button>
             </div>

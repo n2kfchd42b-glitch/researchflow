@@ -1,13 +1,36 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useProject } from "../../context/ProjectContext";
+import { useWorkflow } from "../../context/WorkflowContext";
 import { NetworkMetaResult } from "./types";
 
 const NetworkMetaAnalysis: React.FC = () => {
   const { projectId } = useProject();
-  const [datasetVersionId, setDatasetVersionId] = useState<number | null>(null);
+  const { activeDataset, setActiveDatasetVersion } = useWorkflow();
+  const [datasetVersionId, setDatasetVersionId] = useState<number | null>(() => {
+    if (!activeDataset?.datasetVersionId) return null;
+    const parsed = Number(activeDataset.datasetVersionId);
+    return Number.isFinite(parsed) ? parsed : null;
+  });
   const [result, setResult] = useState<NetworkMetaResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!activeDataset?.datasetVersionId) return;
+    const parsed = Number(activeDataset.datasetVersionId);
+    if (Number.isFinite(parsed)) setDatasetVersionId(parsed);
+  }, [activeDataset?.datasetVersionId]);
+
+  const onDatasetVersionChange = (value: string) => {
+    const parsed = Number(value);
+    if (!value || !Number.isFinite(parsed)) {
+      setDatasetVersionId(null);
+      setActiveDatasetVersion(null);
+      return;
+    }
+    setDatasetVersionId(parsed);
+    setActiveDatasetVersion(String(parsed));
+  };
 
   const handleRun = async () => {
     setError(null);
@@ -39,7 +62,12 @@ const NetworkMetaAnalysis: React.FC = () => {
     <div className="page">
       <div className="card" style={{ width: 350, float: "left", marginRight: 24 }}>
         <h2>Network Meta-Analysis</h2>
-        <input placeholder="Dataset Version ID" type="number" value={datasetVersionId ?? ""} onChange={e => setDatasetVersionId(Number(e.target.value))} />
+        <input placeholder="Dataset Version ID" type="number" value={datasetVersionId ?? ""} onChange={e => onDatasetVersionChange(e.target.value)} />
+        {activeDataset?.datasetName && (
+          <p style={{ fontSize: '0.75rem', color: '#666', marginTop: 6 }}>
+            Active dataset: {activeDataset.datasetName}
+          </p>
+        )}
         <button className="btn" onClick={handleRun}>Run</button>
       </div>
       <div className="card" style={{ marginLeft: 400 }}>

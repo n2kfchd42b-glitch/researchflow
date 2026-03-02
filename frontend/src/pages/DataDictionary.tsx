@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useWorkflow } from '../context/WorkflowContext';
+import { api } from '../services/api';
 
 const STORAGE_KEY = 'researchflow_dictionary';
 
@@ -98,6 +100,7 @@ function buildDictionary(headers: string[], rows: Record<string,string>[]): Dict
 }
 
 export default function DataDictionary() {
+  const { activeDataset } = useWorkflow();
   const [entries, setEntries]         = useState<DictEntry[]>([]);
   const [filename, setFilename]       = useState('');
   const [nRows, setNRows]             = useState(0);
@@ -108,6 +111,8 @@ export default function DataDictionary() {
   const [activeTab, setActiveTab]     = useState('dictionary');
   const [copied, setCopied]           = useState(false);
   const [saved, setSaved]             = useState(false);
+  const [loadingActive, setLoadingActive] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     try {
@@ -137,6 +142,30 @@ export default function DataDictionary() {
       setActiveEntry(dict[0]?.id || null);
     };
     reader.readAsText(file);
+  }
+
+  async function handleLoadActiveDataset() {
+    if (!activeDataset?.datasetId) return;
+    setLoadingActive(true);
+    setLoadError('');
+    try {
+      const data = await api.getDatasetPreview(activeDataset.datasetId);
+      const headers = (data.headers || []).map((h: unknown) => String(h));
+      const rows = (data.rows || []).map((row: Record<string, unknown>) => {
+        const normalized: Record<string, string> = {};
+        Object.entries(row).forEach(([key, value]) => {
+          normalized[key] = value == null ? '' : String(value);
+        });
+        return normalized;
+      });
+      const dict = buildDictionary(headers, rows);
+      const resolvedFilename = data.filename || activeDataset.datasetName || `${activeDataset.datasetId}.csv`;
+      saveLocal(dict, resolvedFilename, rows.length);
+      setActiveEntry(dict[0]?.id || null);
+    } catch (err: any) {
+      setLoadError(err?.message || 'Failed to load active dataset');
+    }
+    setLoadingActive(false);
   }
 
   function updateEntry(id: string, field: keyof DictEntry, value: string | boolean) {
@@ -194,12 +223,24 @@ export default function DataDictionary() {
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           {saved && <span style={{ color: '#5A8A6A', fontSize: '0.82rem' }}>✓ Saved</span>}
+          {activeDataset?.datasetId && (
+            <button
+              className="btn"
+              style={{ background: '#E8F0FE', color: '#1C2B3A' }}
+              onClick={handleLoadActiveDataset}
+              disabled={loadingActive}
+            >
+              {loadingActive ? 'Loading active dataset...' : `Use active dataset${activeDataset.datasetName ? `: ${activeDataset.datasetName}` : ''}`}
+            </button>
+          )}
           <label className="btn btn-primary" style={{ cursor: 'pointer' }}>
             {entries.length ? 'Upload New' : '📂 Upload CSV'}
             <input type="file" accept=".csv" onChange={handleUpload} style={{ display: 'none' }} />
           </label>
         </div>
       </div>
+
+      {loadError && <div className="alert alert-critical">{loadError}</div>}
 
       {!entries.length && (
         <div className="card" style={{ maxWidth: 540, margin: '0 auto', textAlign: 'center', padding: '3rem 2rem' }}>
@@ -208,6 +249,16 @@ export default function DataDictionary() {
           <p style={{ color: '#888', marginBottom: '1.5rem' }}>
             Variable types, ranges and WHO/DHS mappings are auto-detected. Add labels and definitions to complete your dictionary.
           </p>
+          {activeDataset?.datasetId && (
+            <button
+              className="btn"
+              style={{ marginBottom: '0.75rem', background: '#E8F0FE', color: '#1C2B3A' }}
+              onClick={handleLoadActiveDataset}
+              disabled={loadingActive}
+            >
+              {loadingActive ? 'Loading active dataset...' : `Use active dataset${activeDataset.datasetName ? `: ${activeDataset.datasetName}` : ''}`}
+            </button>
+          )}
           <label className="btn btn-primary" style={{ cursor: 'pointer', fontSize: '1rem' }}>
             📂 Upload CSV
             <input type="file" accept=".csv" onChange={handleUpload} style={{ display: 'none' }} />

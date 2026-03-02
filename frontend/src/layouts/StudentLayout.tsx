@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { GraduationCap, Menu } from 'lucide-react';
 import ProjectSelector from '../components/ProjectSelector';
+import ActiveDatasetBadge from '../components/ActiveDatasetBadge';
 
 interface Props {
   user?: any;
@@ -157,6 +158,7 @@ const StudentLayout: React.FC<Props> = ({ user, onLogout }) => {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <ProjectSelector />
+            <ActiveDatasetBadge />
             <span style={{ color: '#777', fontSize: '0.83rem' }}>{displayName}</span>
             <button onClick={handleLogout} style={{
               background: 'transparent', border: '1px solid #ddd',

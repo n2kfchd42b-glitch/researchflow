@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Database, Upload, AlertCircle, Copy, TrendingDown, Tag, RefreshCw, GitBranch, BookOpen } from 'lucide-react';
 import { useNGO } from '../context/NGOPlatformContext';
+import { useWorkflow } from '../../../context/WorkflowContext';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import StatusBadge from '../components/StatusBadge';
 
@@ -39,11 +40,48 @@ const VERSION_HISTORY = [
 
 export default function DataManagementPage() {
   const { activeProject } = useNGO();
-  const [selectedDatasetId, setSelectedDatasetId] = useState<string>(activeProject?.datasets[0]?.id || '');
+  const { activeDataset, setActiveDataset } = useWorkflow();
+  const [selectedDatasetId, setSelectedDatasetId] = useState<string>(
+    activeDataset?.datasetId || activeProject?.datasets[0]?.id || ''
+  );
   const [activeTab, setActiveTab] = useState<CleaningTab>('Missing Data');
 
-  const datasets = activeProject?.datasets || [];
+  const datasets = useMemo(() => activeProject?.datasets || [], [activeProject?.datasets]);
   const selectedDataset = datasets.find(d => d.id === selectedDatasetId) || datasets[0];
+
+  useEffect(() => {
+    if (!datasets.length) return;
+    if (activeDataset?.datasetId && datasets.some(d => d.id === activeDataset.datasetId)) {
+      setSelectedDatasetId(activeDataset.datasetId);
+      return;
+    }
+    if (!selectedDatasetId && datasets[0]?.id) {
+      setSelectedDatasetId(datasets[0].id);
+    }
+  }, [activeDataset?.datasetId, datasets, selectedDatasetId]);
+
+  useEffect(() => {
+    if (!selectedDataset) return;
+    if (activeDataset?.datasetId === selectedDataset.id) return;
+    setActiveDataset({
+      datasetId: selectedDataset.id,
+      datasetName: selectedDataset.name,
+      datasetVersionId: String(selectedDataset.version),
+      source: 'ngo',
+    });
+  }, [activeDataset?.datasetId, selectedDataset, setActiveDataset]);
+
+  const handleDatasetChange = (datasetId: string) => {
+    setSelectedDatasetId(datasetId);
+    const selected = datasets.find(d => d.id === datasetId);
+    if (!selected) return;
+    setActiveDataset({
+      datasetId: selected.id,
+      datasetName: selected.name,
+      datasetVersionId: String(selected.version),
+      source: 'ngo',
+    });
+  };
 
   // Mock quality score
   const qualityScore = selectedDataset ? 82 : 0;
@@ -63,7 +101,7 @@ export default function DataManagementPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 200 }}>
             <label style={labelStyle}>Active Dataset</label>
-            <select style={inputStyle} value={selectedDatasetId} onChange={e => setSelectedDatasetId(e.target.value)}>
+            <select style={inputStyle} value={selectedDatasetId} onChange={e => handleDatasetChange(e.target.value)}>
               {datasets.length === 0 && <option value="">No datasets</option>}
               {datasets.map(d => <option key={d.id} value={d.id}>{d.name} (v{d.version})</option>)}
             </select>

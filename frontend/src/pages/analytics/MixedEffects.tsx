@@ -1,16 +1,39 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useProject } from "../../context/ProjectContext";
+import { useWorkflow } from "../../context/WorkflowContext";
 import { MixedEffectsResult } from "./types";
 
 const MixedEffects: React.FC = () => {
   const { projectId } = useProject();
-  const [datasetVersionId, setDatasetVersionId] = useState<number | null>(null);
+  const { activeDataset, setActiveDatasetVersion } = useWorkflow();
+  const [datasetVersionId, setDatasetVersionId] = useState<number | null>(() => {
+    if (!activeDataset?.datasetVersionId) return null;
+    const parsed = Number(activeDataset.datasetVersionId);
+    return Number.isFinite(parsed) ? parsed : null;
+  });
   const [outcomeColumn, setOutcomeColumn] = useState("");
   const [fixedEffects, setFixedEffects] = useState<string>("");
   const [randomEffectColumn, setRandomEffectColumn] = useState("");
   const [result, setResult] = useState<MixedEffectsResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!activeDataset?.datasetVersionId) return;
+    const parsed = Number(activeDataset.datasetVersionId);
+    if (Number.isFinite(parsed)) setDatasetVersionId(parsed);
+  }, [activeDataset?.datasetVersionId]);
+
+  const onDatasetVersionChange = (value: string) => {
+    const parsed = Number(value);
+    if (!value || !Number.isFinite(parsed)) {
+      setDatasetVersionId(null);
+      setActiveDatasetVersion(null);
+      return;
+    }
+    setDatasetVersionId(parsed);
+    setActiveDatasetVersion(String(parsed));
+  };
 
   const handleRun = async () => {
     setError(null);
@@ -45,7 +68,12 @@ const MixedEffects: React.FC = () => {
     <div className="page">
       <div className="card" style={{ width: 350, float: "left", marginRight: 24 }}>
         <h2>Mixed Effects Model</h2>
-        <input placeholder="Dataset Version ID" type="number" value={datasetVersionId ?? ""} onChange={e => setDatasetVersionId(Number(e.target.value))} />
+        <input placeholder="Dataset Version ID" type="number" value={datasetVersionId ?? ""} onChange={e => onDatasetVersionChange(e.target.value)} />
+        {activeDataset?.datasetName && (
+          <p style={{ fontSize: '0.75rem', color: '#666', marginTop: 6 }}>
+            Active dataset: {activeDataset.datasetName}
+          </p>
+        )}
         <input placeholder="Outcome Column" value={outcomeColumn} onChange={e => setOutcomeColumn(e.target.value)} />
         <input placeholder="Fixed Effects (comma separated)" value={fixedEffects} onChange={e => setFixedEffects(e.target.value)} />
         <input placeholder="Random Effect Column" value={randomEffectColumn} onChange={e => setRandomEffectColumn(e.target.value)} />

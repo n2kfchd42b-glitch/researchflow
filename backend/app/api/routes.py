@@ -852,6 +852,22 @@ def descriptive_stats(dataset_id: str):
     df = get_dataset_df(dataset_id)
     return compute_descriptive(df)
 
+@router.get("/dataset/{dataset_id}/preview")
+def dataset_preview(dataset_id: str):
+    df = get_dataset_df(dataset_id)
+    safe_df = df.where(pd.notna(df), "")
+    rows = safe_df.astype(str).to_dict(orient="records")
+    info = datasets.get(dataset_id, {})
+    return {
+        "dataset_id": dataset_id,
+        "filename": info.get("filename", f"{dataset_id}.csv"),
+        "headers": [str(c) for c in safe_df.columns.tolist()],
+        "rows": rows,
+        "row_count": int(len(safe_df)),
+        "column_count": int(len(safe_df.columns)),
+        "column_types": info.get("report", {}).get("column_types", {}),
+    }
+
 
 # ============================================================
 # STUDY ROUTES

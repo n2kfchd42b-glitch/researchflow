@@ -1,17 +1,40 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useProject } from "../../context/ProjectContext";
+import { useWorkflow } from "../../context/WorkflowContext";
 import { ITSResult } from "./types";
 import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
 
 const InterruptedTimeSeries: React.FC = () => {
   const { projectId } = useProject();
-  const [datasetVersionId, setDatasetVersionId] = useState<number | null>(null);
+  const { activeDataset, setActiveDatasetVersion } = useWorkflow();
+  const [datasetVersionId, setDatasetVersionId] = useState<number | null>(() => {
+    if (!activeDataset?.datasetVersionId) return null;
+    const parsed = Number(activeDataset.datasetVersionId);
+    return Number.isFinite(parsed) ? parsed : null;
+  });
   const [timeColumn, setTimeColumn] = useState("");
   const [outcomeColumn, setOutcomeColumn] = useState("");
   const [interventionPoint, setInterventionPoint] = useState<number>(0);
   const [result, setResult] = useState<ITSResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!activeDataset?.datasetVersionId) return;
+    const parsed = Number(activeDataset.datasetVersionId);
+    if (Number.isFinite(parsed)) setDatasetVersionId(parsed);
+  }, [activeDataset?.datasetVersionId]);
+
+  const onDatasetVersionChange = (value: string) => {
+    const parsed = Number(value);
+    if (!value || !Number.isFinite(parsed)) {
+      setDatasetVersionId(null);
+      setActiveDatasetVersion(null);
+      return;
+    }
+    setDatasetVersionId(parsed);
+    setActiveDatasetVersion(String(parsed));
+  };
 
   const handleRun = async () => {
     setError(null);
@@ -46,7 +69,12 @@ const InterruptedTimeSeries: React.FC = () => {
     <div className="page">
       <div className="card" style={{ width: 350, float: "left", marginRight: 24 }}>
         <h2>Interrupted Time Series</h2>
-        <input placeholder="Dataset Version ID" type="number" value={datasetVersionId ?? ""} onChange={e => setDatasetVersionId(Number(e.target.value))} />
+        <input placeholder="Dataset Version ID" type="number" value={datasetVersionId ?? ""} onChange={e => onDatasetVersionChange(e.target.value)} />
+        {activeDataset?.datasetName && (
+          <p style={{ fontSize: '0.75rem', color: '#666', marginTop: 6 }}>
+            Active dataset: {activeDataset.datasetName}
+          </p>
+        )}
         <input placeholder="Time Column" value={timeColumn} onChange={e => setTimeColumn(e.target.value)} />
         <input placeholder="Outcome Column" value={outcomeColumn} onChange={e => setOutcomeColumn(e.target.value)} />
         <input placeholder="Intervention Point" type="number" value={interventionPoint} onChange={e => setInterventionPoint(Number(e.target.value))} />

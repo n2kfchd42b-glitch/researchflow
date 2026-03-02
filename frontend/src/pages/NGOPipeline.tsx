@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { DescriptiveStats, BivariateCharts, ResultsCharts } from '../components/AnalysisCharts';
+import { useWorkflow } from '../context/WorkflowContext';
+import { previewToUploadResult } from '../utils/datasetPreview';
 
 export default function NGOPipeline() {
+  const { activeDataset, setActiveDataset } = useWorkflow();
   const [uploadResult, setUploadResult] = useState<any>(null);
-  const [datasetId, setDatasetId]       = useState('');
+  const [datasetId, setDatasetId]       = useState(activeDataset?.datasetId || '');
   const [studyId, setStudyId]           = useState('');
   const [programme, setProgramme]       = useState('');
   const [organisation, setOrganisation] = useState('');
@@ -18,6 +21,12 @@ export default function NGOPipeline() {
   const [error, setError]               = useState('');
   const [activeTab, setActiveTab]       = useState('evaluation');
 
+  useEffect(() => {
+    if (activeDataset?.datasetId) {
+      setDatasetId(activeDataset.datasetId);
+    }
+  }, [activeDataset?.datasetId]);
+
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -27,8 +36,30 @@ export default function NGOPipeline() {
       const data = await api.upload(file);
       setUploadResult(data);
       setDatasetId(data.dataset_id);
+      setActiveDataset({
+        datasetId: data.dataset_id,
+        datasetName: file.name,
+        datasetVersionId: null,
+        source: 'shared',
+        columnTypes: data.column_types,
+      });
     } catch (err: any) {
       setError('Upload failed: ' + (err.message || 'Unknown error'));
+    }
+    setLoading(false);
+  }
+
+  async function useActiveDataset() {
+    if (!activeDataset?.datasetId) return;
+    setLoading(true);
+    setError('');
+    try {
+      const preview = await api.getDatasetPreview(activeDataset.datasetId);
+      const hydrated = previewToUploadResult(preview);
+      setUploadResult(hydrated);
+      setDatasetId(activeDataset.datasetId);
+    } catch (err: any) {
+      setError('Failed to load active dataset: ' + (err.message || 'Unknown error'));
     }
     setLoading(false);
   }
@@ -81,7 +112,11 @@ export default function NGOPipeline() {
     return '#f44336';
   }
 
-  const columns = uploadResult ? Object.keys(uploadResult.column_types) : [];
+  const columns = uploadResult
+    ? Object.keys(uploadResult.column_types)
+    : activeDataset?.columnTypes
+      ? Object.keys(activeDataset.columnTypes)
+      : [];
 
   const sidebarItems = [
     { id: 'evaluation', icon: '📊', label: 'New Evaluation' },
@@ -152,14 +187,24 @@ export default function NGOPipeline() {
             </div>
 
             <div className="card">
-              <h2>Upload Programme Data</h2>
-              <label className="upload-zone" style={{ display: 'block', cursor: 'pointer' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📂</div>
-                <p style={{ fontWeight: 600, color: '#5A8A6A' }}>Tap to upload evaluation dataset</p>
-                <p style={{ fontSize: '0.85rem' }}>CSV, XLSX, SAV, DTA</p>
-                <input type="file" accept=".csv,.xlsx,.xls,.sav,.dta"
-                  onChange={handleUpload} style={{ display: 'none' }} />
+              <h2>Programme Dataset</h2>
+              {activeDataset?.datasetId && (
+                <button
+                  className="btn"
+                  style={{ width: '100%', marginBottom: '0.75rem', background: '#E8F0FE', color: '#1C2B3A' }}
+                  onClick={useActiveDataset}
+                  disabled={loading}
+                >
+                  {loading ? 'Loading active dataset...' : `Use active dataset${activeDataset.datasetName ? `: ${activeDataset.datasetName}` : ''}`}
+                </button>
+              )}
+              <label className="btn" style={{ width: '100%', textAlign: 'center', background: '#F3F4F6', color: '#374151', cursor: 'pointer' }}>
+                Upload a different file (fallback)
+                <input type="file" accept=".csv,.xlsx,.xls,.sav,.dta" onChange={handleUpload} style={{ display: 'none' }} />
               </label>
+              <p style={{ fontSize: '0.78rem', color: '#888', marginTop: '0.6rem', marginBottom: 0 }}>
+                Active dataset is preferred for continuous workflow. Upload only to replace dataset.
+              </p>
               {loading && !results && (
                 <p style={{ textAlign: 'center', marginTop: '1rem', color: '#5A8A6A' }}>Processing data...</p>
               )}

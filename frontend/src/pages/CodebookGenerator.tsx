@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useWorkflow } from '../context/WorkflowContext';
+import { api } from '../services/api';
 
 type VariableInfo = {
   name:         string;
@@ -89,10 +91,13 @@ const TYPE_ICONS: Record<string, string> = {
 };
 
 export default function CodebookGenerator() {
+  const { activeDataset } = useWorkflow();
   const [codebook, setCodebook]   = useState<VariableInfo[]>([]);
   const [filename, setFilename]   = useState('');
   const [nRows, setNRows]         = useState(0);
   const [loading, setLoading]     = useState(false);
+  const [loadingActive, setLoadingActive] = useState(false);
+  const [loadError, setLoadError] = useState('');
   const [search, setSearch]       = useState('');
   const [filterType, setFilterType] = useState('All');
   const [activeVar, setActiveVar] = useState<string | null>(null);
@@ -112,6 +117,29 @@ export default function CodebookGenerator() {
       setLoading(false);
     };
     reader.readAsText(file);
+  }
+
+  async function handleLoadActiveDataset() {
+    if (!activeDataset?.datasetId) return;
+    setLoadingActive(true);
+    setLoadError('');
+    try {
+      const data = await api.getDatasetPreview(activeDataset.datasetId);
+      const headers = (data.headers || []).map((h: unknown) => String(h));
+      const rows = (data.rows || []).map((row: Record<string, unknown>) => {
+        const normalized: Record<string, string> = {};
+        Object.entries(row).forEach(([key, value]) => {
+          normalized[key] = value == null ? '' : String(value);
+        });
+        return normalized;
+      });
+      setFilename(data.filename || activeDataset.datasetName || `${activeDataset.datasetId}.csv`);
+      setNRows(rows.length);
+      setCodebook(buildCodebook(headers, rows));
+    } catch (err: any) {
+      setLoadError(err?.message || 'Failed to load active dataset');
+    }
+    setLoadingActive(false);
   }
 
   function updateLabel(name: string, label: string) {
@@ -191,9 +219,21 @@ export default function CodebookGenerator() {
         Auto-generate a publication-ready variable codebook from your dataset. Add labels, notes and export.
       </p>
 
+      {loadError && <div className="alert alert-critical">{loadError}</div>}
+
       {!codebook.length && (
         <div className="card" style={{ maxWidth: 500 }}>
           <h2>Upload Dataset</h2>
+          {activeDataset?.datasetId && (
+            <button
+              className="btn"
+              style={{ width: '100%', marginBottom: '0.75rem', background: '#E8F0FE', color: '#1C2B3A' }}
+              onClick={handleLoadActiveDataset}
+              disabled={loadingActive || loading}
+            >
+              {loadingActive ? 'Loading active dataset...' : `Use active dataset${activeDataset.datasetName ? `: ${activeDataset.datasetName}` : ''}`}
+            </button>
+          )}
           <label className="upload-zone" style={{ display: 'block', cursor: 'pointer' }}>
             <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📂</div>
             <p style={{ fontWeight: 600, color: '#1C2B3A' }}>Upload CSV file</p>
@@ -246,6 +286,16 @@ export default function CodebookGenerator() {
               Upload New
               <input type="file" accept=".csv" onChange={handleUpload} style={{ display: 'none' }} />
             </label>
+            {activeDataset?.datasetId && (
+              <button
+                className="btn"
+                style={{ background: '#E8F0FE', color: '#1C2B3A', fontSize: '0.82rem' }}
+                onClick={handleLoadActiveDataset}
+                disabled={loadingActive || loading}
+              >
+                {loadingActive ? 'Loading active dataset...' : 'Use active dataset'}
+              </button>
+            )}
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: activeVar ? '1fr 340px' : '1fr', gap: '1.5rem' }}>

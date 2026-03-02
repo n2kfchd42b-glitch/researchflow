@@ -74,6 +74,7 @@ import AuditTrail from './pages/AuditTrail';
 import StudyDashboard from './pages/StudyDashboard';
 import DataVersioning from './pages/DataVersioning';
 import { ProjectProvider } from './context/ProjectContext';
+import { WorkflowProvider } from './context/WorkflowContext';
 import { StudentWizardProvider } from './products/student/context/StudentWizardContext';
 import { NGOPlatformProvider } from './products/ngo/context/NGOPlatformContext';
 import { JournalProvider } from './products/journal/context/JournalContext';
@@ -136,6 +137,7 @@ export default function App() {
   return (
     <ErrorBoundary>
     <BrowserRouter>
+      <WorkflowProvider>
       <ProjectProvider>
         <Routes>
           {/* ── Product Landing ── */}
@@ -212,6 +214,7 @@ export default function App() {
           <Route path="/methodology"   element={<MethodologyMemory user={user} />} />
         </Routes>
       </ProjectProvider>
+      </WorkflowProvider>
     </BrowserRouter>
     </ErrorBoundary>
   );

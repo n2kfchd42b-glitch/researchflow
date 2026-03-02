@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useWorkflow } from '../context/WorkflowContext';
+import { api } from '../services/api';
 
 function parseCSV(text: string) {
   const lines   = text.trim().split('\n');
@@ -97,9 +99,12 @@ type VarRow = {
 };
 
 export default function Table1Generator() {
+  const { activeDataset } = useWorkflow();
   const [rows, setRows]         = useState<Record<string,string>[]>([]);
   const [headers, setHeaders]   = useState<string[]>([]);
   const [filename, setFilename] = useState('');
+  const [loadingActive, setLoadingActive] = useState(false);
+  const [loadError, setLoadError] = useState('');
   const [stratify, setStratify] = useState('');
   const [varRows, setVarRows]   = useState<VarRow[]>([]);
   const [groupLabels, setGroupLabels] = useState<string[]>([]);
@@ -118,6 +123,30 @@ export default function Table1Generator() {
       setHeaders(h); setRows(r); setVarRows([]); setStratify('');
     };
     reader.readAsText(file);
+  }
+
+  async function handleLoadActiveDataset() {
+    if (!activeDataset?.datasetId) return;
+    setLoadingActive(true);
+    setLoadError('');
+    try {
+      const data = await api.getDatasetPreview(activeDataset.datasetId);
+      const normalizedRows: Record<string, string>[] = (data.rows || []).map((row: Record<string, unknown>) => {
+        const normalized: Record<string, string> = {};
+        Object.entries(row).forEach(([key, value]) => {
+          normalized[key] = value == null ? '' : String(value);
+        });
+        return normalized;
+      });
+      setHeaders((data.headers || []).map((h: unknown) => String(h)));
+      setRows(normalizedRows);
+      setVarRows([]);
+      setStratify('');
+      setFilename(data.filename || activeDataset.datasetName || `${activeDataset.datasetId}.csv`);
+    } catch (err: any) {
+      setLoadError(err?.message || 'Failed to load active dataset');
+    }
+    setLoadingActive(false);
   }
 
   function generate() {
@@ -252,10 +281,30 @@ export default function Table1Generator() {
         Auto-generate publication-ready baseline characteristics table from your dataset.
       </p>
 
+      {loadError && <div className="alert alert-critical">{loadError}</div>}
+
       <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: '1.5rem' }}>
         <div>
           <div className="card">
             <h2>Dataset</h2>
+            {activeDataset?.datasetName && (
+              <div style={{ background: '#E8F0FE', borderRadius: 8, padding: '0.6rem 0.75rem', marginBottom: '0.75rem', fontSize: '0.8rem', color: '#1C2B3A' }}>
+                Active dataset: <strong>{activeDataset.datasetName}</strong>
+                <div style={{ color: '#666', marginTop: 3 }}>
+                  Load it directly from workflow, or upload CSV manually.
+                </div>
+              </div>
+            )}
+            {activeDataset?.datasetId && (
+              <button
+                className="btn"
+                style={{ width: '100%', marginBottom: '0.75rem', background: '#E8F0FE', color: '#1C2B3A' }}
+                onClick={handleLoadActiveDataset}
+                disabled={loadingActive}
+              >
+                {loadingActive ? 'Loading active dataset...' : `Use active dataset${activeDataset.datasetName ? `: ${activeDataset.datasetName}` : ''}`}
+              </button>
+            )}
             <label className="btn btn-primary btn-full" style={{ cursor: 'pointer', display: 'block', textAlign: 'center', marginBottom: '0.75rem' }}>
               {filename ? `✅ ${filename}` : '📂 Upload CSV'}
               <input type="file" accept=".csv" onChange={handleUpload} style={{ display: 'none' }} />

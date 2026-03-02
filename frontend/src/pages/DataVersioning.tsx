@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useWorkflow } from '../context/WorkflowContext';
 
 type Version = {
   id:          string;
@@ -42,6 +43,7 @@ const VERSION_NAMES = [
 ];
 
 export default function DataVersioning() {
+  const { activeDataset, setActiveDatasetVersion } = useWorkflow();
   const [versions, setVersions]       = useState<Version[]>([]);
   const [activeVersion, setActiveVersion] = useState<string | null>(null);
   const [compareMode, setCompareMode] = useState(false);
@@ -54,6 +56,21 @@ export default function DataVersioning() {
   const [currentData, setCurrentData] = useState<string>('');
   const [currentHeaders, setCurrentHeaders] = useState<string[]>([]);
   const [currentRows, setCurrentRows] = useState<Record<string, string>[]>([]);
+
+  useEffect(() => {
+    if (!activeDataset?.datasetVersionId || versions.length === 0) return;
+    const versionNumber = Number(activeDataset.datasetVersionId);
+    if (!Number.isFinite(versionNumber) || versionNumber < 1 || versionNumber > versions.length) return;
+    const version = versions[versionNumber - 1];
+    if (version && version.id !== activeVersion) {
+      setActiveVersion(version.id);
+    }
+  }, [activeDataset?.datasetVersionId, versions, activeVersion]);
+
+  function selectActiveVersion(versionId: string, versionNumber: number) {
+    setActiveVersion(versionId);
+    setActiveDatasetVersion(String(versionNumber));
+  }
 
   function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -85,12 +102,13 @@ export default function DataVersioning() {
       data:        currentData,
       size_kb:     Math.round(currentData.length / 1024 * 10) / 10,
     };
+    const nextVersionNumber = versions.length + 1;
     setVersions(prev => [...prev, version]);
     setShowSave(false);
     setNewVersionName('');
     setNewVersionDesc('');
     setNewVersionChanges('');
-    setActiveVersion(version.id);
+    selectActiveVersion(version.id, nextVersionNumber);
   }
 
   function downloadVersion(version: Version) {
@@ -105,7 +123,10 @@ export default function DataVersioning() {
   function deleteVersion(id: string) {
     if (window.confirm('Delete this version? This cannot be undone.')) {
       setVersions(prev => prev.filter(v => v.id !== id));
-      if (activeVersion === id) setActiveVersion(null);
+      if (activeVersion === id) {
+        setActiveVersion(null);
+        setActiveDatasetVersion(null);
+      }
     }
   }
 
@@ -125,6 +146,11 @@ export default function DataVersioning() {
           <p style={{ marginBottom: 0, fontSize: '0.88rem', color: '#888' }}>
             Save snapshots at each cleaning stage — never lose your raw data
           </p>
+          {activeDataset?.datasetName && (
+            <p style={{ marginTop: 6, marginBottom: 0, fontSize: '0.8rem', color: '#5A8A6A' }}>
+              Active dataset: {activeDataset.datasetName}
+            </p>
+          )}
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           {versions.length >= 2 && (
@@ -217,7 +243,7 @@ export default function DataVersioning() {
               <div style={{ position: 'relative' }}>
                 <div style={{ position: 'absolute', left: 16, top: 0, bottom: 0, width: 2, background: '#eee', zIndex: 0 }} />
                 {versions.map((v, i) => (
-                  <div key={v.id} onClick={() => setActiveVersion(v.id)} style={{
+                  <div key={v.id} onClick={() => selectActiveVersion(v.id, i + 1)} style={{
                     display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', cursor: 'pointer',
                     position: 'relative', zIndex: 1,
                   }}>
