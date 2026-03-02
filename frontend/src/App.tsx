@@ -7,6 +7,9 @@ import { API_URL } from './config';
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 import Login from './pages/Login';
 
+// ─── Landing Page ─────────────────────────────────────────────────────────────
+import LandingPage from './pages/LandingPage';
+
 // ─── Product Landing ──────────────────────────────────────────────────────────
 import ProductLanding from './pages/ProductLanding';
 
@@ -131,7 +134,15 @@ export default function App() {
   }
 
   if (!user) {
-    return <Login onLogin={setUser} />;
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login onLogin={setUser} />} />
+          <Route path="*" element={<LandingPage />} />
+        </Routes>
+      </BrowserRouter>
+    );
   }
 
   return (
@@ -140,8 +151,9 @@ export default function App() {
       <WorkflowProvider>
       <ProjectProvider>
         <Routes>
-          {/* ── Product Landing ── */}
-          <Route path="/" element={<ProductLanding />} />
+          {/* ── Landing / Product Hub ── */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login onLogin={setUser} />} />
 
           {/* ── Student Wizard ── */}
           <Route path="/student" element={<StudentWizardProvider><StudentLayout user={user} onLogout={handleLogout} /></StudentWizardProvider>}>
