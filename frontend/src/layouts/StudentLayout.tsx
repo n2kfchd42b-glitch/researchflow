@@ -170,7 +170,9 @@ const StudentLayout: React.FC<Props> = ({ user, onLogout }) => {
 
         {/* Page content */}
         <main style={{ flex: 1, overflowY: 'auto', background: '#F4F7FA' }}>
-          <Outlet />
+          <div className="layout-main-content">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

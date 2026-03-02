@@ -274,37 +274,6 @@ def privacy():
     return {"privacy": "Your data is processed securely and not shared with third parties."}
 
 
-# ============================================================
-# AUTH ROUTES
-# ============================================================
-
-@router.post("/auth/register")
-def register(req: RegisterRequest):
-    return register_user(req.name, req.email, req.password, req.role)
-
-@router.post("/auth/login")
-def login(req: LoginRequest):
-    return login_user(req.email, req.password)
-
-@router.get("/auth/me")
-def me(request: Request, authorization: Optional[str] = Header(None)):
-    token = None
-    if authorization and authorization.startswith("Bearer "):
-        token = authorization[7:]
-    if not token:
-        raise HTTPException(status_code=401, detail="Missing token")
-    return decode_token(token)
-
-
-    return StreamingResponse(
-        io.BytesIO(pdf_bytes),
-        media_type="application/pdf",
-        headers={
-            "Content-Disposition":
-            f"attachment; filename=researchflow_{template}_report.pdf"
-        }
-    )
-
 from app.services.auth import register_user, login_user, decode_token
 from pydantic import BaseModel as PydanticBase
 

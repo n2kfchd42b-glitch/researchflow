@@ -1,8 +1,7 @@
-import React, { useState, useEffect, Component } from 'react';
+import React, { useState, Component } from 'react';
 import type { ReactNode, ErrorInfo } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './mobile.css';
-import { API_URL } from './config';
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 import Login from './pages/Login';
@@ -11,7 +10,7 @@ import Login from './pages/Login';
 import LandingPage from './pages/LandingPage';
 
 // ─── Product Landing ──────────────────────────────────────────────────────────
-import ProductLanding from './pages/ProductLanding';
+// import ProductLanding from './pages/ProductLanding';
 
 // ─── Layouts ──────────────────────────────────────────────────────────────────
 import StudentLayout from './layouts/StudentLayout';
@@ -108,41 +107,11 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
 }
 
 export default function App() {
-  const [user,  setUser]  = useState<any>(null);
-  const [ready, setReady] = useState(false);
-
-  // On mount: restore session from httpOnly cookie via /auth/me
-  useEffect(() => {
-    fetch(`${API_URL}/auth/me`, { credentials: 'include' })
-      .then(r => r.ok ? r.json() : null)
-      .then(u  => { if (u) setUser(u); })
-      .catch(() => {})
-      .finally(() => setReady(true));
-  }, []);
+  // Login bypassed – default user grants direct access to the platform
+  const [user,  setUser]  = useState<any>({ id: 'guest', name: 'Guest User', email: 'guest@researchflow.app' });
 
   async function handleLogout() {
-    await fetch(`${API_URL}/auth/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
-    setUser(null);
-  }
-
-  if (!ready) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#1C2B3A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ color: '#C0533A', fontSize: '1.2rem', fontWeight: 700 }}>ResearchFlow…</div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login onLogin={setUser} />} />
-          <Route path="*" element={<LandingPage />} />
-        </Routes>
-      </BrowserRouter>
-    );
+    // no-op when login is blanked out
   }
 
   return (

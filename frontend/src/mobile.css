@@ -8,6 +8,14 @@
   flex-shrink: 0;
   overflow-y: auto;
   height: 100vh;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+
+/* Main content area — breathing room between sidebar and page content */
+.layout-main-content {
+  padding: 1.75rem 2rem;
 }
 
 .layout-hamburger {
@@ -101,6 +109,11 @@
 
   /* CARDS */
   .card {
+    padding: 1rem !important;
+  }
+
+  /* Main content \u2014 reduce padding on mobile */
+  .layout-main-content {
     padding: 1rem !important;
   }
 

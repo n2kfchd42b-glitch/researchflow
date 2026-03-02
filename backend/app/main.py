@@ -86,6 +86,12 @@ app.include_router(projects_router)
 app.include_router(references_router)
 app.include_router(assessments_router)
 app.include_router(analysis_router)
+
+# /api-prefixed routes so frontend fetch('/api/projects') etc. work
+app.include_router(projects_router, prefix="/api")
+app.include_router(references_router, prefix="/api")
+app.include_router(studies_router, prefix="/api")
+app.include_router(assessments_router, prefix="/api")
 @app.get("/")
 def root():
     return {
@@ -111,5 +117,5 @@ async def health():
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8001))
-    host = os.getenv("HOST", "127.0.0.1")
+    host = os.getenv("HOST", "0.0.0.0")
     uvicorn.run("app.main:app", host=host, port=port, reload=True)
